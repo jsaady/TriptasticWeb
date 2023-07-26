@@ -1,0 +1,7 @@
+node_modules
+.parcel-cache
+.gitlab
+.vscode
+dist
+.env
+README.md

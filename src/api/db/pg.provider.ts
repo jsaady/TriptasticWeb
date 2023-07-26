@@ -7,7 +7,7 @@ const PG = 'PG';
 export const PG_PROVIDER: Provider<Sql> = {
   provide: PG,
   useFactory: (config: ConfigService) => {
-    const url = new URL(config.get('DATABASE_URL')!);
+    const url = new URL(config.getOrThrow('DATABASE_URL')!);
 
     return postgres({
       host: url.host,
