@@ -18,7 +18,8 @@ export class DBModule {
   static forRoot(): DynamicModule {
     return {
       module: DBModule,
-      providers: [PG_PROVIDER]
+      providers: [PG_PROVIDER, DBService],
+      exports: [PG_PROVIDER]
     };
   }
 }
