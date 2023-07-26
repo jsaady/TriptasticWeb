@@ -7,6 +7,4 @@ export class AppService {
   constructor (
     @InjectPG() pg: Sql
   ) { }
-
-  
 }

@@ -22,6 +22,8 @@ stages:
 - cleanup
 sast:
   stage: test
+test:
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
 include:
 - template: Auto-DevOps.gitlab-ci.yml
 
