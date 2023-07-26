@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "test": "jest",
+    "test": "jest --ci --coverage",
     "serve:api": "nodemon --exec \"npm run build:api && npm start\" -w ./src/api -e \"ts\"",
     "serve:ui": "parcel ./src/ui/index.html",
     "serve": "concurrently \"npm run serve:api\" \"npm run serve:ui\"",
@@ -34,9 +34,11 @@
   },
   "dependencies": {
     "@nestjs/common": "^10.1.2",
+    "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^10.1.2",
     "@nestjs/platform-express": "^10.1.2",
     "express": "^4.18.2",
+    "postgres": "^3.3.5",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"
   }
