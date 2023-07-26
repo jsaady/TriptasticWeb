@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module.js';
 import express from 'express';
 import { resolve } from 'path';
+import { AppModule } from './app.module.js';
 
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
@@ -12,6 +12,8 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
   app.setGlobalPrefix('/api');
 
   app.use(express.static(resolve(currentDir, '..', 'ui')));
+
+  app.enableShutdownHooks();
 
   await app.listen(3000);
 })();
