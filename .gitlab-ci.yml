@@ -25,10 +25,11 @@ sast:
 include:
 - template: Auto-DevOps.gitlab-ci.yml
 
-contexts:
-   stage: .pre
-   image:
-     name: bitnami/kubectl:latest
-     entrypoint: [""]
-   script:
-     - kubectl config get-contexts 
+# use to debug cluster names
+# contexts:
+#    stage: .pre
+#    image:
+#      name: bitnami/kubectl:latest
+#      entrypoint: [""]
+#    script:
+#      - kubectl config get-contexts 
