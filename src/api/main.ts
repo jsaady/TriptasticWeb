@@ -15,5 +15,5 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
   app.enableShutdownHooks();
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 5000);
 })();
