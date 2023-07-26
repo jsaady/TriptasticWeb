@@ -7,6 +7,7 @@ export default {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  testPathPattern: ['src/'],
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
