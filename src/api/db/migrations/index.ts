@@ -1,5 +1,7 @@
 import { Sql } from 'postgres';
 import initialMigration from './initial.migration.js';
+import userMigration from './user.migration.js';
+import userSeed from './user.seed.js';
 interface Migration {
   name: string;
   up: (tx: Sql) => Promise<boolean>;
@@ -8,7 +10,9 @@ interface Migration {
 }
 
 const migrations: Migration[] = [
-  initialMigration
+  initialMigration,
+  userMigration,
+  userSeed
 ];
 
 export default migrations;

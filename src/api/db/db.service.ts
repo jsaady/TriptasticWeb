@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Sql } from 'postgres';
 import migrations from './migrations/index.js';
 import { InjectPG } from './pg.provider.js';
@@ -11,6 +11,8 @@ interface MigrationHistory {
 
 @Injectable()
 export class DBService {
+  logger = new Logger(DBService.name);
+
   constructor (
     @InjectPG() private pg: Sql
   ) { }
@@ -48,15 +50,20 @@ export class DBService {
       acc.set(m.name, m.success);
 
       return acc;
-    }, new Map<string, boolean>())
+    }, new Map<string, boolean>());
+
     for (const migration of migrations) {
+      this.logger.log(`Starting ${migration.name}`);
       const newMigrationHistory: MigrationHistory = {
         name: migration.name,
         success: false,
         date: Date.now()
       };
+      
+      let shouldInsert = true;
       try {
         if (existingMigrationsMap.has(migration.name)) {
+          this.logger.log(`Migration ${migration.name} has previously run`);
           const wasSuccessful = existingMigrationsMap.get(migration.name);
           
           if (!wasSuccessful) {
@@ -67,25 +74,31 @@ export class DBService {
         }
         await this.pg.begin(async (tx) => {
           const shouldRun = await migration.check?.(tx) ?? true;
-
+          
           if (shouldRun) {
             const successful = await migration.up(tx);
-
+            this.logger.log(`Migration ${migration.name} was${successful ? '' : ' not'} successful`);
+            
             if (!successful) {
               throw new Error(`${migration.name} returned false`);
             }
-
+            
             newMigrationHistory.success = true;
+          } else {
+            this.logger.log(`Migration ${migration.name} was skipped`);
+            shouldInsert = false;
           }
         });
       } catch (e) {
         console.error(e);
       }
 
-      await this.pg`
-        insert into migrations
-        ${this.pg(newMigrationHistory, 'name', 'success', 'date')}
-      `
+      if (shouldInsert) {
+        await this.pg`
+          insert into migrations
+          ${this.pg(newMigrationHistory, 'name', 'success', 'date')}
+        `
+      }
     }
   }
 }

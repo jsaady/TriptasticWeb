@@ -1,10 +1,10 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import express from 'express';
 import { resolve } from 'path';
 import { AppModule } from './app.module.js';
 import { DBService } from './db/db.service.js';
-import { ConfigService } from '@nestjs/config';
-
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -17,6 +17,8 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     const dbService = app.get(DBService);
     await dbService.up();
   }
+
+  app.use(cookieParser());
 
   app.setGlobalPrefix('/api');
 

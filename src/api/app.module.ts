@@ -1,10 +1,17 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller.js';
 import { ConfigModule } from '@nestjs/config';
-import { DBModule } from './db/db.module.js';
+import { AppController } from './app.controller.js';
+import { AuthModule } from './auth/auth.module.js';
+import { ContextModule } from './context/context.module.js';
+import { UsersModule } from './users/users.module.js';
 
 @Module({
-  imports: [ConfigModule.forRoot(), DBModule.forRoot()],
+  imports: [
+    ContextModule,
+    AuthModule,
+    UsersModule,
+    ConfigModule.forRoot()
+  ],
   controllers: [AppController]
 })
 export class AppModule { }
