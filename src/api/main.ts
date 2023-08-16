@@ -4,7 +4,11 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import { resolve } from 'path';
 import { AppModule } from './app.module.js';
-import { DBService } from './db/db.service.js';
+import { MikroORM } from '@mikro-orm/core';
+import csurf from 'csurf';
+import { Logger } from '@nestjs/common';
+import helmet from 'helmet';
+import { CONFIG_VARS } from './utils/config.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -14,11 +18,17 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
   const config = app.get(ConfigService);
 
   if (!config.get('SKIP_MIGRATIONS')) {
-    const dbService = app.get(DBService);
-    await dbService.up();
+    const mikroOrm = app.get(MikroORM);
+    await mikroOrm.getSchemaGenerator().ensureDatabase();
+    await mikroOrm.migrator.up();
+    Logger.log(await mikroOrm.getMigrator().getPendingMigrations());
   }
 
-  app.use(cookieParser());
+  app.use(cookieParser(config.getOrThrow(CONFIG_VARS.cookieSecret)));
+
+  // app.use(csurf());
+
+  app.use(helmet());
 
   app.setGlobalPrefix('/api');
 

@@ -1,13 +1,11 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Cipher, createCipheriv, createDecipheriv, randomBytes } from 'crypto';
-import { UserService } from '../users/users.service.js';
-import { compare, hash } from 'bcrypt';
-import { UserDTO } from '../users/users.dto.js';
-import { AuthDTO, RegisterUserDTO } from './auth.dto.js';
-import { User } from '../users/users.entities.js';
-import { AUTH_SALT_ROUNDS, AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
 import { JwtService } from '@nestjs/jwt';
+import { compare, hash } from 'bcrypt';
+import { CreateUserDTO } from '../users/users.dto.js';
+import { User } from '../users/users.entity.js';
+import { UserService } from '../users/users.service.js';
+import { AUTH_SALT_ROUNDS } from './auth.constants.js';
+import { AuthDTO, RegisterUserDTO } from './auth.dto.js';
 
 @Injectable()
 export class AuthService {
@@ -18,16 +16,15 @@ export class AuthService {
     private userService: UserService
   ) { }
 
-  async registerUser({ username, email, password }: RegisterUserDTO) {
-    const existingUser = await this.userService.getUserByUserNameAndEmail(username, email);
+  async registerUser({ email, password }: RegisterUserDTO) {
+    const existingUser = await this.userService.getUserByEmail(email);
 
     if (existingUser) {
-      const extra = existingUser.email === email ? `email ${email}` : `username ${username}`;
+      const extra = `email ${email}`;
       throw new BadRequestException(`User with ${extra} already exists`);
     }
 
-    const newUser: Omit<User, 'id'> = {
-      username,
+    const newUser: CreateUserDTO = {
       email,
       password: await hash(password, AUTH_SALT_ROUNDS),
       emailConfirmed: false,
@@ -44,7 +41,6 @@ export class AuthService {
     return {
       token: await this.jwt.signAsync({
         sub: user.id,
-        name: user.username,
         isAdmin: user.isAdmin,
         email: user.email,
         emailConfirmed: user.emailConfirmed,
@@ -55,8 +51,8 @@ export class AuthService {
     };
   }
 
-  async checkPasswordForUser(username: string, password: string) {
-    const user = await this.userService.getUserByUserNameOrEmail(username);
+  async checkPasswordForUser(email: string, password: string) {
+    const user = await this.userService.getUserByEmail(email);
 
     if (!user) throw new UnauthorizedException('User not found');
 

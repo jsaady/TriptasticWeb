@@ -1,4 +1,4 @@
-import React, { FormEvent, useCallback } from 'react';
+import React, { FormEvent, useCallback, useState } from 'react';
 import { styled } from 'styled-components';
 import { useHttp } from './utils/http.js';
 import { useForm } from './utils/forms.js';
@@ -9,7 +9,8 @@ import { useAuthorization } from './utils/useAuth.js';
 
 const LoginForm = styled.form`
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
   max-width: 640px;
   margin: auto;
   padding: 1rem;
@@ -43,7 +44,7 @@ const LoginButton = styled.button`
 const LoginHeading = styled.h3``;
 
 interface LoginForm {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -51,21 +52,20 @@ export const Login = () => {
   const { register, registerForm } = useForm<LoginForm>();
   const { setLoggedIn } = useAuthorization();
 
-  const [handleSubmit] = useAsyncHttp(async ({ post }, state: LoginForm) => {
-    console.log('here3');
-    
-    await post('/api/auth/', {
+  const [handleSubmit] = useAsyncHttp(async ({ post }, state: LoginForm) => {    
+    await post('/api/auth/login', {
       ...state
     });
-    
-    console.log('here4');
+
     setLoggedIn(true);
   }, [setLoggedIn]);
 
   return <LoginForm {...registerForm(handleSubmit)}>
     <LoginHeading>You must log in to continue</LoginHeading>
-    <LoginInput {...register('username')} placeholder='Username'></LoginInput>
+    <LoginInput {...register('email')} placeholder='Email' type="email"></LoginInput>
     <LoginInput {...register('password')} placeholder='Password' type="password"></LoginInput>
+
     <LoginButton type="submit">LOGIN</LoginButton>
+    <LoginButton type="button">REGISTER</LoginButton>
   </LoginForm>
 };

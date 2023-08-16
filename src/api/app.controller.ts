@@ -1,9 +1,8 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth/auth.service.js';
-import { IsAuthenticated } from './auth/isAuthenticated.guard.js';
+import { AuthService } from './features/auth/auth.service.js';
+import { IsAuthenticated } from './features/auth/isAuthenticated.guard.js';
 
 @Controller()
-@UseGuards(IsAuthenticated)
 export class AppController {
   constructor (
     private authService: AuthService

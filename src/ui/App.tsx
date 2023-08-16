@@ -9,7 +9,7 @@ const App = () => {
   const { loggedIn, setLoggedIn } = useAuthorization();
 
   const [doFetch, { result, loading, error }] = useAsyncHttp(async ({ get }) => {
-    await get('/api')
+    await get('/api/auth/me')
     setLoggedIn(true);
   }, [setLoggedIn]);
 

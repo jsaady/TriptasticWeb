@@ -1,0 +1,12 @@
+/**
+ * @type {import('@mikro-orm/core').Options}
+ */
+export default {
+  type: 'postgresql',
+  clientUrl: process.env.DATABASE_URL,
+  entities: ['./dist/api/**/*.entity.js'],
+  entitiesTs: ['./src/api/**/*.entity.ts'],
+  migrations: {
+    path: './src/api/db/migrations'
+  }
+}
