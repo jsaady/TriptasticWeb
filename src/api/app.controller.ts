@@ -4,9 +4,6 @@ import { IsAuthenticated } from './features/auth/isAuthenticated.guard.js';
 
 @Controller()
 export class AppController {
-  constructor (
-    private authService: AuthService
-  ) { }
 
   @Get('/')
   getRoot() {
