@@ -29,6 +29,7 @@ import { APP_GUARD } from '@nestjs/core';
           entities: ['./**/*.entity.js'],
           entitiesTs: ['./**/*.entity.ts'],
           migrations: {
+            disableForeignKeys: false,
             path: './dist/api/db/migrations',
             pathTs: './src/api/db/migrations'
           },

@@ -7,6 +7,7 @@ export default {
   entities: ['./dist/api/**/*.entity.js'],
   entitiesTs: ['./src/api/**/*.entity.ts'],
   migrations: {
+    disableForeignKeys: false,
     path: './src/api/db/migrations'
   }
 }
