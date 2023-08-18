@@ -26,12 +26,3 @@ test:
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
 include:
 - template: Auto-DevOps.gitlab-ci.yml
-
-# use to debug cluster names
-contexts:
-   stage: .pre
-   image:
-     name: bitnami/kubectl:latest
-     entrypoint: [""]
-   script:
-     - env
