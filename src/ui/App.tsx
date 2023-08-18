@@ -17,10 +17,6 @@ const App = () => {
     doFetch();
   }, []);
 
-  useEffect(() => {
-    console.log(loggedIn)
-  }, [loggedIn]);
-
   if (loading) return 'Loading...';
 
   return <Wrapper showGradient={!loggedIn}>

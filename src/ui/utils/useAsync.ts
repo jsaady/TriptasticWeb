@@ -56,7 +56,6 @@ export const useAsyncHttp = <T, A extends any[]>(call: (http: AsyncHTTPClient, .
   const http = useMemo<AsyncHTTPClient>(() => ({
     get: (path: string) => httpClient.get(path, controller.signal),
     post: (path: string, body: any) => {
-      console.log('here2');
       return httpClient.post(path, body, controller.signal)
     }
   }), [httpClient, controller]);

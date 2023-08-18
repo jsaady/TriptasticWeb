@@ -52,7 +52,6 @@ export const useHttp = (): HTTPClient => {
   }, [makeRequest]);
   
   const post = useCallback(async (path: string, payload: unknown, signal: AbortSignal) => {
-    console.log('here1');
     return makeRequest(path, 'post', signal, payload);
   }, [makeRequest]);
 

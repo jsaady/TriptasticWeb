@@ -50,9 +50,9 @@ interface LoginForm {
 
 export const Login = () => {
   const { register, registerForm } = useForm<LoginForm>();
-  const { setLoggedIn } = useAuthorization();
+  const { setLoggedIn, loggedIn } = useAuthorization();
 
-  const [handleSubmit] = useAsyncHttp(async ({ post }, state: LoginForm) => {    
+  const [handleSubmit, { loading }] = useAsyncHttp(async ({ post }, state: LoginForm) => {    
     await post('/api/auth/login', {
       ...state
     });
@@ -62,8 +62,9 @@ export const Login = () => {
 
   return <LoginForm {...registerForm(handleSubmit)}>
     <LoginHeading>You must log in to continue</LoginHeading>
-    <LoginInput {...register('email')} placeholder='Email' type="email"></LoginInput>
-    <LoginInput {...register('password')} placeholder='Password' type="password"></LoginInput>
+    {loggedIn && <p data-testid="login-success">Log in succeeded</p>}
+    <LoginInput disabled={loggedIn}  {...register('email')} placeholder='Email' type="email"></LoginInput>
+    <LoginInput disabled={loggedIn} {...register('password')} placeholder='Password' type="password"></LoginInput>
 
     <LoginButton type="submit">LOGIN</LoginButton>
     <LoginButton type="button">REGISTER</LoginButton>

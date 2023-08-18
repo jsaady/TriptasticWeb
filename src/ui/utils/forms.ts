@@ -30,7 +30,6 @@ export const useForm = <T>(initialState?: T) => {
 
     const props: FormItemProps = useMemo(() => ({
       onChange: (value: ChangeEvent<HTMLInputElement>) => {
-        console.log('handling');
         setState((s) => ({
           ...s,
           [name]: value.target.value

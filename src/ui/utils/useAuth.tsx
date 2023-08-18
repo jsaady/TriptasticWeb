@@ -13,7 +13,6 @@ export const withAuthorization = <T,>(Comp: ComponentType<T>) => (props: T & JSX
   });
 
   const setLoggedIn = useCallback((loggedIn?: boolean) => {
-    console.log('updating logged in', loggedIn);
     setState(v => ({
       ...v,
       loggedIn: loggedIn ?? !v.loggedIn

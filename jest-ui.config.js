@@ -2,12 +2,14 @@
 
 export default {
   preset: 'ts-jest/presets/default-esm',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   extensionsToTreatAsEsm: ['.ts'],
+  setupFilesAfterEnv: ['./src/ui/testSetup.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  testPathPattern: ['src/'],
+  testRegex: ['src\\/ui\\/(.*)\\.spec\\.[jt]sx?'],
+  testPathIgnorePatterns: ['src\\/api\\/(.*)'],
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
