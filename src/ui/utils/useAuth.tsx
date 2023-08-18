@@ -2,14 +2,17 @@ import React, { ComponentType, createContext, useCallback, useContext, useState 
 
 export interface AuthState {
   loggedIn: boolean;
+  me: any;
   setLoggedIn: (loggedIn?: boolean) => void;
+  setMe: (me: any) => void;
 }
 
 const AuthorizationContext = createContext<AuthState>(null as unknown as AuthState);
 
 export const withAuthorization = <T,>(Comp: ComponentType<T>) => (props: T & JSX.IntrinsicAttributes) => {
   const [state, setState] = useState({
-    loggedIn: false
+    loggedIn: false,
+    me: undefined
   });
 
   const setLoggedIn = useCallback((loggedIn?: boolean) => {
@@ -19,9 +22,17 @@ export const withAuthorization = <T,>(Comp: ComponentType<T>) => (props: T & JSX
     }))
   }, [setState]);
 
+  const setMe = useCallback((me: any) => {
+    setState(v => ({
+      ...v,
+      me
+    }));
+  }, [setState]);
+
   return <AuthorizationContext.Provider value={{
     ...state,
-    setLoggedIn
+    setLoggedIn,
+    setMe,
   }}>
     <Comp {...props} />
   </AuthorizationContext.Provider>

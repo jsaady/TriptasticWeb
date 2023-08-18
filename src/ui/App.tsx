@@ -6,16 +6,20 @@ import { useAsyncHttp } from './utils/useAsync.js';
 import { useAuthorization, withAuthorization } from './utils/useAuth.js';
 
 const App = () => {
-  const { loggedIn, setLoggedIn } = useAuthorization();
+  const { loggedIn, setLoggedIn, setMe } = useAuthorization();
 
   const [doFetch, { result, loading, error }] = useAsyncHttp(async ({ get }) => {
-    await get('/api/auth/me')
+    await get('/api/auth/me');
     setLoggedIn(true);
   }, [setLoggedIn]);
 
   useEffect(() => {
     doFetch();
-  }, []);
+  }, [loggedIn]);
+
+  useEffect(() => {
+    setMe(result);
+  }, [result]);
 
   if (loading) return 'Loading...';
 

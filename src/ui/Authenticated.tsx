@@ -14,7 +14,7 @@ const LogoutButton = styled.button`
 `;
 
 export const Authenticated = () => {
-  const { setLoggedIn } = useAuthorization();
+  const { setLoggedIn, me } = useAuthorization();
   const [handleLogout] = useAsyncHttp(async ({ post }) => {    
     await post('/api/auth/logout', {});
 
@@ -25,6 +25,6 @@ export const Authenticated = () => {
     <LogoutButton onClick={handleLogout}>
       Log out
     </LogoutButton>
-    <h1>Logged in</h1>
+    <h1>Logged in {JSON.stringify(me)}</h1>
   </AuthenticatedWrapper>
 };
