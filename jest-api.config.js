@@ -7,7 +7,8 @@ export default {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  testPathPattern: ['src/'],
+  testRegex: ['src\\/api\\/(.*)\\.spec\\.[jt]sx?'],
+  testPathIgnorePatterns: ['src\\/ui\\/(.*)'],
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',

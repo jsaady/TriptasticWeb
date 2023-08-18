@@ -1,56 +1,33 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { Authenticated } from './Authenticated.js';
+import { Login } from './Login.js';
+import { Wrapper } from './Wrapper.js';
+import { useAsyncHttp } from './utils/useAsync.js';
+import { useAuthorization, withAuthorization } from './utils/useAuth.js';
 
-const useAsync = <T,>(cb: () => Promise<T>) => {
-  const [state, setState] = useState({
-    loading: false,
-    result: null as T,
-    error: null as any
-  });
+const App = () => {
+  const { loggedIn, setLoggedIn, setMe } = useAuthorization();
 
-  const trigger = useCallback(async () => {
-    if (state.loading) return;
-
-    setState(s => ({
-      ...s,
-      loading: true
-    }));
-
-    try {
-      const result = await cb();
-
-      setState(s => ({
-        loading: false,
-        result,
-        error: null
-      }));
-    } catch (e) {
-      setState(s => ({
-        ...s,
-        loading: false,
-        error: e
-      }));
-    }
-  }, [cb, state]);
-
-  return [trigger, state] as const;
-}
-
-export const App = () => {
-  
-  const callApi = useCallback(async () => {
-    return fetch('/api/', { headers: { Accept: 'application/json', 'Content-Type': 'application/json' }})
-      .then(r => r.json())
-      .then(d => JSON.stringify(d));
-  }, []);
-  const [doFetch, { result, loading, error }] = useAsync(callApi);
+  const [doFetch, { result, loading, error }] = useAsyncHttp(async ({ get }) => {
+    await get('/api/auth/me');
+    setLoggedIn(true);
+  }, [setLoggedIn]);
 
   useEffect(() => {
     doFetch();
-  }, []);
+  }, [loggedIn]);
+
+  useEffect(() => {
+    setMe(result);
+  }, [result]);
 
   if (loading) return 'Loading...';
 
-  console.log(result, error);
+  return <Wrapper showGradient={!loggedIn}>
+    {
+      loggedIn ? <Authenticated /> : <Login />
+    }
+  </Wrapper>
+};
 
-  return <h1>App {result}</h1>
-}
+export default withAuthorization(App);
