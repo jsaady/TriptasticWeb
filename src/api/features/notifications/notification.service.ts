@@ -53,7 +53,7 @@ export class NotificationService {
       try {
         const payload = JSON.stringify({ title: text });
     
-        await this.webPush.sendNotification({
+        const result = await this.webPush.sendNotification({
           endpoint: sub.endpoint,
           keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth }
         }, payload, {
@@ -63,6 +63,8 @@ export class NotificationService {
             publicKey: this.vapidPublic
           }
         });
+
+        console.log(result);
     
         return true;
       } catch (e) {
