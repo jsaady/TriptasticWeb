@@ -3,15 +3,7 @@ import {manifest, version} from '@parcel/service-worker';
 declare var self: ServiceWorkerGlobalScope;
 
 self.addEventListener('push', (event) => {
-  const textRaw = event.data?.text() ?? '{}';
-  let title = 'Runner', text = textRaw;
-  try {
-    const parsed = JSON.parse(textRaw);
-    title = parsed.title;
-    text = parsed.text;
-  } catch (e) {
-    console.log(textRaw);
-  }
+  const { title, text } = event.data?.json() ?? {};
 
   const options = {
     body: text,
