@@ -14,7 +14,7 @@ self.addEventListener('push', (event) => {
   }
 
   const options = {
-    body: textRaw,
+    body: text,
     icon: 'icon.png',
     badge: 'badge.png'
   };
