@@ -9,5 +9,6 @@ export class AddSubscriptionDTO {
 
 export class SendNotificationDTO {
   userId!: number;
+  title!: string;
   text!: string;
 }

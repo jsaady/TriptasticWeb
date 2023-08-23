@@ -40,7 +40,7 @@ export class NotificationService {
     return this.subscriptionRepo.getEntityManager().createQueryBuilder(Subscription).delete({ user: { id: userId } }).execute();
   }
 
-  async sendNotification({ userId, text }: SendNotificationDTO) {
+  async sendNotification({ userId, text, title }: SendNotificationDTO) {
     const subs = await this.subscriptionRepo.find({
       user: { id: userId }
     });
@@ -51,7 +51,7 @@ export class NotificationService {
 
     for (const sub of subs) {
       try {
-        const payload = JSON.stringify({ title: text });
+        const payload = JSON.stringify({ title, text });
     
         const result = await this.webPush.sendNotification({
           endpoint: sub.endpoint,

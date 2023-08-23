@@ -3,16 +3,22 @@ import {manifest, version} from '@parcel/service-worker';
 declare var self: ServiceWorkerGlobalScope;
 
 self.addEventListener('push', (event) => {
-  const options = {
-    body: event.data?.text(),
-    icon: 'icon.png',
-    badge: 'badge.png'
-  };
+  const textRaw = event.data?.text() ?? '{}';
 
-  
-  event.waitUntil(
-    self.registration.showNotification('Runner', options)
-  );
+  const { title, text } = JSON.parse(textRaw);
+
+  if (title && text) {
+    const options = {
+      body: textRaw,
+      icon: 'icon.png',
+      badge: 'badge.png'
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+    );
+  }
+
 });
 
 // async function install() {
