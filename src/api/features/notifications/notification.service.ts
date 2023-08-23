@@ -41,32 +41,35 @@ export class NotificationService {
   }
 
   async sendNotification({ userId, text }: SendNotificationDTO) {
-    const sub = await this.subscriptionRepo.findOne({
+    const subs = await this.subscriptionRepo.find({
       user: { id: userId }
     });
 
-    if (!sub) {
+    if (!subs?.length) {
       throw new BadRequestException('User not subscribed to notifications');
     }
-    try {
-      const payload = JSON.stringify({ title: text });
-  
-      await this.webPush.sendNotification({
-        endpoint: sub.endpoint,
-        keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth }
-      }, payload, {
-        vapidDetails: {
-          subject: this.vapidSubject,
-          privateKey: this.vapidPrivate,
-          publicKey: this.vapidPublic
-        }
-      });
-  
-      return true;
-    } catch (e) {
-      console.error(e);
 
-      throw new InternalServerErrorException('Error sending notification');
+    for (const sub of subs) {
+      try {
+        const payload = JSON.stringify({ title: text });
+    
+        await this.webPush.sendNotification({
+          endpoint: sub.endpoint,
+          keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth }
+        }, payload, {
+          vapidDetails: {
+            subject: this.vapidSubject,
+            privateKey: this.vapidPrivate,
+            publicKey: this.vapidPublic
+          }
+        });
+    
+        return true;
+      } catch (e) {
+        console.error(e);
+  
+        throw new InternalServerErrorException('Error sending notification');
+      }
     }
   }
 }
