@@ -4,20 +4,24 @@ declare var self: ServiceWorkerGlobalScope;
 
 self.addEventListener('push', (event) => {
   const textRaw = event.data?.text() ?? '{}';
-
-  const { title, text } = JSON.parse(textRaw);
-
-  if (title && text) {
-    const options = {
-      body: textRaw,
-      icon: 'icon.png',
-      badge: 'badge.png'
-    };
-
-    event.waitUntil(
-      self.registration.showNotification(title, options)
-    );
+  let title = 'Runner', text = textRaw;
+  try {
+    const parsed = JSON.parse(textRaw);
+    title = parsed.title;
+    text = parsed.text;
+  } catch (e) {
+    console.log(textRaw);
   }
+
+  const options = {
+    body: textRaw,
+    icon: 'icon.png',
+    badge: 'badge.png'
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
 
 });
 
