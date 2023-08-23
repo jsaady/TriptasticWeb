@@ -14,29 +14,31 @@ export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, de
     stateRef.current = state;
   }, [state]);
 
-  const trigger = useCallback(async (...args: A) => {
-    if (stateRef.current.loading) return;
-
-    setState(s => ({
-      ...s,
-      loading: true
-    }));
-
-    try {
-      const result = await cb(...args);
-
-      setState(s => ({
-        loading: false,
-        result,
-        error: null
-      }));
-    } catch (e) {
+  const trigger = useCallback((...args: A) => {
+    (async () => {
+      if (stateRef.current.loading) return;
+  
       setState(s => ({
         ...s,
-        loading: false,
-        error: e
+        loading: true
       }));
-    }
+  
+      try {
+        const result = await cb(...args);
+  
+        setState(s => ({
+          loading: false,
+          result,
+          error: null
+        }));
+      } catch (e) {
+        setState(s => ({
+          ...s,
+          loading: false,
+          error: e
+        }));
+      }
+    })();
   }, [cb, ...deps]);
 
   return [trigger, state] as const;
@@ -45,7 +47,7 @@ export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, de
 type Pop<T, O extends any[] = []> = T extends [infer Head, ...infer Tail] ? Tail extends [any] ? [...O, Head] : Pop<Tail, [...O, Head]> : [];
 
 type AsyncHTTPClient = {
-  [x in keyof HTTPClient]: (...args: Pop<Parameters<HTTPClient[x]>>) => ReturnType<HTTPClient[x]>;
+  [x in keyof HTTPClient]: <T = unknown>(...args: Pop<Parameters<HTTPClient[x]>>) => Promise<T>;
 };
 
 export const useAsyncHttp = <T, A extends any[]>(call: (http: AsyncHTTPClient, ...rest: A) => Promise<T>, deps: any[]) => {
@@ -57,20 +59,21 @@ export const useAsyncHttp = <T, A extends any[]>(call: (http: AsyncHTTPClient, .
     get: (path: string) => httpClient.get(path, controller.signal),
     post: (path: string, body: any) => {
       return httpClient.post(path, body, controller.signal)
-    }
+    },
+    del: (path: string) => httpClient.del(path, controller.signal)
   }), [httpClient, controller]);
 
   const asyncCb = useCallback((...args: A) => {
     return call(http, ...args);
   }, [http, call, ...deps]);
 
-  const [trigger, state] = useAsync(asyncCb, []);
+  const [trigger, state] = useAsync(asyncCb, [asyncCb]);
 
   const makeCall = useCallback((...args: A) => {
     trigger(...args);
 
     return cancel;
-  }, []);
+  }, [trigger]);
 
   return [makeCall, state, cancel] as const;
 }

@@ -1,4 +1,4 @@
-import React, { useContext, Context, useMemo, useCallback, createContext, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
 
 interface MyState {
   myProp: string;

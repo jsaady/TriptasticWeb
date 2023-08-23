@@ -20,4 +20,13 @@ export class User extends BaseEntity {
 
   @Property()
   emailConfirmed!: boolean;
+
+  @Property({ nullable: true })
+  emailToken?: string | null;
+
+  @Property({ nullable: true, type: 'datetime' })
+  emailTokenDate?: Date | null;
+
+  @Property({ nullable: true, type: 'string' })
+  currentWebAuthnChallenge?: string | null;
 }

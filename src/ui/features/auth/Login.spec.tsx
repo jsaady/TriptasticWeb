@@ -1,14 +1,22 @@
-import React from 'react';
+import '@testing-library/jest-dom';
+import { act, fireEvent, render } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { render, fireEvent, act, getByTestId } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { Login } from './Login.js';
-import { withAuthorization } from './utils/useAuth.js';
 import { styled } from 'styled-components';
-
-const server = setupServer();
-
+import { withAuthorization } from '../../utils/useAuth.js';
+import { Login } from './Login.js';
+import { ComponentType } from 'react';
+jest.mock('@simplewebauthn/browser', () => ({
+  startAuthentication() {
+    return {};
+  }
+}));
+const server = setupServer(
+  rest.get('/api/auth/check', (req, res, ctx) => {
+    return res(ctx.json({}))
+  })
+  );
+  
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
@@ -19,11 +27,11 @@ test('login screen should render', async () => {
     rest.post('/api/auth/login', async (req, res, ctx) => {
       requestBody = await req.json();
 
-      return res(ctx.status(200));
+      return res(ctx.json({ success: true }));
     })
   );
 
-  const { findByTestId } = render(<Login />, { wrapper: withAuthorization(styled.div``) });
+  const { findByTestId } = render(<Login />, { wrapper: withAuthorization(styled.div``) as ComponentType });
 
   const emailEl = document.getElementsByName('email')[0] as HTMLInputElement;
   const passwordEl = document.getElementsByName('password')[0] as HTMLInputElement;
@@ -36,6 +44,7 @@ test('login screen should render', async () => {
     fireEvent.change(emailEl, { target: { value: 'test@test.com' }});
     fireEvent.change(passwordEl, { target: { value: 'password' }});
     fireEvent.click(submitEl!);
+    // console.log(emailEl, passwordEl, submitEl);
   });
 
   await new Promise(process.nextTick);

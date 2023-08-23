@@ -9,5 +9,10 @@ export default {
   migrations: {
     disableForeignKeys: false,
     path: './src/api/db/migrations'
+  },
+  seeder: {
+    path: './src/api/db/seeds',
+    defaultSeeder: 'DefaultSeeder',
+    glob: '!(*.d).{js,ts}'
   }
 }
