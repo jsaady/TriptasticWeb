@@ -18,7 +18,7 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
 
   const [checkStatus, { result: enabled }] = useAsync(async () => {
     const reg = await navigator.serviceWorker.ready;
-    const [permission, subscription] = await Promise.all([reg.pushManager.permissionState(), reg.pushManager.getSubscription()]);
+    const [permission, subscription] = await Promise.all([reg.pushManager.permissionState({ userVisibleOnly: true }), reg.pushManager.getSubscription()]);
     const enabled = !!subscription && permission === 'granted';
     console.log(permission, enabled);
     return enabled;
