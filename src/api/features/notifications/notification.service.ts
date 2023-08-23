@@ -21,7 +21,7 @@ export class NotificationService {
   ) {
     this.vapidPublic = this.configService.getOrThrow(CONFIG_VARS.vapidPublic);
     this.vapidPrivate = this.configService.getOrThrow(CONFIG_VARS.vapidPrivate);
-    this.vapidSubject = this.configService.getOrThrow(CONFIG_VARS.envUrl);
+    this.vapidSubject = this.configService.getOrThrow(CONFIG_VARS.envUrl).replace('http:', 'https:');
   }
 
   async addSubscription(userId: number, subscriptionDto: AddSubscriptionDTO) {
