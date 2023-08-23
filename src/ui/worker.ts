@@ -1,9 +1,17 @@
 /// <reference lib="webworker" />
-import {manifest, version} from '@parcel/service-worker';
+// import {manifest, version} from '@parcel/service-worker';
 declare var self: ServiceWorkerGlobalScope;
 
+function handleMessageEvent(_event: ExtendableMessageEvent) {
+  // ...
+};
+self.addEventListener('message', (event) => {
+  handleMessageEvent(event);
+});
+
 self.addEventListener('push', (event) => {
-  const { title, text } = event.data?.json() ?? {};
+  const evtData = event.data?.json() ?? {};
+  const { title, text } = evtData;
 
   const options = {
     body: text,
@@ -14,8 +22,26 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(title, options)
   );
-
 });
+
+self.addEventListener('install', (event) => {
+  // primeCaches();
+
+  // Notify all clients about the installation
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => client.postMessage('INSTALLED!'));
+  });
+});
+
+self.addEventListener('activate', e => {
+  console.log('ACTIVATED!');
+});
+
+// self.addEventListener('fetch', (event) => {
+//   event.respondWith(caches.match(event.request) as any);
+// });
+
+// self.addEventListener("online")
 
 // async function install() {
 //   const cache = await caches.open(version);
