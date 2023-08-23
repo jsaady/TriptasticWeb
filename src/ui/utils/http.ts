@@ -1,7 +1,12 @@
 import { useCallback } from 'react';
 import { useAuthorization } from './useAuth.js';
+import { useLoggedInContext } from './useLoggedIn.js';
 
-class FetchError extends Error { }
+class FetchError extends Error {
+  constructor (public response: Response, public responseText: string) {
+    super(`Error status ${response.status}`);
+  }
+}
 
 const getHeaders = () => {
   const h = new Headers({
@@ -12,14 +17,14 @@ const getHeaders = () => {
   return h;
 }
 
-
 export interface HTTPClient {
-  get: (path: string, signal: AbortSignal) => Promise<unknown>;
-  post: (path: string, body: unknown, signal: AbortSignal) => Promise<unknown>;
+  get: <T = unknown>(path: string, signal: AbortSignal) => Promise<T>;
+  del: <T = unknown>(path: string, signal: AbortSignal) => Promise<T>;
+  post: <T = unknown>(path: string, body: unknown, signal: AbortSignal) => Promise<T>;
 }
 
 export const useHttp = (): HTTPClient => {
-  const { setLoggedIn } = useAuthorization();
+  const { setLoggedIn } = useLoggedInContext();
 
   const makeRequest = useCallback(async (path: string, method: 'get'|'post'|'patch'|'put'|'delete', signal: AbortSignal, body?: unknown) => {
     const r = await fetch(path, {
@@ -35,10 +40,10 @@ export const useHttp = (): HTTPClient => {
       }
 
       console.error(r);
-      throw new FetchError(`Error status ${r.status}`);
+      throw new FetchError(r, await r.text());
     }
- 
-    if (r.headers.get('Content-Type') === 'application/json' && +r.headers.get('Content-Length')! > 0) {
+
+    if (r.headers.get('Content-Type')?.startsWith('application/json')) {
       const parsed = await r.json();
 
       return parsed;
@@ -50,6 +55,10 @@ export const useHttp = (): HTTPClient => {
   const get = useCallback(async (path: string, signal: AbortSignal) => {
     return makeRequest(path, 'get', signal);
   }, [makeRequest]);
+
+  const del = useCallback(async (path: string, signal: AbortSignal) => {
+    return makeRequest(path, 'delete', signal);
+  }, [makeRequest]);
   
   const post = useCallback(async (path: string, payload: unknown, signal: AbortSignal) => {
     return makeRequest(path, 'post', signal, payload);
@@ -57,6 +66,7 @@ export const useHttp = (): HTTPClient => {
 
   return {
     get,
+    del,
     post
   }
 }

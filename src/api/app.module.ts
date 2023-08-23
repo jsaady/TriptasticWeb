@@ -8,11 +8,13 @@ import { AuthModule } from './features/auth/auth.module.js';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config.js';
 import { APP_GUARD } from '@nestjs/core';
+import { NotificationModule } from './features/notifications/notification.module.js';
 
 @Module({
   imports: [
     ContextModule,
     AuthModule,
+    NotificationModule,
     UsersModule,
     ConfigModule.forRoot(),
     ThrottlerModule.forRoot({
@@ -33,6 +35,12 @@ import { APP_GUARD } from '@nestjs/core';
             path: './dist/api/db/migrations',
             pathTs: './src/api/db/migrations'
           },
+          seeder: {
+            defaultSeeder: 'DefaultSeeder',
+            path: './dist/api/db/seeds',
+            pathTs: './src/api/db/seeds',
+            glob: '!(*.d).{js,ts}'
+          }
         };
       },
       inject: [ConfigService],

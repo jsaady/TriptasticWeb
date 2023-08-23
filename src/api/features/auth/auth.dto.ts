@@ -11,9 +11,19 @@ export class AuthDTO {
 
 export interface AuthTokenContents {
   sub: number;
-  name: string;
   isAdmin: boolean;
   email: string;
   emailConfirmed: boolean;
   needPasswordReset: boolean;
+  mfaEnabled: boolean;
+  mfaMethod?: string;
+}
+
+export interface VerifyEmailDTO {
+  token: string;
+}
+
+export interface ResetPasswordDTO {
+  currentPassword: string;
+  password: string;
 }

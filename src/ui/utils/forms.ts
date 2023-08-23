@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, MutableRefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface FormItemProps {
   ref: MutableRefObject<HTMLInputElement | null>;
@@ -6,7 +6,8 @@ interface FormItemProps {
   name: string;
 }
 
-type FormItemPropsState<T> = Partial<Record<string&keyof T, FormItemProps>>
+type FormItemPropsState<T> = Partial<Record<string&keyof T, FormItemProps>>;
+export type RegistrationFn<T> = (name: string&keyof T) => FormItemProps;
 
 const getExistingFormItemProps = (fip: FormItemPropsState<any>, name: string) => {
   const foundFip = fip[name];
@@ -20,31 +21,34 @@ export const useForm = <T>(initialState?: T) => {
   const [state, setState] = useState<T>(initialState as unknown as T);
   const [formItemProps, setFormItemProps] = useState<FormItemPropsState<T>>({});
   const stateRef = useRef(state);
+  const setStateRef = useRef(setState);
 
   useEffect(() => {
     stateRef.current = state;
-  }, [state]);
+    setStateRef.current = setState;
+  }, [state, setState]);
 
-  const register = (name: string&keyof T) => {
-    const ref = useRef<HTMLInputElement>(null);
-
-    const props: FormItemProps = useMemo(() => ({
-      onChange: (value: ChangeEvent<HTMLInputElement>) => {
-        setState((s) => ({
-          ...s,
-          [name]: value.target.value
-        }))
-      },
-      ref,
-      name,
-    }), [name, ref, setState]);
-
-    useEffect(() => {
+  const register: RegistrationFn<T> = (name: string&keyof T) => {
+    let props = formItemProps[name];
+    if (!props) {
+      const ref = createRef<HTMLInputElement>();
+      props = {
+        onChange: (value: ChangeEvent<HTMLInputElement>) => {
+          setState((s) => ({
+            ...s,
+            [name]: value.target.value
+          }))
+        },
+        ref,
+        name,
+      };
       setFormItemProps(fip => ({
         ...fip,
         [name]: props
       }));
-    }, [name, props])
+    }
+    // useEffect(() => {
+    // }, [name, props]);
 
     return props;
   };
