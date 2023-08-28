@@ -30,7 +30,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: env dump
+      - name: Dump ENV Vars
         run: env
 
       - name: Log in
