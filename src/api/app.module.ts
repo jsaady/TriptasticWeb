@@ -9,9 +9,17 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config.js';
 import { APP_GUARD } from '@nestjs/core';
 import { NotificationModule } from './features/notifications/notification.module.js';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { resolve } from 'path';
+
+const currentDir = resolve(new URL(import.meta.url).pathname, '..');
+
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: resolve(currentDir, '..', 'ui')
+    }),
     ContextModule,
     AuthModule,
     NotificationModule,
@@ -23,6 +31,12 @@ import { NotificationModule } from './features/notifications/notification.module
     }),
     MikroOrmModule.forRootAsync({
       useFactory: (config: ConfigService) => {
+        // let url = config.get('DATABASE_URL')!;
+
+        // if (!url) {
+        //   url = `${}`
+        // }
+
         const url = config.getOrThrow('DATABASE_URL')!;
 
         return {

@@ -10,9 +10,9 @@ import { AppModule } from './app.module.js';
 import { DefaultSeeder } from './db/seeds/DefaultSeeder.js';
 import { CONFIG_VARS } from './utils/config.js';
 
-const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
 (async () => {
+  console.log(process.env);
   const app = await NestFactory.create(AppModule);
 
   const config = app.get(ConfigService);
@@ -32,8 +32,6 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
   app.use(helmet());
 
   app.setGlobalPrefix('/api');
-
-  app.use(express.static(resolve(currentDir, '..', 'ui')));
 
   app.enableShutdownHooks();
 
