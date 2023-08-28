@@ -14,8 +14,8 @@ on:
     branches: ['main']
 
 env:
-  REGISTRY: ${{ env.GITHUB_SERVER_URL }}
-  IMAGE_NAME: ${{ gitea.repository }}
+  REGISTRY: ${{ github.server_url }}
+  IMAGE_NAME: ${{ github.repository }}
   TAG_NAME: latest
 
 jobs:
