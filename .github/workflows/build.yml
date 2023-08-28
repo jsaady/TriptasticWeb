@@ -14,7 +14,7 @@ on:
     branches: ['main']
 
 env:
-  REGISTRY: ${{ github.server_url }}
+  REGISTRY: gitea.holyham.cloud
   IMAGE_NAME: ${{ github.repository }}
   TAG_NAME: latest
 
