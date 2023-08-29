@@ -17,6 +17,7 @@ env:
   REGISTRY: gitea.holyham.cloud
   IMAGE_NAME: ${{ github.repository }}
   TAG_NAME: latest
+  DOMAIN_NAME: ${{ github.repository_owner }}-${{ github.ref_name }}.apps.holyham.cloud
 
 jobs:
   build-and-push-image:
@@ -30,8 +31,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Extract env vars
+        uses: jteq/actions/extract-env-vars@main
+
       - name: Dump ENV Vars
-        run: env
+        run: cat ./app/app-secrets.yaml
 
       - name: Log in
         run: docker login ${{ env.REGISTRY }} -u ${{ gitea.actor }} -p ${{ secrets.REGISTRY_PW }}
@@ -68,3 +72,8 @@ jobs:
       run: npm test
     # - name: Lint
     #   run: npm lint
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
