@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Extract env vars
-        uses: gitea.holyham.cloud/jteq/actions/extract-env-vars@main
+        uses: ${{ github.server_url }}/jteq/actions/extract-env-vars@main
 
       - name: Dump ENV Vars
         run: cat ./app/app-secrets.yaml
