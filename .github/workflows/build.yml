@@ -38,7 +38,7 @@ jobs:
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }} \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} \
-            ${{ github.workspace }}
+            .
 
       - name: Push
         run: docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
