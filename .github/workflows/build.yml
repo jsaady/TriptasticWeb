@@ -14,7 +14,7 @@ on:
     branches: ['main']
 
 env:
-  REGISTRY: gitea.holyham.cloud
+  REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   TAG_NAME: latest
   DOMAIN_NAME: ${{ github.repository_owner }}-${{ github.ref_name }}.apps.holyham.cloud
