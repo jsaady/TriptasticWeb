@@ -77,3 +77,6 @@ jobs:
 
     - name: Dump ENV Vars
       run: cat ./app/app-secrets.yaml
+
+    - name: kubectl debug
+      run: kubectl cluster-info
