@@ -1,9 +1,9 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService } from '../../utils/config/config.service.js';
 import type WebPush from 'web-push';
-import { CONFIG_VARS } from '../../utils/config.js';
+import { CONFIG_VARS } from '../../utils/config/config.js';
 import { User } from '../users/users.entity.js';
 import { AddSubscriptionDTO, SendNotificationDTO } from './notification.dto.js';
 import { Subscription } from './subscription.entity.js';
@@ -19,9 +19,9 @@ export class NotificationService {
     @InjectWebPush() private webPush: typeof WebPush,
     @InjectRepository(Subscription) private subscriptionRepo: EntityRepository<Subscription>
   ) {
-    this.vapidPublic = this.configService.getOrThrow(CONFIG_VARS.vapidPublic);
-    this.vapidPrivate = this.configService.getOrThrow(CONFIG_VARS.vapidPrivate);
-    this.vapidSubject = this.configService.getOrThrow(CONFIG_VARS.envUrl).replace('http:', 'https:');
+    this.vapidPublic = this.configService.getOrThrow('vapidPublic');
+    this.vapidPrivate = this.configService.getOrThrow('vapidPrivate');
+    this.vapidSubject = this.configService.getOrThrow('envUrl').replace('http:', 'https:');
   }
 
   async addSubscription(userId: number, subscriptionDto: AddSubscriptionDTO) {

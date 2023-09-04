@@ -1,14 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { UserService } from '../users/users.service.js';
 import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { GenerateRegistrationOptionsOpts, generateRegistrationOptions, VerifiedRegistrationResponse, VerifyRegistrationResponseOpts, verifyRegistrationResponse, GenerateAuthenticationOptionsOpts, generateAuthenticationOptions, VerifiedAuthenticationResponse, VerifyAuthenticationResponseOpts, verifyAuthenticationResponse } from '@simplewebauthn/server';
-import { isoUint8Array, isoBase64URL } from '@simplewebauthn/server/helpers';
-import { RegistrationResponseJSON, AuthenticatorDevice, AuthenticationResponseJSON } from '@simplewebauthn/typescript-types';
-import { APP_NAME, CONFIG_VARS } from '../../utils/config.js';
-import { User } from './user.decorator.js';
-import { UserDevice } from './userDevice.entity.js';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { GenerateAuthenticationOptionsOpts, GenerateRegistrationOptionsOpts, VerifiedAuthenticationResponse, VerifiedRegistrationResponse, VerifyAuthenticationResponseOpts, VerifyRegistrationResponseOpts, generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
+import { isoBase64URL, isoUint8Array } from '@simplewebauthn/server/helpers';
+import { AuthenticationResponseJSON, AuthenticatorDevice, RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
+import { APP_NAME, CONFIG_VARS } from '../../utils/config/config.js';
+import { UserService } from '../users/users.service.js';
+import { UserDevice } from './userDevice.entity.js';
 
 @Injectable()
 export class WebAuthnService {

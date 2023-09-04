@@ -3,12 +3,10 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
-import express from 'express';
 import helmet from 'helmet';
-import { resolve } from 'path';
 import { AppModule } from './app.module.js';
 import { DefaultSeeder } from './db/seeds/DefaultSeeder.js';
-import { CONFIG_VARS } from './utils/config.js';
+import { CONFIG_VARS } from './utils/config/config.js';
 
 
 (async () => {

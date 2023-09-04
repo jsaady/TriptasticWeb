@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { CONFIG_VARS, MFA_ENABLED } from '../../utils/config.js';
+import { CONFIG_VARS, MFA_ENABLED } from '../../utils/config/config.js';
 import { AuthDTO, AuthTokenContents } from './auth.dto.js';
 const IS_AUTH_CONFIG = 'IS_AUTH_CONFIG';
 const SKIP_AUTH_CHECK = 'SKIP_AUTH_CHECK';

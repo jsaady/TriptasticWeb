@@ -1,27 +1,27 @@
-import NodeMailer from 'nodemailer';
 import { Inject, Provider } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import NodeMailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
-import { CONFIG_VARS } from '../../utils/config.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 
 const NODE_MAILER = 'NODE_MAILER';
 
 export const NODE_MAILER_PROVIDER: Provider = {
   provide: NODE_MAILER,
   useFactory: (config: ConfigService) => {
-    const host = config.getOrThrow(CONFIG_VARS.emailHost);
-    const port = config.getOrThrow(CONFIG_VARS.emailPort);
-    const user = config.getOrThrow(CONFIG_VARS.emailUser);
-    const pass = config.getOrThrow(CONFIG_VARS.emailPassword);
+    const host: any = config.getOrThrow('emailHost');
+    const port: any = config.getOrThrow('emailPort');
+    const user: any = config.getOrThrow('emailUser');
+    const pass: any = config.getOrThrow('emailPassword');
 
-    return NodeMailer.createTransport({
+    const smtpOptions: SMTPTransport.Options = {
       host,
       port,
       auth: {
         user,
-        pass
+        pass,
       }
-    })
+    };
+    return NodeMailer.createTransport(smtpOptions)
   },
   inject: [ConfigService]
 }

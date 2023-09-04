@@ -1,16 +1,16 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AppController } from './app.controller.js';
-import { ContextModule } from './utils/context/context.module.js';
-import { UsersModule } from './features/users/users.module.js';
-import { AuthModule } from './features/auth/auth.module.js';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config.js';
 import { APP_GUARD } from '@nestjs/core';
-import { NotificationModule } from './features/notifications/notification.module.js';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
+import { AppController } from './app.controller.js';
+import { AuthModule } from './features/auth/auth.module.js';
+import { NotificationModule } from './features/notifications/notification.module.js';
+import { UsersModule } from './features/users/users.module.js';
+import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
+import { ContextModule } from './utils/context/context.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 

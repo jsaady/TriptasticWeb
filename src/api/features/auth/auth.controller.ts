@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/common';
 import { AuthenticationResponseJSON, RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
 import { Request, Response } from 'express';
-import { MFA_ENABLED } from '../../utils/config.js';
+import { MFA_ENABLED } from '../../utils/config/config.js';
 import { User as UserEntity } from '../users/users.entity.js';
 import { UserService } from '../users/users.service.js';
 import { AUTH_TOKEN_EXPIRATION } from './auth.constants.js';

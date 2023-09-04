@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Transporter } from 'nodemailer';
+import { CONFIG_VARS } from '../../utils/config/config.js';
 import { InjectNodeMailer } from './nodeMailer.provider.js';
-import { Transport, Transporter } from 'nodemailer';
-import { CONFIG_VARS } from '../../utils/config.js';
 
 @Injectable()
 export class EmailService {

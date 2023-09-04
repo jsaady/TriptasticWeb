@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
-import { EMAIL_VERIFICATION_EXPIRATION } from '../../utils/config.js';
+import { EMAIL_VERIFICATION_EXPIRATION } from '../../utils/config/config.js';
 import { EmailService } from '../email/email.service.js';
 import { CreateUserDTO } from '../users/users.dto.js';
 import { User } from '../users/users.entity.js';

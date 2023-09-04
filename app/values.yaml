@@ -80,3 +80,15 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+postgresql:
+  enabled: true
+  postgresqlDatabase: "usersdb"
+  postgresqlUsername: "userservice-pguser"
+  existingSecret: "postgres-credentials"
+  service:
+    ports:
+      postgresql: 5432
+  secretKeys:
+    userPasswordKey: postgresPassword
+

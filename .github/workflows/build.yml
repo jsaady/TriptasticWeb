@@ -73,7 +73,13 @@ jobs:
     - name: Extract env vars
       uses: jsaady/actions/extract-env-vars@main
       env:
-        APP_SECRET_JWT_SECRET: ${{ secrets.APP_SECRET_JWT_SECRET }}
+        APP_SECRET_ENVIRONMENT_URL: ${{ secrets.APP_SECRET_ENVIRONMENT_URL }}
+        APP_SECRET_ENVIRONMENT_NAME: ${{ secrets.APP_SECRET_ENVIRONMENT_NAME }}
+        APP_SECRET_EMAIL_HOST: ${{ secrets.APP_SECRET_EMAIL_HOST }}
+        APP_SECRET_EMAIL_PORT: ${{ secrets.APP_SECRET_EMAIL_PORT }}
+        APP_SECRET_EMAIL_USER: ${{ secrets.APP_SECRET_EMAIL_USER }}
+        APP_SECRET_EMAIL_PASSWORD: ${{ secrets.APP_SECRET_EMAIL_PASSWORD }}
+        APP_SECRET_EMAIL_REPLY_TO: ${{ secrets.APP_SECRET_EMAIL_REPLY_TO }}
 
     - name: Dump ENV Vars
       run: cat ./app/app-secrets.yaml
