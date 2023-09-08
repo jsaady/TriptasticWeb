@@ -131,6 +131,7 @@ export class AuthService {
   private async hashValue (value: string): Promise<string> {
     return await hash(value, AUTH_SALT_ROUNDS);
   }
+
   private async compareValue (value: string, hashedValue: string) {
     return await compare(value, hashedValue);
   }

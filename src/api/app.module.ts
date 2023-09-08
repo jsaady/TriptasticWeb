@@ -1,11 +1,12 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
 import { AppController } from './app.controller.js';
+import { MigrationModule } from './db/migration.provider.js';
 import { AuthModule } from './features/auth/auth.module.js';
 import { NotificationModule } from './features/notifications/notification.module.js';
 import { UsersModule } from './features/users/users.module.js';
@@ -17,6 +18,8 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
 @Module({
   imports: [
+    NestConfigModule.forRoot(),
+    MigrationModule,
     ServeStaticModule.forRoot({
       rootPath: resolve(currentDir, '..', 'ui')
     }),
@@ -24,13 +27,12 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     AuthModule,
     NotificationModule,
     UsersModule,
-    ConfigModule.forRoot(),
     ThrottlerModule.forRoot({
       ttl: RATE_LIMIT_TTL,
       limit: RATE_LIMIT_LIMIT
     }),
     MikroOrmModule.forRootAsync({
-      useFactory: (config: ConfigService) => {
+      useFactory: (config: NestConfigService) => {
         // let url = config.get('DATABASE_URL')!;
 
         // if (!url) {
@@ -58,8 +60,8 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
           }
         };
       },
-      inject: [ConfigService],
-      imports: [ConfigModule]
+      inject: [NestConfigService],
+      imports: [NestConfigModule]
     })
   ],
   providers: [{
@@ -68,4 +70,8 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
   }],
   controllers: [AppController]
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  async configure(consumer: MiddlewareConsumer) {
+    console.log('here');
+  }
+}

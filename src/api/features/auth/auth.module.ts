@@ -1,8 +1,7 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { CONFIG_VARS } from '../../utils/config/config.js';
+import { ConfigModule } from '../../utils/config/config.module.js';
 import { EmailModule } from '../email/email.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
@@ -11,6 +10,7 @@ import { AuthService } from './auth.service.js';
 import { IsAuthenticatedGuard } from './isAuthenticated.guard.js';
 import { UserDevice } from './userDevice.entity.js';
 import { WebAuthnService } from './webAuthn.service.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { WebAuthnService } from './webAuthn.service.js';
     JwtModule.registerAsync({
       useFactory: async (config: ConfigService) => {
         return {
-          secret: config.getOrThrow(CONFIG_VARS.jwtSecret),
+          secret: config.getOrThrow('jwtSecret'),
           signOptions: {
             expiresIn: `${AUTH_TOKEN_EXPIRATION}s`,
             

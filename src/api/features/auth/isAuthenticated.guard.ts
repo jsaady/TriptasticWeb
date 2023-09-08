@@ -1,10 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata, UnauthorizedException, UseGuards, applyDecorators } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { CONFIG_VARS, MFA_ENABLED } from '../../utils/config/config.js';
 import { AuthDTO, AuthTokenContents } from './auth.dto.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 const IS_AUTH_CONFIG = 'IS_AUTH_CONFIG';
 const SKIP_AUTH_CHECK = 'SKIP_AUTH_CHECK';
 
@@ -38,7 +38,7 @@ export class IsAuthenticatedGuard implements CanActivate {
       const payload = await this.jwt.verifyAsync<AuthTokenContents>(
         token.token,
         {
-          secret: this.configService.getOrThrow(CONFIG_VARS.jwtSecret)
+          secret: this.configService.getOrThrow('jwtSecret')
         }
       );
       // 💡 We're assigning the payload to the request object here

@@ -4,8 +4,8 @@ import { NotificationService } from './notification.service.js';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Subscription } from './subscription.entity.js';
 import { AuthModule } from '../auth/auth.module.js';
-import { ConfigModule } from '@nestjs/config';
 import { WEB_PUSH_PROVIDER } from './webPush.provider.js';
+import { ConfigModule } from '../../utils/config/config.module.js';
 
 @Module({
   imports: [ConfigModule, MikroOrmModule.forFeature([Subscription]), AuthModule],

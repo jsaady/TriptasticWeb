@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Transporter } from 'nodemailer';
 import { CONFIG_VARS } from '../../utils/config/config.js';
 import { InjectNodeMailer } from './nodeMailer.provider.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 
 @Injectable()
 export class EmailService {
@@ -11,12 +11,12 @@ export class EmailService {
     @InjectNodeMailer() private transport: Transporter,
     private config: ConfigService
   ) {
-    this.senderEmail = config.getOrThrow(CONFIG_VARS.emailReplyTo);
+    this.senderEmail = config.getOrThrow('emailReplyTo');
   }
 
   sendEmail(email: string, subject: string, content: string) {
     return new Promise<any>((resolve, reject) => this.transport.sendMail({
-      from: this.config.getOrThrow(CONFIG_VARS.emailUser),
+      from: this.config.getOrThrow('emailUser'),
       replyTo: this.senderEmail,
       to: email,
       subject,

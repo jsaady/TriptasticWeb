@@ -1,11 +1,11 @@
 import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { GenerateAuthenticationOptionsOpts, GenerateRegistrationOptionsOpts, VerifiedAuthenticationResponse, VerifiedRegistrationResponse, VerifyAuthenticationResponseOpts, VerifyRegistrationResponseOpts, generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server';
 import { isoBase64URL, isoUint8Array } from '@simplewebauthn/server/helpers';
 import { AuthenticationResponseJSON, AuthenticatorDevice, RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
 import { APP_NAME, CONFIG_VARS } from '../../utils/config/config.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 import { UserService } from '../users/users.service.js';
 import { UserDevice } from './userDevice.entity.js';
 
@@ -20,8 +20,8 @@ export class WebAuthnService {
     @InjectRepository(UserDevice) private userDeviceRepo: EntityRepository<UserDevice>,
     configService: ConfigService
   ) {
-    this.rpName = `${APP_NAME} - ${configService.getOrThrow(CONFIG_VARS.envName)}`;
-    this.rpId = new URL(configService.getOrThrow(CONFIG_VARS.envUrl)).hostname;
+    this.rpName = `${APP_NAME} - ${configService.getOrThrow('envName')}`;
+    this.rpId = new URL(configService.getOrThrow('envUrl')).hostname;
   }
   async startWebAuthnRegistration (userId: number) {
     const [user, devices] = await Promise.all([
