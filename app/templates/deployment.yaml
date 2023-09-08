@@ -33,6 +33,17 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+          - secretRef:
+              name: generated-app-secrets
+          env:
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresql.auth.existingSecret }}
+                key: {{ .Values.postgresql.auth.secretKeys.adminPasswordKey }}
+          - name: DATABASE_URL
+            value: "postgres://{{ .Values.postgresql.postgresqlUsername }}@{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.ports.postgresql }}/{{ .Values.postgresql.auth.database }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
