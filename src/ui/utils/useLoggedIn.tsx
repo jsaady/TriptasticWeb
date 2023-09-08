@@ -1,21 +1,13 @@
-import React, { ComponentType, createContext, useContext, useState } from 'react';
+import { useState, createContext, PropsWithChildren, useContext } from 'react';
 
-interface LoggedInContextProps {
-  loggedIn: boolean;
-  setLoggedIn: (loggedIn: boolean) => void;
-}
+const loggedInContext = createContext(null as unknown as { loggedIn: boolean, setLoggedIn: (loggedIn: boolean) => void });
 
-const LoggedInContext = createContext<LoggedInContextProps>(null as any);
+export const withLoggedIn = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>): React.FC<P> => (props: P) => {
+  const [loggedIn, setLoggedIn] = useState(null as unknown as boolean);
 
-export const withLoggedInContext = <T extends React.JSX.IntrinsicAttributes>(Component: ComponentType<T>) => (props: T) => {
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  return <LoggedInContext.Provider value={{
-    loggedIn,
-    setLoggedIn
-  }}>
+  return <loggedInContext.Provider value={{loggedIn, setLoggedIn}}>
     <Component {...props} />
-  </LoggedInContext.Provider>
+  </loggedInContext.Provider>
 };
 
-export const useLoggedInContext = () => useContext(LoggedInContext);
+export const useLoggedIn = () => useContext(loggedInContext);

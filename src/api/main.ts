@@ -1,11 +1,7 @@
-import { MikroORM } from '@mikro-orm/core';
-import { Logger } from '@nestjs/common';
-import { ConfigService as NestConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
-import { DefaultSeeder } from './db/seeds/DefaultSeeder.js';
 import { ConfigService } from './utils/config/config.service.js';
 
 

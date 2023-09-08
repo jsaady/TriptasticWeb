@@ -1,7 +1,8 @@
-import { ComponentType, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { LoginResponse } from '../features/auth/types.js';
 import { useAsyncHttp } from './useAsync.js';
-import { useLoggedInContext, withLoggedInContext } from './useLoggedIn.js';
+import { useLoggedIn, withLoggedIn } from './useLoggedIn.js';
 
 export enum LoginState {
   login,
@@ -21,10 +22,11 @@ export interface AuthState {
   logout: () => void;
 }
 
-const AuthorizationContext = createContext<AuthState>(null as unknown as AuthState);
+const authorizationContext = createContext<AuthState>(null as any);
 
-const withAuthorizationProvider = <T,>(Comp: ComponentType<T>) => (props: T & JSX.IntrinsicAttributes) => {
-  const {loggedIn, setLoggedIn} = useLoggedInContext();
+const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>) => (props: P) => {
+  const { loggedIn, setLoggedIn } = useLoggedIn();
+  const navigate = useNavigate();
 
   const clientIdentifier = useMemo(() => {
     let storedClientIdentifier = localStorage.getItem('clientIdentifier');
@@ -42,11 +44,6 @@ const withAuthorizationProvider = <T,>(Comp: ComponentType<T>) => (props: T & JS
     loginState: LoginState.login
   });
 
-  const [check, { loading }] = useAsyncHttp(async ({ get }) => {
-    const response = await get<LoginResponse>('/api/auth/check');
-
-    return handleLoginResponse(response);
-  }, []);
 
   const handleLoginResponse = useCallback(({ code, success }: LoginResponse) => {
     let newState: LoginState;
@@ -74,8 +71,17 @@ const withAuthorizationProvider = <T,>(Comp: ComponentType<T>) => (props: T & JS
     }));
 
     setLoggedIn(success);
+
+    if (success) {
+      navigate('/');
+    }
   }, [setLoggedIn, setState]);
 
+  const [check, { loading }] = useAsyncHttp(async ({ get }) => {
+    const response = await get<LoginResponse>('/api/auth/check');
+
+    return handleLoginResponse(response);
+  }, []);
 
   const [logout] = useAsyncHttp(async ({ post }) => {    
     await post('/api/auth/logout', {});
@@ -87,21 +93,25 @@ const withAuthorizationProvider = <T,>(Comp: ComponentType<T>) => (props: T & JS
     }));
   }, [setLoggedIn]);
 
-  useEffect(check, []);
+  useEffect(() => {
+    check();
+  }, []);
 
-  return <AuthorizationContext.Provider value={{
-    ...state,
-    clientIdentifier,
-    loading,
-    loggedIn,
-    setLoggedIn,
-    logout,
-    handleLoginResponse
-  }}>
-    <Comp {...props} />
-  </AuthorizationContext.Provider>
+  return <authorizationContext.Provider value={{
+      ...state,
+      clientIdentifier,
+      loading,
+      loggedIn,
+      setLoggedIn,
+      logout,
+      handleLoginResponse
+    }}>
+    <Component {...props} />
+  </authorizationContext.Provider>
 };
 
-export const withAuthorization = <T extends JSX.IntrinsicAttributes>(comp: ComponentType<T>) => withLoggedInContext(withAuthorizationProvider(comp));
+export const withAuthorization = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>) => withLoggedIn(withAuthorizationContext(Component));
 
-export const useAuthorization = () => useContext(AuthorizationContext);
+export const useAuthorization = () => {
+  return useContext(authorizationContext);
+};

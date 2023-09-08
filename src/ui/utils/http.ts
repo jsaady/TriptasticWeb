@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
-import { useAuthorization } from './useAuth.js';
-import { useLoggedInContext } from './useLoggedIn.js';
+import { useLoggedIn } from './useLoggedIn.js';
 
 class FetchError extends Error {
   constructor (public response: Response, public responseText: string) {
@@ -23,8 +22,8 @@ export interface HTTPClient {
   post: <T = unknown>(path: string, body: unknown, signal: AbortSignal) => Promise<T>;
 }
 
-export const useHttp = (): HTTPClient => {
-  const { setLoggedIn } = useLoggedInContext();
+export const useHttp = (): HTTPClient|null => {
+  const { setLoggedIn } = useLoggedIn();
 
   const makeRequest = useCallback(async (path: string, method: 'get'|'post'|'patch'|'put'|'delete', signal: AbortSignal, body?: unknown) => {
     const r = await fetch(path, {

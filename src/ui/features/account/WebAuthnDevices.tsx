@@ -12,7 +12,6 @@ export const WebAuthnDevices = () => {
     return get<any[]>('/api/auth/web-authn/devices');
   }, []);
 
-
   const [removeDevice, { loading: removeDeviceLoading }] = useAsyncHttp(async ({ del }, id: number) => {
     await del<any[]>(`/api/auth/web-authn/devices/${id}`);
 
