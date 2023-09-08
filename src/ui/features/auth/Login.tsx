@@ -38,13 +38,14 @@ const ResetPasswordElements = ({ register, disabled }: LoginFormProps) => {
 
 export const Login = () => {
   const { register, registerForm } = useForm<LoginFormState>();
-  const { loginState, loggedIn, logout, setLoggedIn, handleLoginResponse } = useAuthorization();
+  const { loginState, loggedIn, logout, setLoggedIn, handleLoginResponse, clientIdentifier } = useAuthorization();
 
   const [sendVerificationEmail] = useAsyncHttp(({ post }) => post('/api/auth/send-verification-email', {}), []);
 
   const [handleLogin, { loading: loginLoading }] = useAsyncHttp(async ({ post }, state: LoginFormState) => {    
     const response = await post<LoginResponse>('/api/auth/login', {
-      ...state
+      ...state,
+      clientIdentifier
     });
 
     handleLoginResponse(response);

@@ -20,23 +20,23 @@ export class AuthController {
   ) { }
 
   @Post('/login')
-  async login(@Body() {email, password}: {email: string, password: string}, @Res({ passthrough: true }) response: Response) {
+  async login(@Body() { email, password, clientIdentifier }: {email: string, password: string; clientIdentifier: string;}, @Res({ passthrough: true }) response: Response) {
     const user = await this.authService.loginUser(email, password);
 
-    return await this.processUserLogin(user, response);
+    return await this.processUserLogin(user, response, clientIdentifier, null);
   }
 
 
   @Post('/reset-password')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async resetPassword(@User() {email}: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { currentPassword, password }: ResetPasswordDTO) {
+  async resetPassword(@User() { email, clientIdentifier }: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { currentPassword, password }: ResetPasswordDTO) {
     const updatedUser = await this.authService.resetPasswordForUser(email, currentPassword, password);
-    return this.processUserLogin(updatedUser, response);
+    return this.processUserLogin(updatedUser, response, clientIdentifier, null);
   }
 
   @Post('/send-verification-email')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async sendVerificationEmail(@User() {sub}: AuthTokenContents, @Body() {force = false}: {force?: boolean}, @Res({ passthrough: true }) response: Response) {
+  async sendVerificationEmail(@User() { sub }: AuthTokenContents, @Body() {force = false}: {force?: boolean}, @Res({ passthrough: true }) response: Response) {
     await this.authService.initiateEmailVerification(sub, force);
 
     return { success: true };
@@ -44,16 +44,16 @@ export class AuthController {
 
   @Post('/verify-email')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async verifyEmail(@User() {sub}: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { token }: VerifyEmailDTO) {
+  async verifyEmail(@User() { sub , clientIdentifier}: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { token }: VerifyEmailDTO) {
     const updatedUser = await this.authService.validateEmailToken(sub, token);
-    return this.processUserLogin(updatedUser, response, 'email');
+    return this.processUserLogin(updatedUser, response, clientIdentifier, 'email');
   }
 
   @Post('/register')
-  async register(@Body() {email, password}: RegisterUserDTO, @Res({ passthrough: true }) response: Response) {
-    const user = await this.authService.registerUser({ email, password });
+  async register(@Body() { email, password, clientIdentifier }: RegisterUserDTO, @Res({ passthrough: true }) response: Response) {
+    const user = await this.authService.registerUser({ email, password, clientIdentifier });
 
-    return await this.processUserLogin(user, response);
+    return await this.processUserLogin(user, response, clientIdentifier, null);
   }
 
   @Post('/logout')
@@ -75,7 +75,7 @@ export class AuthController {
   async checkAuth(@User() token: AuthTokenContents, @Res({ passthrough: true }) response: Response) {
     const user = await this.userService.getUserById(token.sub);
 
-    return this.processUserLogin(user, response, token.mfaMethod);
+    return this.processUserLogin(user, response, token.clientIdentifier, token.mfaMethod);
   }
 
   @Post('web-authn/start-registration')
@@ -86,12 +86,12 @@ export class AuthController {
   
   @Post('web-authn/verify-registration')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async verifyRegistration(@User() { sub }: AuthTokenContents, @Body() {attn, name}: {attn: RegistrationResponseJSON; name: string;}, @Res({ passthrough: true }) response: Response) {
+  async verifyRegistration(@User() { sub, clientIdentifier }: AuthTokenContents, @Body() {attn, name}: {attn: RegistrationResponseJSON; name: string;}, @Res({ passthrough: true }) response: Response) {
     const { verified, user } = await this.webAuthnService.verifyWebAuthnRegistration(sub, name, attn);
 
     if (!verified) throw new BadRequestException();
 
-    return this.processUserLogin(user, response, 'webauthn');
+    return this.processUserLogin(user, response, clientIdentifier, 'webauthn');
   }
 
   @Post('web-authn/login-start')
@@ -102,12 +102,12 @@ export class AuthController {
 
   @Post('web-authn/verify-login')
   @IsAuthenticated({ allowNoMFA: true })
-  async verifyLogin(@User() { sub }: AuthTokenContents, @Body() body: AuthenticationResponseJSON, @Res({ passthrough: true }) response: Response) {
+  async verifyLogin(@User() { sub, clientIdentifier }: AuthTokenContents, @Body() body: AuthenticationResponseJSON, @Res({ passthrough: true }) response: Response) {
     const {verified, user} = await this.webAuthnService.verifyWebAuthn(sub, body);
 
     if (!verified) throw new BadRequestException();
 
-    return this.processUserLogin(user, response, 'webauthn');
+    return this.processUserLogin(user, response, clientIdentifier, 'webauthn');
   }
 
   @Get('web-authn/devices')
@@ -122,8 +122,16 @@ export class AuthController {
     return this.webAuthnService.removeDeviceById(+id, sub);
   }
 
-  private async processUserLogin (user: UserEntity, response: Response<any, Record<string, any>>, mfaMethod?: string) {
-    const [token, contents] = await this.authService.mintDTOForUser(user, mfaMethod);
+  private async processUserLogin (user: UserEntity, response: Response<any, Record<string, any>>, clientIdentifier: string, mfaMethod: string | null) {
+    const existingUserDevice = await this.authService.checkUserClientIdentifier(user.id, clientIdentifier);
+
+    if (existingUserDevice) {
+      mfaMethod = 'client_identifier';
+    } else if (mfaMethod && MFA_ENABLED) {
+      await this.authService.registerUserClientIdentifier(user.id, clientIdentifier);
+    }
+
+    const [token, contents] = await this.authService.mintDTOForUser(user, clientIdentifier, mfaMethod);
 
     response.cookie('Authorization', Buffer.from(JSON.stringify(token)).toString('base64'), {
       maxAge: AUTH_TOKEN_EXPIRATION * 1000,

@@ -1,6 +1,7 @@
 export class RegisterUserDTO {
   email!: string;
   password!: string;
+  clientIdentifier!: string;
 }
 
 export class AuthDTO {
@@ -11,12 +12,13 @@ export class AuthDTO {
 
 export interface AuthTokenContents {
   sub: number;
+  clientIdentifier: string;
   isAdmin: boolean;
   email: string;
   emailConfirmed: boolean;
   needPasswordReset: boolean;
   mfaEnabled: boolean;
-  mfaMethod?: string;
+  mfaMethod: string|null;
 }
 
 export interface VerifyEmailDTO {

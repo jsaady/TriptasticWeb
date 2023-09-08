@@ -9,6 +9,9 @@ import { UserService } from '../users/users.service.js';
 import { AUTH_SALT_ROUNDS } from './auth.constants.js';
 import { AuthDTO, AuthTokenContents, RegisterUserDTO } from './auth.dto.js';
 import { WebAuthnService } from './webAuthn.service.js';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { UserClient } from './entities/userClient.entity.js';
+import { EntityRepository } from '@mikro-orm/postgresql';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +19,8 @@ export class AuthService {
     private jwt: JwtService,
     private userService: UserService,
     private emailService: EmailService,
-    private webAuthnService: WebAuthnService
+    private webAuthnService: WebAuthnService,
+    @InjectRepository(UserClient) private userClientRepo: EntityRepository<UserClient>
   ) { }
 
   private async generateEmailVerificationToken() {
@@ -89,7 +93,7 @@ export class AuthService {
   }
 
 
-  async mintDTOForUser(user: User, mfaMethod?: string): Promise<[AuthDTO, AuthTokenContents]> {
+  async mintDTOForUser(user: User, clientIdentifier: string, mfaMethod: string|null): Promise<[AuthDTO, AuthTokenContents]> {
     const contents: AuthTokenContents = {
       sub: user.id,
       isAdmin: user.isAdmin,
@@ -97,6 +101,7 @@ export class AuthService {
       emailConfirmed: user.emailConfirmed,
       needPasswordReset: user.needPasswordReset,
       mfaEnabled: await this.checkUserHasMFA(user),
+      clientIdentifier,
       mfaMethod
     };
     return [{
@@ -150,5 +155,16 @@ export class AuthService {
     const user = await this.checkPasswordForUser(username, password);
 
     return user;
+  }
+
+  async checkUserClientIdentifier(userId: number, clientID: string): Promise<boolean> {
+    const existing = await this.userClientRepo.findOne({ user: { id: userId }, clientID });
+
+    return !!existing;
+  }
+
+  async registerUserClientIdentifier(userId: number, clientID: string): Promise<void> {
+    const newClient = this.userClientRepo.create({ user: { id: userId }, clientID });
+    await this.userClientRepo.nativeInsert(newClient);
   }
 }

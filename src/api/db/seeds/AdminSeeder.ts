@@ -1,8 +1,8 @@
 import type { EntityManager } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
-import { User } from '../../features/users/users.entity.js';
 import { hash } from 'bcrypt';
 import { AUTH_SALT_ROUNDS } from '../../features/auth/auth.constants.js';
+import { User } from '../../features/users/users.entity.js';
 
 export class AdminSeeder extends Seeder {
 

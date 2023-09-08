@@ -1,4 +1,4 @@
-import { ComponentType, createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { ComponentType, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { LoginResponse } from '../features/auth/types.js';
 import { useAsyncHttp } from './useAsync.js';
 import { useLoggedInContext, withLoggedInContext } from './useLoggedIn.js';
@@ -13,6 +13,7 @@ export enum LoginState {
 
 export interface AuthState {
   loggedIn: boolean;
+  clientIdentifier: string;
   loginState: LoginState;
   loading: boolean;
   setLoggedIn: (loggedIn: boolean) => void;
@@ -24,6 +25,18 @@ const AuthorizationContext = createContext<AuthState>(null as unknown as AuthSta
 
 const withAuthorizationProvider = <T,>(Comp: ComponentType<T>) => (props: T & JSX.IntrinsicAttributes) => {
   const {loggedIn, setLoggedIn} = useLoggedInContext();
+
+  const clientIdentifier = useMemo(() => {
+    let storedClientIdentifier = localStorage.getItem('clientIdentifier');
+
+    if (!storedClientIdentifier) {
+      storedClientIdentifier = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('clientIdentifier', storedClientIdentifier);
+    }
+
+    return storedClientIdentifier;
+  }, []);
+
   const [state, setState] = useState({
     me: undefined,
     loginState: LoginState.login
@@ -78,6 +91,7 @@ const withAuthorizationProvider = <T,>(Comp: ComponentType<T>) => (props: T & JS
 
   return <AuthorizationContext.Provider value={{
     ...state,
+    clientIdentifier,
     loading,
     loggedIn,
     setLoggedIn,
