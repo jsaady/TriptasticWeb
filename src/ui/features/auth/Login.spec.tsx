@@ -2,7 +2,6 @@ import '@testing-library/jest-dom';
 import { act, fireEvent, render } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { styled } from 'styled-components';
 import { withAuthorization } from '../../utils/useAuth.js';
 import { Login } from './Login.js';
 import { ComponentType } from 'react';
@@ -31,7 +30,7 @@ test('login screen should render', async () => {
     })
   );
 
-  const { findByTestId } = render(<Login />, { wrapper: withAuthorization(styled.div``) as ComponentType });
+  const { findByTestId } = render(<Login />, { wrapper: withAuthorization(() => <div />) as ComponentType });
 
   const emailEl = document.getElementsByName('email')[0] as HTMLInputElement;
   const passwordEl = document.getElementsByName('password')[0] as HTMLInputElement;

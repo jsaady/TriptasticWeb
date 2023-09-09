@@ -8,7 +8,7 @@ export interface RootContext {
 
 export const Root = withAuthorization(() => {
   const { loggedIn } = useAuthorization();
-  return <Wrapper $showGradient={!loggedIn}>
+  return <Wrapper showGradient={!loggedIn}>
     <Outlet />
   </Wrapper>
 });

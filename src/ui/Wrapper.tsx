@@ -1,10 +1,13 @@
-import { styled } from 'styled-components';
 
-export const Wrapper = styled.div<{ $showGradient: boolean; }> `
-  height: 100%;
-  width: 100%;
-  ${({ $showGradient }) => $showGradient && `background: linear-gradient(90deg, #880000, #000065);`}
-  top: 0;
-  position: absolute;
-  font-family: "Arial";
-`;
+
+interface WrapperProps extends React.PropsWithChildren {
+  showGradient?: boolean;
+}
+
+
+// convert wrapper to tailwind
+export const Wrapper = ({ children, showGradient = false }: WrapperProps) => (
+  <div className={`h-screen w-screen ${showGradient ? 'bg-gradient-to-r from-red-800 to-blue-800' : ''}`}>
+    {children}
+  </div>
+);

@@ -1,32 +1,17 @@
-import { useMemo } from 'react';
+import { ButtonHTMLAttributes, PropsWithChildren, useMemo } from 'react';
 import { Navigate, Outlet } from 'react-router';
-import { styled } from 'styled-components';
 import { useNotifications, withNotifications } from './features/notifications/useNotifications.js';
 import { useAuthorization } from './utils/useAuth.js';
 import { Link } from 'react-router-dom';
 import { Icon } from './components/Icon.js';
-const AuthenticatedWrapper = styled.div``;
 
-const LogoutButton = styled.button`
-  height: 2rem;
-  width: 10rem;
-  margin: 1rem;
-  background-color: darkgrey;
-  border: none;
-  font-size: 16px;
-`;
+const AuthenticatedWrapper: React.FC<PropsWithChildren> = ({ children }) => <div>{children}</div>
 
-const DevicesButton = styled(Link)`
-  height: 2rem;
-  width: 10rem;
-  margin: 1rem;
-  background-color: darkgrey;
-  border: none;
-  padding: .5rem 4rem;
-  text-decoration: none;
-  color: black;
-  font-size: 16px;
-`;
+const LogoutButton = (props: ButtonHTMLAttributes<HTMLButtonElement>) => {
+  return <button className='' {...props}></button>
+}
+
+const DevicesButton = Link;
 
 export const Authenticated = withNotifications(() => {
   const { logout, loggedIn, loading } = useAuthorization();
