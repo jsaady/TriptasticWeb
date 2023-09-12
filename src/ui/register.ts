@@ -15,7 +15,6 @@ export async function setupSW () {
     
 
     navigator.serviceWorker.addEventListener('message', (ev) => console.log(ev));
-    console.log('registered my big bro');
   }
 }
 

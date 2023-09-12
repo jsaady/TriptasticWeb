@@ -16,25 +16,4 @@ export class GeneratedConfig {
 
   @Property()
   vapidPrivate!: string;
-
-  @Property()
-  envUrl!: string;
-
-  @Property()
-  envName!: string;
-
-  @Property()
-  emailHost!: string;
-
-  @Property()
-  emailPort!: string;
-
-  @Property()
-  emailUser!: string;
-
-  @Property()
-  emailPassword!: string;
-
-  @Property()
-  emailReplyTo!: string;
 }

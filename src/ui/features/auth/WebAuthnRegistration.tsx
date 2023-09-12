@@ -1,10 +1,10 @@
 import { startRegistration } from '@simplewebauthn/browser';
 import { PublicKeyCredentialCreationOptionsJSON, RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
 import { useEffect } from 'react';
-import { useAsync, useAsyncHttp } from '../../utils/useAsync.js';
-import { LoginButtonEl, LoginFormEl, LoginInputEl } from './LoginElements.js';
-import { LoginResponse } from './types.js';
 import { useForm } from '../../utils/forms.js';
+import { useAsync, useAsyncHttp } from '../../utils/useAsync.js';
+import { LoginButton, LoginForm, LoginInputEl } from './LoginElements.js';
+import { LoginResponse } from './types.js';
 
 export interface WebAuthnRegistrationFormProps {
   onRegistered: (result: LoginResponse) => void;
@@ -47,8 +47,8 @@ export const WebAuthnRegistrationForm = ({ onRegistered }: WebAuthnRegistrationF
     if (verificationResult) onRegistered(verificationResult);
   }, [verificationResult]);
 
-  return <LoginFormEl {...registerForm(triggerWebAuthnGeneration)}>
+  return <LoginForm {...registerForm(triggerWebAuthnGeneration)}>
     <LoginInputEl {...register('name')} required placeholder='Device Name' />
-    <LoginButtonEl type="submit">Register Device</LoginButtonEl>
-  </LoginFormEl>
+    <LoginButton type="submit">Register Device</LoginButton>
+  </LoginForm>
 }

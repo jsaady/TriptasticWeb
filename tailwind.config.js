@@ -4,7 +4,11 @@ export default {
     "./src/ui/**/*.{html,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        // 'gray': '#FFFFFF'
+      }
+    },
   },
   plugins: [],
   darkMode: 'media'

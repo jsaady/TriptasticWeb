@@ -1,11 +1,13 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
+import { Button } from '../../components/Button.js';
+import { Input } from '../../components/Input.js';
 import { RegistrationFn, useForm } from '../../utils/forms.js';
 import { useAsyncHttp } from '../../utils/useAsync.js';
 import { LoginState, useAuthorization } from '../../utils/useAuth.js';
-import { EmailMFAPage } from './EmailMFA.js';
-import { LoginButtonEl, LoginFormEl, LoginHeading, LoginInputEl, LoginLink, LoginWrapperEl } from './LoginElements.js';
+import { LoginForm, LoginHeading, LogoutLink } from './LoginElements.js';
 import { MFA } from './MFA.js';
 import { LoginResponse } from './types.js';
+import { useNavigate } from 'react-router';
 
 interface LoginFormState {
   email: string;
@@ -21,17 +23,17 @@ interface LoginFormProps {
 
 const LoginFormElements = ({ register, disabled }: LoginFormProps) => {
   return <>
-    <LoginInputEl disabled={disabled}  {...register('email')} placeholder='Email' type="email" />
-    <LoginInputEl disabled={disabled} {...register('password')} placeholder='Password' type="password" />
-    <LoginButtonEl type="submit">LOGIN</LoginButtonEl>
-    <LoginButtonEl type="button">REGISTER</LoginButtonEl>
+    <Input disabled={disabled} label='Email' {...register('email')} type="email" />
+    <Input disabled={disabled} label='Password' {...register('password')} type="password" />
+    <Button className="w-full my-6" type="submit">LOGIN</Button>
+    {/* <Button type="button">REGISTER</Button> */}
   </>
 };
 
 const ResetPasswordElements = ({ register, disabled }: LoginFormProps) => {
   return <>
-    <LoginInputEl disabled={disabled} {...register('newPassword')} placeholder='New password' type='password' />
-    <LoginButtonEl type="submit">SET PASSWORD</LoginButtonEl>
+    <Input disabled={disabled} {...register('newPassword')} placeholder='New password' type='password' />
+    <Button type="submit">SET PASSWORD</Button>
   </>
 };
 
@@ -39,8 +41,7 @@ const ResetPasswordElements = ({ register, disabled }: LoginFormProps) => {
 export const Login = () => {
   const { register, registerForm } = useForm<LoginFormState>();
   const { loginState, loggedIn, logout, setLoggedIn, handleLoginResponse, clientIdentifier } = useAuthorization();
-
-  const [sendVerificationEmail] = useAsyncHttp(({ post }) => post('/api/auth/send-verification-email', {}), []);
+  const navigate = useNavigate();
 
   const [handleLogin, { loading: loginLoading }] = useAsyncHttp(async ({ post }, state: LoginFormState) => {    
     const response = await post<LoginResponse>('/api/auth/login', {
@@ -48,7 +49,11 @@ export const Login = () => {
       clientIdentifier
     });
 
-    handleLoginResponse(response);
+    const success = handleLoginResponse(response);
+
+    if (success) {
+      navigate('/');
+    }
   }, [setLoggedIn]);
 
   const [handleResetPassword, { loading: resetLoading }] = useAsyncHttp(async ({ post }, state: LoginFormState) => {    
@@ -61,17 +66,12 @@ export const Login = () => {
   }, [setLoggedIn]);
 
 
-  const { showPasswordReset, showVerifyEmail, showUsernamePassword, showLoginMfa } = useMemo(() => ({
+  const { showPasswordReset, showUsernamePassword, showLoginMfa } = useMemo(() => ({
     showPasswordReset: loginState === LoginState.resetPassword,
-    showVerifyEmail: loginState === LoginState.verifyEmail,
     showRegisterMfa: loginState === LoginState.registerMfa,
     showLoginMfa: loginState === LoginState.loginMfa,
     showUsernamePassword: loginState === LoginState.login
   }), [loginState]);
-
-  useEffect(() => {
-    if (showVerifyEmail) sendVerificationEmail();
-  }, [showVerifyEmail]);
 
 
   const handleSubmit = useMemo(() => {
@@ -97,14 +97,13 @@ export const Login = () => {
   }, [loginState]);
 
 
-  return <LoginWrapperEl>
-    {!showUsernamePassword && <LoginLink onClick={logout}>Log out</LoginLink>}
+  return <div className="max-w-lg mx-auto p-4 items-center bg-white top-10 relative">
+    {!showUsernamePassword && <LogoutLink className='float-right' onClick={logout}>Log out</LogoutLink>}
     {heading && <LoginHeading>{heading}</LoginHeading>}
     {loggedIn && <p data-testid="login-success">Log in succeeded</p>}
-    {(showUsernamePassword || showPasswordReset) && <LoginFormEl {...registerForm(handleSubmit)}>
+    {(showUsernamePassword || showPasswordReset) && <LoginForm {...registerForm(handleSubmit)}>
       {showUsernamePassword ? LoginFormElements({ register, disabled: loading }) : ResetPasswordElements({ register, disabled: loading })}
-    </LoginFormEl>}
+    </LoginForm>}
     {showLoginMfa && <MFA onMFAComplete={handleLoginResponse} />}
-    {showVerifyEmail && <EmailMFAPage onEmailConfirmed={handleLoginResponse} />}
-  </LoginWrapperEl>
+  </div>
 };

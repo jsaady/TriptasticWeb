@@ -17,8 +17,9 @@ export interface AuthState {
   clientIdentifier: string;
   loginState: LoginState;
   loading: boolean;
+  me?: { sub: number; email: string; };
   setLoggedIn: (loggedIn: boolean) => void;
-  handleLoginResponse: (res: LoginResponse) => void;
+  handleLoginResponse: (res: LoginResponse) => boolean;
   logout: () => void;
 }
 
@@ -26,7 +27,6 @@ const authorizationContext = createContext<AuthState>(null as any);
 
 const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>) => (props: P) => {
   const { loggedIn, setLoggedIn } = useLoggedIn();
-  const navigate = useNavigate();
 
   const clientIdentifier = useMemo(() => {
     let storedClientIdentifier = localStorage.getItem('clientIdentifier');
@@ -40,12 +40,11 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
   }, []);
 
   const [state, setState] = useState({
-    me: undefined,
     loginState: LoginState.login
   });
 
 
-  const handleLoginResponse = useCallback(({ code, success }: LoginResponse) => {
+  const handleLoginResponse = useCallback(({ code, success, data }: LoginResponse) => {
     let newState: LoginState;
     switch (code) {
       case 'password_reset':
@@ -67,18 +66,21 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
     
     setState(s => ({
       ...s,
-      loginState: newState
+      loginState: newState,
+      me: data
     }));
+
+    console.log(data);
 
     setLoggedIn(success);
 
-    if (success) {
-      navigate('/');
-    }
+    return success;
   }, [setLoggedIn, setState]);
 
   const [check, { loading }] = useAsyncHttp(async ({ get }) => {
     const response = await get<LoginResponse>('/api/auth/check');
+
+    console.log(response);
 
     return handleLoginResponse(response);
   }, []);

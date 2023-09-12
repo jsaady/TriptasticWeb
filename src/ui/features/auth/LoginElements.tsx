@@ -1,38 +1,26 @@
 import { PropsWithChildren } from 'react';
 
-export const LoginWrapperEl = ({ children }: React.PropsWithChildren) => (
-  <div className="flex flex-wrap justify-center max-w-640px mx-auto p-4 items-center bg-white mt-40">
-    {children}
-  </div>
-);
-
-
-export const LoginFormEl = ({ children }: React.PropsWithChildren) => (
-  <form className="w-full flex flex-col">{children}</form>
-);
-
-export const LoginLabelEl = ({ children, hidden }: {hidden: boolean}&React.PropsWithChildren) => (
-  <label className="w-90% text-left" hidden={hidden}>{children}</label>
-);
-
-
-export const LoginInputEl = ({ hidden }: {hidden: boolean}) => (
-  <input className="bg-gray-200 border-none h-8 w-90% rounded-md text-gray-800 font-bold text-lg" hidden={hidden} />
+export const LoginForm = ({ children, ...rest }: React.HTMLProps<HTMLFormElement>) => (
+  <form className="w-full flex flex-wrap items-center justify-center" {...rest}>{children}</form>
 );
 
 export const LoginFormSeparator = () => (
-  <hr className="w-90%" />
+  <div className="relative">
+    <div className="absolute inset-0 flex items-center">
+      <div className="w-full border-t border-neutral-300 dark:border-darkblack-400"></div>
+    </div>
+    <div className="relative flex justify-center text-sm">
+      <span className="bg-white dark:bg-darkblack-500 px-2 text-base text-bneutral-600">Or</span>
+    </div>
+  </div>
 );
 
-export const LoginButtonEl = ({children, ...rest}: PropsWithChildren<React.HTMLProps<HTMLButtonElement>>) => (
-  <button className="h-8 w-32 bg-gray-300 border-none rounded-md text-gray-800 font-bold text-lg" {...(rest as any)}>{children}</button>
-);
-export const LoginLink = ({children, ...rest}: PropsWithChildren<React.HTMLProps<HTMLElement>>) => (
-  <a className="ml-auto cursor-pointer" {...rest as any}>{children}</a>
+export const LogoutLink = ({ children, className, ...rest }: PropsWithChildren<React.HTMLProps<HTMLElement>>) => (
+  <a {...rest as any} className={`${className ?? ''} mt-2 cursor-pointer text-blue-400`}>{children}</a>
 );
 
-export const LoginHeading = ({children, ...rest}: PropsWithChildren<React.HTMLProps<HTMLElement>>) => (
-  <h3 className="text-2xl font-bold" {...rest as any}>{children}</h3>
+export const LoginHeading = ({ children, ...rest }: PropsWithChildren<React.HTMLProps<HTMLElement>>) => (
+  <h3 className="text-2xl m-4 text-center" {...rest as any}>{children}</h3>
 );
 
 export const ErrorText = ({ children }: React.PropsWithChildren) => (

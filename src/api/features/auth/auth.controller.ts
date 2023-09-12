@@ -63,19 +63,12 @@ export class AuthController {
     return {};
   }
 
-  @Get('/me')
-  @IsAuthenticated()
-  getMe(@Req() req: Request) {
-    return req.user ?? {};
-  }
-
-
   @Get('/check')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
   async checkAuth(@User() token: AuthTokenContents, @Res({ passthrough: true }) response: Response) {
     const user = await this.userService.getUserById(token.sub);
 
-    return this.processUserLogin(user, response, token.clientIdentifier, token.mfaMethod);
+    return await this.processUserLogin(user, response, token.clientIdentifier, token.mfaMethod);
   }
 
   @Post('web-authn/start-registration')
@@ -142,34 +135,39 @@ export class AuthController {
     if (user.needPasswordReset) {
       return {
         success: false,
-        code: 'password_reset'
+        code: 'password_reset',
+        data: contents
       };
     }
 
     if (!user.emailConfirmed) {
       return {
         success: false,
-        code: 'verify_email'
+        code: 'verify_email',
+        data: contents
       };
     }
 
     if (!contents.mfaEnabled && MFA_ENABLED) {
       return {
         success: false,
-        code: 'mfa_registration_required'
+        code: 'mfa_registration_required',
+        data: contents
       }
     }
 
     if (!contents.mfaMethod && MFA_ENABLED) {
       return {
         success: false,
-        code: 'mfa_login_required'
+        code: 'mfa_login_required',
+        data: contents
       };
     }
 
     return {
       success: true,
-      code: ''
+      code: '',
+      data: contents
     };
   }
 

@@ -20,7 +20,7 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
     const reg = await navigator.serviceWorker.ready;
     const [permission, subscription] = await Promise.all([reg.pushManager.permissionState({ userVisibleOnly: true }), reg.pushManager.getSubscription()]);
     const enabled = !!subscription && permission === 'granted';
-    console.log(permission, enabled);
+
     return enabled;
   }, []);
 

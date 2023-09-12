@@ -3,7 +3,7 @@ import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService as Config } from '@nestjs/config';
 import webPush from 'web-push';
-import { CONFIG_VARS } from './config.js';
+import { CONFIG_VARS, FullConfig } from './config.js';
 import { GeneratedConfig } from './generated-config.entity.js';
 import { GENERATED_CONFIG } from './generated-config.provider.js';
 
@@ -11,7 +11,7 @@ import { GENERATED_CONFIG } from './generated-config.provider.js';
 export class ConfigService {
 
   constructor(
-    @Inject(GENERATED_CONFIG) private generatedConfig: GeneratedConfig
+    @Inject(GENERATED_CONFIG) private generatedConfig: FullConfig
   ) {}
 
 

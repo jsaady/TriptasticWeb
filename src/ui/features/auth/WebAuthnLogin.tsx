@@ -1,8 +1,9 @@
 import { startAuthentication } from '@simplewebauthn/browser';
 import { AuthenticationResponseJSON, PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/typescript-types';
 import { useEffect } from 'react';
+import { Button } from '../../components/Button.js';
 import { useAsync, useAsyncHttp } from '../../utils/useAsync.js';
-import { LoginButtonEl, LoginHeading } from './LoginElements.js';
+import { LoginHeading } from './LoginElements.js';
 import { LoginResponse } from './types.js';
 
 export interface WebAuthnLoginFormProps {
@@ -34,12 +35,11 @@ export const WebAuthnLoginForm = ({ onLoggedIn }: WebAuthnLoginFormProps) => {
   }, [loginOptions]);
 
   useEffect(() => {
-    console.log('verify result', loginVerifyResult);
     if (loginVerifyResult) onLoggedIn(loginVerifyResult)
   }, [loginVerifyResult]);
 
-  return <>
+  return <div className='flex flex-col w-full items-center'>
     <LoginHeading>Verify with device</LoginHeading>
-    <LoginButtonEl onClick={triggerWebAuthnLogin}>Login with device</LoginButtonEl>
-  </>
+    <Button onClick={triggerWebAuthnLogin}>Login with device</Button>
+  </div>
 }
