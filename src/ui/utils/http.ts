@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useLoggedIn } from './useLoggedIn.js';
 
-class FetchError extends Error {
+export class FetchError extends Error {
   constructor (public response: Response, public responseText: string) {
     super(`Error status ${response.status}`);
   }
@@ -22,28 +22,30 @@ export interface HTTPClient {
   post: <T = unknown>(path: string, body: unknown, signal: AbortSignal) => Promise<T>;
 }
 
-export const useHttp = (): HTTPClient|null => {
+export const useHttp = (): HTTPClient => {
   const { setLoggedIn } = useLoggedIn();
 
   const makeRequest = useCallback(async (path: string, method: 'get'|'post'|'patch'|'put'|'delete', signal: AbortSignal, body?: unknown) => {
-    const r = await fetch(path, {
+    const originalResponse = await fetch(path, {
       body: JSON.stringify(body),
       headers: getHeaders(),
       method,
       signal
     });
+
+    const response = originalResponse.clone();
   
-    if (r.status >= 400) {
-      if (r.status === 401) {
+    if (response.status >= 400) {
+      if (response.status === 401) {
         setLoggedIn(false);
       }
 
-      console.error(r);
-      throw new FetchError(r, await r.text());
+      console.error(response);
+      throw new FetchError(originalResponse, await response.text());
     }
 
-    if (r.headers.get('Content-Type')?.startsWith('application/json')) {
-      const parsed = await r.json();
+    if (response.headers.get('Content-Type')?.startsWith('application/json')) {
+      const parsed = await response.json();
 
       return parsed;
     }

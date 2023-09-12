@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { LoginResponse } from '../features/auth/types.js';
 import { useAsyncHttp } from './useAsync.js';
 import { useLoggedIn, withLoggedIn } from './useLoggedIn.js';
@@ -28,6 +28,8 @@ const authorizationContext = createContext<AuthState>(null as any);
 const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>) => (props: P) => {
   const { loggedIn, setLoggedIn } = useLoggedIn();
 
+  const search = useMemo(() => new URLSearchParams(location.search), [location.search]);
+
   const clientIdentifier = useMemo(() => {
     let storedClientIdentifier = localStorage.getItem('clientIdentifier');
 
@@ -40,9 +42,8 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
   }, []);
 
   const [state, setState] = useState({
-    loginState: LoginState.login
+    loginState: search.get('rpt') ? LoginState.resetPassword : LoginState.login
   });
-
 
   const handleLoginResponse = useCallback(({ code, success, data }: LoginResponse) => {
     let newState: LoginState;
@@ -70,8 +71,6 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
       me: data
     }));
 
-    console.log(data);
-
     setLoggedIn(success);
 
     return success;
@@ -80,12 +79,14 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
   const [check, { loading }] = useAsyncHttp(async ({ get }) => {
     const response = await get<LoginResponse>('/api/auth/check');
 
-    console.log(response);
-
     return handleLoginResponse(response);
   }, []);
 
-  const [logout] = useAsyncHttp(async ({ post }) => {    
+  const [logout] = useAsyncHttp(async ({ post }) => {
+    search.delete('rpt');
+
+    location.search = search.toString();
+
     await post('/api/auth/logout', {});
 
     setLoggedIn(false);

@@ -3,11 +3,11 @@ import { HTTPClient, useHttp } from './http.js';
 
 export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, deps: any[]) => {
   const [state, setState] = useState({
-    loading: false,
     result: null as T,
     error: null as any
   });
 
+  const loadingRef = useRef(false);
   const stateRef = useRef(state);
 
   useEffect(() => {
@@ -16,8 +16,13 @@ export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, de
 
   const trigger = useCallback((...args: A) => {
     (async () => {
-      if (stateRef.current.loading) return;
+      if (loadingRef.current) {
+        console.log('Already loading...');
+        return;
+      }
   
+      loadingRef.current = true;
+
       setState(s => ({
         ...s,
         loading: true
@@ -37,11 +42,13 @@ export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, de
           loading: false,
           error: e
         }));
+      } finally {
+        loadingRef.current = false;
       }
     })();
   }, [cb, ...deps]);
 
-  return [trigger, state] as const;
+  return [trigger, {...state, loading: loadingRef.current}] as const;
 };
 
 type Pop<T, O extends any[] = []> = T extends [infer Head, ...infer Tail] ? Tail extends [any] ? [...O, Head] : Pop<Tail, [...O, Head]> : [];

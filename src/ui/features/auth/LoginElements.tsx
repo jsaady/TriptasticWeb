@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 
-export const LoginForm = ({ children, ...rest }: React.HTMLProps<HTMLFormElement>) => (
-  <form className="w-full flex flex-wrap items-center justify-center" {...rest}>{children}</form>
+export const LoginForm = ({ children, className, ...rest }: React.HTMLProps<HTMLFormElement>) => (
+  <form  {...rest} className={(className ?? '') + " w-full flex flex-wrap items-center justify-center"}>{children}</form>
 );
 
 export const LoginFormSeparator = () => (
@@ -10,7 +10,7 @@ export const LoginFormSeparator = () => (
       <div className="w-full border-t border-neutral-300 dark:border-darkblack-400"></div>
     </div>
     <div className="relative flex justify-center text-sm">
-      <span className="bg-white dark:bg-darkblack-500 px-2 text-base text-bneutral-600">Or</span>
+      <span className="bg-white px-2 text-base text-neutral-600 dark:bg-neutral-900 dark:text-white">Or</span>
     </div>
   </div>
 );
@@ -24,5 +24,5 @@ export const LoginHeading = ({ children, ...rest }: PropsWithChildren<React.HTML
 );
 
 export const ErrorText = ({ children }: React.PropsWithChildren) => (
-  <p className="text-red-500 bg-red-100 p-4">{children}</p>
+  <p className="text-red-500 bg-red-100 p-4 dark:bg-inherit self-start justify-self-start">{children}</p>
 );

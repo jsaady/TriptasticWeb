@@ -76,8 +76,6 @@ export const Sidebar = () => {
 
   if (!sidebarState) throw new Error('Sidebar component used outside of SidebarContext');
 
-  console.log(sidebarState);
-
   return (
     <div className={`flex flex-col min-h-[90vh] w-64 border-neutral-200 dark:border-neutral-700 ${sidebarState.items.length ? 'flex' : 'hidden'}`}>
       <div className='flex flex-col flex-grow overflow-y-auto'>

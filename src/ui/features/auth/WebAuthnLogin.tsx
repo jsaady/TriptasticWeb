@@ -38,8 +38,8 @@ export const WebAuthnLoginForm = ({ onLoggedIn }: WebAuthnLoginFormProps) => {
     if (loginVerifyResult) onLoggedIn(loginVerifyResult)
   }, [loginVerifyResult]);
 
-  return <div className='flex flex-col w-full items-center'>
+  return <div className='w-full flex flex-wrap items-center justify-center'>
     <LoginHeading>Verify with device</LoginHeading>
-    <Button onClick={triggerWebAuthnLogin}>Login with device</Button>
+    <Button className='mx-4 mb-4 w-full' onClick={triggerWebAuthnLogin}>Login with device</Button>
   </div>
 }

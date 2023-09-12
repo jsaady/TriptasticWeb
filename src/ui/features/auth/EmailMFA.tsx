@@ -40,6 +40,6 @@ export const EmailMFAPage = ({ onEmailConfirmed }: EmailMFAProps) => {
         Didn't receive an email?&nbsp;<LogoutLink onClick={send}>Resend verification</LogoutLink>
       </div>
     </>
-     : <Button className='m-4 w-full' onClick={send}>Send verification</Button>}
+     : <Button className='mx-4 mb-4 w-full' onClick={send}>Send verification</Button>}
   </LoginForm>
 };

@@ -29,9 +29,14 @@ export class AuthController {
 
   @Post('/reset-password')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async resetPassword(@User() { email, clientIdentifier }: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { currentPassword, password }: ResetPasswordDTO) {
-    const updatedUser = await this.authService.resetPasswordForUser(email, currentPassword, password);
-    return this.processUserLogin(updatedUser, response, clientIdentifier, null);
+  async resetPassword(@User() { email, clientIdentifier, needPasswordReset }: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { currentPassword, password }: ResetPasswordDTO) {
+    try {
+      const updatedUser = await this.authService.resetPasswordForUser(email, currentPassword, password);
+      return this.processUserLogin(updatedUser, response, clientIdentifier, null);
+    } catch (e) {
+      if (needPasswordReset) throw e;
+      throw new BadRequestException('Invalid current password');
+    }
   }
 
   @Post('/send-verification-email')
