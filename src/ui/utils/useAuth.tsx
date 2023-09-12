@@ -1,21 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import { useSearchParams } from 'react-router-dom';
 import { LoginResponse } from '../features/auth/types.js';
 import { useAsyncHttp } from './useAsync.js';
 import { useLoggedIn, withLoggedIn } from './useLoggedIn.js';
 
-export enum LoginState {
-  login,
-  resetPassword,
-  verifyEmail,
-  registerMfa,
-  loginMfa
-}
-
 export interface AuthState {
   loggedIn: boolean;
   clientIdentifier: string;
-  loginState: LoginState;
   loading: boolean;
   me?: { sub: number; email: string; };
   setLoggedIn: (loggedIn: boolean) => void;
@@ -27,8 +19,10 @@ const authorizationContext = createContext<AuthState>(null as any);
 
 const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>) => (props: P) => {
   const { loggedIn, setLoggedIn } = useLoggedIn();
-
-  const search = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  let [searchParams, setSearchParams] = useSearchParams();
+  const [me, setMe] = useState<{ sub: number; email: string; }>();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const clientIdentifier = useMemo(() => {
     let storedClientIdentifier = localStorage.getItem('clientIdentifier');
@@ -41,40 +35,24 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
     return storedClientIdentifier;
   }, []);
 
-  const [state, setState] = useState({
-    loginState: search.get('rpt') ? LoginState.resetPassword : LoginState.login
-  });
-
   const handleLoginResponse = useCallback(({ code, success, data }: LoginResponse) => {
-    let newState: LoginState;
     switch (code) {
       case 'password_reset':
-        newState = LoginState.resetPassword;
-        break;
-      case 'verify_email':
-        newState = LoginState.verifyEmail;
-        break;
-      case 'mfa_registration_required':
-        newState = LoginState.registerMfa;
+        navigate('/login/update-password');
         break;
       case 'mfa_login_required':
-        newState = LoginState.loginMfa;
-        break;
-      default:
-        newState = LoginState.login;
+        navigate('/login/mfa');
         break;
     }
-    
-    setState(s => ({
-      ...s,
-      loginState: newState,
-      me: data
-    }));
-
+    setMe(data);
     setLoggedIn(success);
 
+    if (success && pathname.startsWith('/login')) {
+      navigate('/');
+    }
+
     return success;
-  }, [setLoggedIn, setState]);
+  }, [setLoggedIn, setMe]);
 
   const [check, { loading }] = useAsyncHttp(async ({ get }) => {
     const response = await get<LoginResponse>('/api/auth/check');
@@ -83,17 +61,12 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
   }, []);
 
   const [logout] = useAsyncHttp(async ({ post }) => {
-    search.delete('rpt');
-
-    location.search = search.toString();
+    searchParams.delete('rpt');
+    setSearchParams(searchParams);
 
     await post('/api/auth/logout', {});
 
     setLoggedIn(false);
-    setState(s => ({
-      ...s,
-      loginState: LoginState.login,
-    }));
   }, [setLoggedIn]);
 
   useEffect(() => {
@@ -101,7 +74,7 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
   }, []);
 
   return <authorizationContext.Provider value={{
-      ...state,
+      me,
       clientIdentifier,
       loading,
       loggedIn,

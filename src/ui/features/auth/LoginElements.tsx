@@ -20,9 +20,5 @@ export const LogoutLink = ({ children, className, ...rest }: PropsWithChildren<R
 );
 
 export const LoginHeading = ({ children, ...rest }: PropsWithChildren<React.HTMLProps<HTMLElement>>) => (
-  <h3 className="text-2xl m-4 text-center" {...rest as any}>{children}</h3>
-);
-
-export const ErrorText = ({ children }: React.PropsWithChildren) => (
-  <p className="text-red-500 bg-red-100 p-4 dark:bg-inherit self-start justify-self-start">{children}</p>
+  <h3 className="text-2xl text-center" {...rest as any}>{children}</h3>
 );

@@ -19,6 +19,7 @@ export interface AuthTokenContents {
   needPasswordReset: boolean;
   mfaEnabled: boolean;
   mfaMethod: string|null;
+  type: 'auth';
 }
 
 export interface VerifyEmailDTO {
@@ -26,6 +27,12 @@ export interface VerifyEmailDTO {
 }
 
 export interface ResetPasswordDTO {
+  token: string;
+  password: string;
+  clientIdentifier?: string;
+}
+
+export interface UpdatePasswordDTO {
   currentPassword: string;
   password: string;
 }

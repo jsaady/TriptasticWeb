@@ -3,19 +3,20 @@ import { AuthenticationResponseJSON, PublicKeyCredentialRequestOptionsJSON } fro
 import { useEffect } from 'react';
 import { Button } from '../../components/Button.js';
 import { useAsync, useAsyncHttp } from '../../utils/useAsync.js';
+import { useAuthorization } from '../../utils/useAuth.js';
 import { LoginHeading } from './LoginElements.js';
 import { LoginResponse } from './types.js';
 
-export interface WebAuthnLoginFormProps {
-  onLoggedIn: (result: LoginResponse) => void;
-}
+export const WebAuthnLoginForm = () => {
+  const { handleLoginResponse } = useAuthorization();
 
-export const WebAuthnLoginForm = ({ onLoggedIn }: WebAuthnLoginFormProps) => {
   const [triggerWebAuthnLogin, { result: loginOptions, loading: loginStartLoading, error: loginStartError }] = useAsyncHttp(({ post }) => {
     return post<PublicKeyCredentialRequestOptionsJSON>('/api/auth/web-authn/login-start', {});
   }, []);
-  const [triggerVerifyWebAuthnLogin, { result: loginVerifyResult, loading: verifyLoginLoading, error: verifyLoginError }] = useAsyncHttp(({ post }, opts: AuthenticationResponseJSON) => {
-    return post<LoginResponse>('/api/auth/web-authn/verify-login', opts);
+  const [triggerVerifyWebAuthnLogin, { result: loginVerifyResult, loading: verifyLoginLoading, error: verifyLoginError }] = useAsyncHttp(async ({ post }, opts: AuthenticationResponseJSON) => {
+    const response = await post<LoginResponse>('/api/auth/web-authn/verify-login', opts);
+
+    handleLoginResponse(response);
   }, []);
 
   const [doStartLogin] = useAsync(async () => {
@@ -33,10 +34,6 @@ export const WebAuthnLoginForm = ({ onLoggedIn }: WebAuthnLoginFormProps) => {
   useEffect(() => {
     if (loginOptions) doStartLogin();
   }, [loginOptions]);
-
-  useEffect(() => {
-    if (loginVerifyResult) onLoggedIn(loginVerifyResult)
-  }, [loginVerifyResult]);
 
   return <div className='w-full flex flex-wrap items-center justify-center'>
     <LoginHeading>Verify with device</LoginHeading>

@@ -1,17 +1,18 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/postgresql';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
 import { EMAIL_VERIFICATION_EXPIRATION } from '../../utils/config/config.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 import { EmailService } from '../email/email.service.js';
 import { CreateUserDTO } from '../users/users.dto.js';
 import { User } from '../users/users.entity.js';
 import { UserService } from '../users/users.service.js';
-import { AUTH_SALT_ROUNDS } from './auth.constants.js';
+import { AUTH_SALT_ROUNDS, AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
 import { AuthDTO, AuthTokenContents, RegisterUserDTO } from './auth.dto.js';
-import { WebAuthnService } from './webAuthn.service.js';
-import { InjectRepository } from '@mikro-orm/nestjs';
 import { UserClient } from './entities/userClient.entity.js';
-import { EntityRepository } from '@mikro-orm/postgresql';
+import { WebAuthnService } from './webAuthn.service.js';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
     private userService: UserService,
     private emailService: EmailService,
     private webAuthnService: WebAuthnService,
+    private config: ConfigService,
     @InjectRepository(UserClient) private userClientRepo: EntityRepository<UserClient>
   ) { }
 
@@ -102,7 +104,8 @@ export class AuthService {
       needPasswordReset: user.needPasswordReset,
       mfaEnabled: await this.checkUserHasMFA(user),
       clientIdentifier,
-      mfaMethod
+      mfaMethod,
+      type: 'auth'
     };
     return [{
       token: await this.jwt.signAsync(contents),
@@ -114,11 +117,17 @@ export class AuthService {
   async checkPasswordForUser(email: string, password: string) {
     const user = await this.userService.getUserByEmail(email);
 
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user) {
+      Logger.log(`User with email ${email} not found`, 'AuthService.checkPasswordForUser');
+      throw new UnauthorizedException('Incorrect email or password');
+    }
 
     const passwordMatches = await this.compareValue(password, user.password);
 
-    if (!passwordMatches) throw new UnauthorizedException('Incorrect password');
+    if (!passwordMatches) {
+      Logger.log(`User with email ${email} provided incorrect password`, 'AuthService.checkPasswordForUser');
+      throw new UnauthorizedException('Incorrect email or password');
+    }
 
     return user;
   }
@@ -141,7 +150,7 @@ export class AuthService {
     return await compare(value, hashedValue);
   }
 
-  async resetPasswordForUser(email: string, currentPassword: string, newPassword: string) {
+  async updatePasswordForUser(email: string, currentPassword: string, newPassword: string) {
     const user = await this.checkPasswordForUser(email, currentPassword);
 
     const hashedPassword = await this.hashValue(newPassword);
@@ -149,6 +158,54 @@ export class AuthService {
     const newUser = await this.userService.updateUser(user, { password: hashedPassword, needPasswordReset: false });
 
     return newUser;
+  }
+
+  async sendResetPasswordEmail (email: string) {
+    const user = await this.userService.getUserByEmail(email);
+
+    if (!user) {
+      Logger.log(`User with email ${email} not found`, 'AuthService.sendResetPasswordEmail');
+
+      return;
+    }
+
+    const token = await this.generateResetPasswordToken(email);
+
+    const emailContent = `Please click the following link to reset your password: ${this.config.getOrThrow('envUrl')}/login/reset-password?rpt=${encodeURIComponent(token)}. This link will expire in ${AUTH_TOKEN_EXPIRATION / 60} minutes.}`;
+
+    await this.emailService.sendEmail(email, 'Password Reset', emailContent);
+  }
+
+  private async generateResetPasswordToken(
+    email: string,
+  ) {
+    return this.jwt.signAsync({
+      email,
+      type: 'reset_password'
+    });
+  }
+
+  private async validatePasswordResetToken(token: string) {
+    const { email, type } = await this.jwt.verifyAsync(token);
+
+    const user = await this.userService.getUserByEmail(email);
+
+    if (!user) throw new BadRequestException('User not found');
+    if (type !== 'reset_password') throw new BadRequestException('Invalid token type');
+
+    return email;
+  }
+
+  async resetPasswordForUser(token: string, newPassword: string) {
+    const email = await this.validatePasswordResetToken(token);
+    const user = await this.userService.getUserByEmail(email);
+
+    if (!user) throw new BadRequestException('User not found');
+
+    const hashedPassword = await this.hashValue(newPassword);
+    const updatedUser = await this.userService.updateUser(user, { password: hashedPassword, needPasswordReset: false });
+
+    return updatedUser;
   }
 
   async loginUser(username: string, password: string) {

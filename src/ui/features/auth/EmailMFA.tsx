@@ -5,16 +5,15 @@ import { LoginForm, LoginHeading, LogoutLink } from './LoginElements.js';
 import { LoginResponse } from './types.js';
 import { Input } from '../../components/Input.js';
 import { Button } from '../../components/Button.js';
+import { useAuthorization } from '../../utils/useAuth.js';
 
-export interface EmailMFAProps {
-  onEmailConfirmed: (resp: LoginResponse) => void;
-}
 
 interface EmailFormState {
   emailToken: string;
 }
 
-export const EmailMFAPage = ({ onEmailConfirmed }: EmailMFAProps) => {
+export const EmailMFAPage = () => {
+  const { handleLoginResponse } = useAuthorization();
   const { register, registerForm } = useForm<EmailFormState>();
   const [sentEmail, setSentEmail] = useState(false);
   const [confirm, { loading: confirmLoading }] = useAsyncHttp(async ({ post }, { emailToken }: EmailFormState) => {
@@ -22,7 +21,7 @@ export const EmailMFAPage = ({ onEmailConfirmed }: EmailMFAProps) => {
       token: emailToken
     });
 
-    onEmailConfirmed(response);
+    handleLoginResponse(response);
   }, []);
   const [sendVerificationEmail] = useAsyncHttp(({ post }, force = false) => post('/api/auth/send-verification-email', { force }), []);
 

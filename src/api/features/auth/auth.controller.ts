@@ -1,11 +1,11 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Res } from '@nestjs/common';
 import { AuthenticationResponseJSON, RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { MFA_ENABLED } from '../../utils/config/config.js';
 import { User as UserEntity } from '../users/users.entity.js';
 import { UserService } from '../users/users.service.js';
 import { AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
-import { AuthTokenContents, RegisterUserDTO, ResetPasswordDTO, VerifyEmailDTO } from './auth.dto.js';
+import { AuthTokenContents, RegisterUserDTO, ResetPasswordDTO, UpdatePasswordDTO, VerifyEmailDTO } from './auth.dto.js';
 import { AuthService } from './auth.service.js';
 import { IsAuthenticated } from './isAuthenticated.guard.js';
 import { User } from './user.decorator.js';
@@ -26,12 +26,16 @@ export class AuthController {
     return await this.processUserLogin(user, response, clientIdentifier, null);
   }
 
-
-  @Post('/reset-password')
+  @Post('/update-password')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async resetPassword(@User() { email, clientIdentifier, needPasswordReset }: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { currentPassword, password }: ResetPasswordDTO) {
+  async updatePassword(
+    @User() { email, clientIdentifier, needPasswordReset }: AuthTokenContents,
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: UpdatePasswordDTO
+  ) {
     try {
-      const updatedUser = await this.authService.resetPasswordForUser(email, currentPassword, password);
+      const updatedUser = await this.authService.updatePasswordForUser(email, body.currentPassword, body.password);
+
       return this.processUserLogin(updatedUser, response, clientIdentifier, null);
     } catch (e) {
       if (needPasswordReset) throw e;
@@ -39,9 +43,31 @@ export class AuthController {
     }
   }
 
+
+  @Post('/reset-password')
+  async resetPassword(
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: ResetPasswordDTO
+  ) {
+    const updatedUser = await this.authService.resetPasswordForUser(body.token, body.password);
+
+    if (body.clientIdentifier) {
+      return this.processUserLogin(updatedUser, response, body.clientIdentifier, null);
+    }
+
+    return { success: true };
+  }
+
+  @Post('/send-reset-password-email')
+  async sendResetPasswordEmail(@Body() { email }: { email: string }) {
+    await this.authService.sendResetPasswordEmail(email);
+
+    return { success: true };
+  }
+
   @Post('/send-verification-email')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async sendVerificationEmail(@User() { sub }: AuthTokenContents, @Body() {force = false}: {force?: boolean}, @Res({ passthrough: true }) response: Response) {
+  async sendVerificationEmail(@User() { sub }: AuthTokenContents, @Body() {force = false}: {force?: boolean}) {
     await this.authService.initiateEmailVerification(sub, force);
 
     return { success: true };

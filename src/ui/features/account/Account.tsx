@@ -1,6 +1,6 @@
 import { Input } from '../../components/Input.js';
 import { useAuthorization } from '../../utils/useAuth.js';
-import { ResetPasswordForm } from '../auth/ResetPasswordForm.js';
+import { UpdatePasswordForm } from '../auth/UpdatePasswordForm.js';
 
 export const Account = () => {
   const { me } = useAuthorization();
@@ -10,6 +10,6 @@ export const Account = () => {
 
     <Input disabled label="Email" value={me?.email} />
 
-    <ResetPasswordForm />
+    <UpdatePasswordForm />
   </div>
 };
