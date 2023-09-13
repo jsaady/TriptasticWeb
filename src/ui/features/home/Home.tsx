@@ -1,4 +1,3 @@
-import { Dropdown } from '../../components/Dropdown.js';
 import { useAuthorization } from '../../utils/useAuth.js';
 
 export const Home = () => {
