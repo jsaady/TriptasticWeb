@@ -10,6 +10,7 @@
     "serve:api": "nodemon --exec \"npm run build:api && npm start\" -w ./src/api -e \"ts\"",
     "serve:ui": "parcel ./src/ui/index.html  --dist-dir ./dist/ui",
     "serve": "concurrently \"npm run serve:api\" \"npm run serve:ui\"",
+    "prebuild:api": "rm -rf dist/api",
     "build:api": "tsc -P tsconfig.api.json",
     "build:ui": "parcel build ./src/ui/index.html --dist-dir ./dist/ui",
     "build:watch": "concurrently \"parcel watch ./src/ui/index.html --dist-dir ./dist/ui --no-hmr\" \"tsc -P tsconfig.api.json -w\"",
