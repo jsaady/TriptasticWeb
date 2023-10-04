@@ -21,6 +21,12 @@ export class EmailService {
       to: email,
       subject,
       text: content
-    }, (e: Error | null, info) => e ? reject(e) : resolve(info)));
+    }, (e: Error | null, info) => {
+      if (e) {
+        return reject(e);
+      }
+      
+      return resolve(info);
+    }));
   }
 }

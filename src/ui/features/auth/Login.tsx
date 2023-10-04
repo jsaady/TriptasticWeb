@@ -4,9 +4,9 @@ import { useAuthorization } from '../../utils/useAuth.js';
 import { LoginHeading, LogoutLink } from './LoginElements.js';
 
 export interface LoginFormState {
+  username: string;
   email: string;
   password: string;
-  emailToken?: string;
 }
 
 export const Login = () => {
@@ -29,10 +29,12 @@ export const Login = () => {
     }
   }, [pathname]);
 
+
   return <div className="max-w-lg mx-auto p-4 items-center bg-white top-10 relative dark:bg-inherit flex flex-col">
     {pathname !== '/login' && <LogoutLink className='w-full text-end' onClick={logout}>Back to login</LogoutLink>}
     {heading && <LoginHeading>{heading}</LoginHeading>}
     {loggedIn && <p data-testid="login-success">Log in succeeded</p>}
+
     <Outlet />
   </div>
 };

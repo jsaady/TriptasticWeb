@@ -1,15 +1,15 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { Root } from './Root.js';
-import { Login } from './features/auth/Login.js';
 import { Authenticated } from './Authenticated.js';
-import { WebAuthnDevices } from './features/account/WebAuthnDevices.js';
-import { Home } from './features/home/Home.js';
+import { Root } from './Root.js';
 import { Account } from './features/account/Account.js';
-import { UsernamePasswordForm } from './features/auth/UsernamePasswordForm.js';
-import { UpdatePasswordForm } from './features/auth/UpdatePasswordForm.js';
-import { ResetPasswordForm } from './features/auth/ResetPasswordForm.js';
-import { MFA } from './features/auth/MFA.js';
+import { WebAuthnDevices } from './features/account/WebAuthnDevices.js';
 import { ForgotPasswordForm } from './features/auth/ForgotPassword.js';
+import { Login } from './features/auth/Login.js';
+import { ResetPasswordForm } from './features/auth/ResetPasswordForm.js';
+import { UpdatePasswordForm } from './features/auth/UpdatePasswordForm.js';
+import { VerifyEmailForm } from './features/auth/VerifyEmail.js';
+import { WebAuthnLoginForm } from './features/auth/WebAuthnLoginForm.js';
+import { Home } from './features/home/Home.js';
 
 export const router = createBrowserRouter([{
   path: '/',
@@ -19,7 +19,10 @@ export const router = createBrowserRouter([{
     element: <Login />,
     children: [{
       path: '',
-      element: <UsernamePasswordForm />
+      element: <WebAuthnLoginForm />
+    }, {
+      path: 'verify-email',
+      element: <VerifyEmailForm />
     }, {
       path: 'update-password',
       element: <UpdatePasswordForm />
@@ -29,9 +32,6 @@ export const router = createBrowserRouter([{
     }, {
       path: 'reset-password',
       element: <ResetPasswordForm />
-    }, {
-      path: 'mfa',
-      element: <MFA />
     }]
   }, {
     path: '',

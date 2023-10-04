@@ -5,7 +5,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
-import { AppController } from './app.controller.js';
 import { MigrationModule } from './db/migration.provider.js';
 import { AuthModule } from './features/auth/auth.module.js';
 import { NotificationModule } from './features/notifications/notification.module.js';
@@ -14,7 +13,6 @@ import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
 import { ContextModule } from './utils/context/context.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
-
 
 @Module({
   imports: [
@@ -68,10 +66,5 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     provide: APP_GUARD,
     useClass: ThrottlerGuard
   }],
-  controllers: [AppController]
 })
-export class AppModule implements NestModule {
-  async configure(consumer: MiddlewareConsumer) {
-    console.log('here');
-  }
-}
+export class AppModule {}

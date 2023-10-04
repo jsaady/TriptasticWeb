@@ -1,3 +1,5 @@
+import { AuthenticationResponseJSON, PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON, RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
+
 export class RegisterUserDTO {
   email!: string;
   password!: string;
@@ -35,4 +37,41 @@ export interface ResetPasswordDTO {
 export interface UpdatePasswordDTO {
   currentPassword: string;
   password: string;
+}
+
+export interface AuthStartDTO {
+  status: AuthStatus;
+  challengeOptions?: PublicKeyCredentialRequestOptionsJSON|PublicKeyCredentialCreationOptionsJSON;
+}
+
+
+export interface AuthRegisterDeviceDTO {
+  response: RegistrationResponseJSON;
+  clientIdentifier: string;
+  username: string;
+  password: string;
+  deviceName?: string;
+}
+
+export interface AuthRegisterDTO {
+  response: RegistrationResponseJSON;
+  clientIdentifier: string;
+  username: string;
+  email: string;
+  password: string;
+  deviceName?: string;
+}
+
+export interface AuthLoginDTO {
+  response: AuthenticationResponseJSON;
+  clientIdentifier: string;
+  username: string;
+}
+
+export enum AuthStatus {
+  registerUser = 'registerUser',
+  registerDevice = 'registerDevice',
+  verifyEmail = 'verifyEmail',
+  login = 'login',
+  ok = 'ok'
 }

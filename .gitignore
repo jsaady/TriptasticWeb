@@ -3,4 +3,5 @@ dist
 .parcel-cache
 .env
 coverage
+.idea
 

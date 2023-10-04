@@ -1,18 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { Button } from '../../components/Button.js';
+import { Input } from '../../components/Input.js';
 import { useForm } from '../../utils/forms.js';
 import { useAsyncHttp } from '../../utils/useAsync.js';
+import { useAuthorization } from '../../utils/useAuth.js';
 import { LoginForm, LoginHeading, LogoutLink } from './LoginElements.js';
 import { LoginResponse } from './types.js';
-import { Input } from '../../components/Input.js';
-import { Button } from '../../components/Button.js';
-import { useAuthorization } from '../../utils/useAuth.js';
 
 
 interface EmailFormState {
   emailToken: string;
 }
 
-export const EmailMFAPage = () => {
+export const VerifyEmailForm = () => {
   const { handleLoginResponse } = useAuthorization();
   const { register, registerForm } = useForm<EmailFormState>();
   const [sentEmail, setSentEmail] = useState(false);
@@ -31,7 +31,7 @@ export const EmailMFAPage = () => {
   }, []);
 
   return <LoginForm {...registerForm(confirm)}>
-    <LoginHeading>Verify with email</LoginHeading>
+    <LoginHeading className='mb-4'>Verify with email</LoginHeading>
     {sentEmail ? <>
       <Input className='mx-4' disabled={confirmLoading} {...register('emailToken')} placeholder='Verification token' />
       <Button className="m-4 w-full" type="submit">Verify</Button>

@@ -99,7 +99,11 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
     ref.current!.value = value as any;
   };
 
+  const submitRef = useRef((_state: T) => {});
+
   const registerForm = useCallback((handleSubmit: (state: T) => any) => {
+    submitRef.current = handleSubmit;
+
     return {
       onSubmit: (e: FormEvent) => {
         e.preventDefault();
@@ -110,7 +114,7 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
           return;
         }
 
-        handleSubmit(stateRef.current);
+        submitRef.current(stateRef.current);
       }
     }
   }, [validateOnSubmit]);

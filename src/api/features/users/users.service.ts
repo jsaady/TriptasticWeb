@@ -1,9 +1,9 @@
-import { EntityRepository, wrap } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { CreateUserDTO } from './users.dto.js';
-import { User } from './users.entity.js';
+import {EntityRepository, wrap} from '@mikro-orm/core';
+import {InjectRepository} from '@mikro-orm/nestjs';
+import {Injectable} from '@nestjs/common';
+import {plainToClass} from 'class-transformer';
+import {CreateUserDTO} from './users.dto.js';
+import {User} from './users.entity.js';
 
 @Injectable()
 export class UserService {
@@ -13,7 +13,7 @@ export class UserService {
 
   async createUser(user: CreateUserDTO): Promise<User> {
     const newUser = this.em.create(User, plainToClass(User, user));
-    await this.em.insert(User, newUser);
+    await this.em.persistAndFlush(newUser);
   
     return newUser;
   }
@@ -25,13 +25,16 @@ export class UserService {
   }
 
   async getUserByEmail(email: string) {
-    const foundUser = await this.userRepo.findOne({
+    return await this.userRepo.findOne({
       email
     });
-
-    return foundUser;
   }
 
+  async getUserByUsername(username: string) {
+    return await this.userRepo.findOne({
+      username
+    });
+  }
   async updateUser(user: User, updates: Partial<User>) {
     const newUser = wrap(user).assign(updates, { em: this.em });
     await this.em.flush();

@@ -1,5 +1,6 @@
 export class UserDTO {
   gitlabId?: string|number;
+  username!: string;
   email!: string;
   isAdmin!: boolean;
   needPasswordReset!: boolean;

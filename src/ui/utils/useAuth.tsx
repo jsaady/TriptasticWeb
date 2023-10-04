@@ -40,8 +40,8 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
       case 'password_reset':
         navigate('/login/update-password');
         break;
-      case 'mfa_login_required':
-        navigate('/login/mfa');
+      case 'verify_email':
+        navigate('/login/verify-email');
         break;
     }
     setMe(data);
@@ -52,13 +52,13 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
     }
 
     return success;
-  }, [setLoggedIn, setMe]);
+  }, [setLoggedIn, setMe, pathname]);
 
   const [check, { loading }] = useAsyncHttp(async ({ get }) => {
     const response = await get<LoginResponse>('/api/auth/check');
 
     return handleLoginResponse(response);
-  }, []);
+  }, [handleLoginResponse]);
 
   const [logout] = useAsyncHttp(async ({ post }) => {
     searchParams.delete('rpt');

@@ -1,11 +1,10 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Res } from '@nestjs/common';
-import { AuthenticationResponseJSON, RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
 import { Response } from 'express';
 import { MFA_ENABLED } from '../../utils/config/config.js';
 import { User as UserEntity } from '../users/users.entity.js';
 import { UserService } from '../users/users.service.js';
 import { AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
-import { AuthTokenContents, RegisterUserDTO, ResetPasswordDTO, UpdatePasswordDTO, VerifyEmailDTO } from './auth.dto.js';
+import { AuthLoginDTO, AuthRegisterDTO, AuthRegisterDeviceDTO, AuthTokenContents, UpdatePasswordDTO, VerifyEmailDTO } from './auth.dto.js';
 import { AuthService } from './auth.service.js';
 import { IsAuthenticated } from './isAuthenticated.guard.js';
 import { User } from './user.decorator.js';
@@ -19,11 +18,30 @@ export class AuthController {
     private userService: UserService
   ) { }
 
-  @Post('/login')
-  async login(@Body() { email, password, clientIdentifier }: {email: string, password: string; clientIdentifier: string;}, @Res({ passthrough: true }) response: Response) {
-    const user = await this.authService.loginUser(email, password);
+  @Post('/start')
+  async start(@Body() { username, registerDevice }: { username: string; registerDevice?: boolean }) {
+    return this.authService.start(username, registerDevice);
+  }
 
-    return await this.processUserLogin(user, response, clientIdentifier, null);
+  @Post('/register-device')
+  async registerDevice(@Body() dto: AuthRegisterDeviceDTO, @Res({ passthrough: true }) response: Response) {
+    const result = await this.authService.continueDeviceRegistration(dto);
+
+    return this.processUserLogin(result, response, dto.clientIdentifier, null);
+  }
+
+  @Post('/register')
+  async register(@Body() dto: AuthRegisterDTO, @Res({ passthrough: true }) response: Response) {
+    const result = await this.authService.continueRegistration(dto);
+
+    return this.processUserLogin(result, response, dto.clientIdentifier, null);
+  }
+
+  @Post('/login')
+  async login(@Body() dto: AuthLoginDTO, @Res({ passthrough: true }) response: Response) {
+    const result = await this.authService.continueLogin(dto);
+
+    return this.processUserLogin(result, response, dto.clientIdentifier, null);
   }
 
   @Post('/update-password')
@@ -44,27 +62,6 @@ export class AuthController {
   }
 
 
-  @Post('/reset-password')
-  async resetPassword(
-    @Res({ passthrough: true }) response: Response,
-    @Body() body: ResetPasswordDTO
-  ) {
-    const updatedUser = await this.authService.resetPasswordForUser(body.token, body.password);
-
-    if (body.clientIdentifier) {
-      return this.processUserLogin(updatedUser, response, body.clientIdentifier, null);
-    }
-
-    return { success: true };
-  }
-
-  @Post('/send-reset-password-email')
-  async sendResetPasswordEmail(@Body() { email }: { email: string }) {
-    await this.authService.sendResetPasswordEmail(email);
-
-    return { success: true };
-  }
-
   @Post('/send-verification-email')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
   async sendVerificationEmail(@User() { sub }: AuthTokenContents, @Body() {force = false}: {force?: boolean}) {
@@ -78,13 +75,6 @@ export class AuthController {
   async verifyEmail(@User() { sub , clientIdentifier}: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { token }: VerifyEmailDTO) {
     const updatedUser = await this.authService.validateEmailToken(sub, token);
     return this.processUserLogin(updatedUser, response, clientIdentifier, 'email');
-  }
-
-  @Post('/register')
-  async register(@Body() { email, password, clientIdentifier }: RegisterUserDTO, @Res({ passthrough: true }) response: Response) {
-    const user = await this.authService.registerUser({ email, password, clientIdentifier });
-
-    return await this.processUserLogin(user, response, clientIdentifier, null);
   }
 
   @Post('/logout')
@@ -102,37 +92,6 @@ export class AuthController {
     return await this.processUserLogin(user, response, token.clientIdentifier, token.mfaMethod);
   }
 
-  @Post('web-authn/start-registration')
-  @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async startRegistration(@User() { sub }: AuthTokenContents) {
-    return this.webAuthnService.startWebAuthnRegistration(sub);
-  }
-  
-  @Post('web-authn/verify-registration')
-  @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async verifyRegistration(@User() { sub, clientIdentifier }: AuthTokenContents, @Body() {attn, name}: {attn: RegistrationResponseJSON; name: string;}, @Res({ passthrough: true }) response: Response) {
-    const { verified, user } = await this.webAuthnService.verifyWebAuthnRegistration(sub, name, attn);
-
-    if (!verified) throw new BadRequestException();
-
-    return this.processUserLogin(user, response, clientIdentifier, 'webauthn');
-  }
-
-  @Post('web-authn/login-start')
-  @IsAuthenticated({ allowNoMFA: true })
-  async startLogin(@User() { sub }: AuthTokenContents) {
-    return this.webAuthnService.startWebAuthn(sub);
-  }
-
-  @Post('web-authn/verify-login')
-  @IsAuthenticated({ allowNoMFA: true })
-  async verifyLogin(@User() { sub, clientIdentifier }: AuthTokenContents, @Body() body: AuthenticationResponseJSON, @Res({ passthrough: true }) response: Response) {
-    const {verified, user} = await this.webAuthnService.verifyWebAuthn(sub, body);
-
-    if (!verified) throw new BadRequestException();
-
-    return this.processUserLogin(user, response, clientIdentifier, 'webauthn');
-  }
 
   @Get('web-authn/devices')
   @IsAuthenticated()
@@ -163,34 +122,10 @@ export class AuthController {
       signed: true
     });
 
-    if (user.needPasswordReset) {
-      return {
-        success: false,
-        code: 'password_reset',
-        data: contents
-      };
-    }
-
     if (!user.emailConfirmed) {
       return {
         success: false,
         code: 'verify_email',
-        data: contents
-      };
-    }
-
-    if (!contents.mfaEnabled && MFA_ENABLED) {
-      return {
-        success: false,
-        code: 'mfa_registration_required',
-        data: contents
-      }
-    }
-
-    if (!contents.mfaMethod && MFA_ENABLED) {
-      return {
-        success: false,
-        code: 'mfa_login_required',
         data: contents
       };
     }

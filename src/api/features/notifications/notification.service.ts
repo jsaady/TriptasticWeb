@@ -1,9 +1,8 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '../../utils/config/config.service.js';
 import type WebPush from 'web-push';
-import { CONFIG_VARS } from '../../utils/config/config.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 import { User } from '../users/users.entity.js';
 import { AddSubscriptionDTO, SendNotificationDTO } from './notification.dto.js';
 import { Subscription } from './subscription.entity.js';
@@ -37,7 +36,7 @@ export class NotificationService {
   }
 
   async removeSubscription(userId: number) {
-    return this.subscriptionRepo.getEntityManager().createQueryBuilder(Subscription).delete({ user: { id: userId } }).execute();
+    return this.subscriptionRepo.getEntityManager().nativeDelete(Subscription, { user: { id: userId } });
   }
 
   async sendNotification({ userId, text, title }: SendNotificationDTO) {
@@ -53,7 +52,7 @@ export class NotificationService {
       try {
         const payload = JSON.stringify({ title, text });
     
-        const result = await this.webPush.sendNotification({
+        await this.webPush.sendNotification({
           endpoint: sub.endpoint,
           keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth }
         }, payload, {
@@ -62,16 +61,14 @@ export class NotificationService {
             privateKey: this.vapidPrivate,
             publicKey: this.vapidPublic
           }
-        });
-
-        console.log(result);
-    
-        return true;
+        });    
       } catch (e) {
         console.error(e);
-  
+        
         throw new InternalServerErrorException('Error sending notification');
       }
     }
+
+    return true;
   }
 }

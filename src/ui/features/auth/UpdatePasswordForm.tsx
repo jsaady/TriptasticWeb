@@ -4,7 +4,8 @@ import { useForm } from '../../utils/forms.js';
 import { FetchError } from '../../utils/http.js';
 import { useAsyncHttp } from '../../utils/useAsync.js';
 import { useAuthorization } from '../../utils/useAuth.js';
-import { ErrorText, LoginForm } from './LoginElements.js';
+import { ErrorBanner } from './Banner.js';
+import { LoginForm } from './LoginElements.js';
 import { LoginResponse } from './types.js';
 
 export interface UpdatePasswordFormProps {
@@ -38,7 +39,7 @@ export const UpdatePasswordForm = ({ onSubmit }: UpdatePasswordFormProps) => {
   }, [setLoggedIn]);
 
   return <LoginForm {...registerForm(handleUpdatePassword)}>
-    {error && <ErrorText>{error.message}</ErrorText>}
+    {error && <ErrorBanner>{error.message}</ErrorBanner>}
     <Input disabled={loading} label='Current Password' {...register('password', { required: true })} type="password" />
     <Input disabled={loading} label='New Password' {...register('newPassword', { required: true })} type="password" />
     <Input disabled={loading} {...register('confirmPassword', (v, s) => v !== s.newPassword && 'Passwords must match')} label='Confirm password' type='password' />

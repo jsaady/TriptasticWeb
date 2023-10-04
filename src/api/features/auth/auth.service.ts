@@ -2,15 +2,15 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { AuthenticationResponseJSON } from '@simplewebauthn/typescript-types';
 import { compare, hash } from 'bcrypt';
 import { EMAIL_VERIFICATION_EXPIRATION } from '../../utils/config/config.js';
 import { ConfigService } from '../../utils/config/config.service.js';
 import { EmailService } from '../email/email.service.js';
-import { CreateUserDTO } from '../users/users.dto.js';
 import { User } from '../users/users.entity.js';
 import { UserService } from '../users/users.service.js';
 import { AUTH_SALT_ROUNDS, AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
-import { AuthDTO, AuthTokenContents, RegisterUserDTO } from './auth.dto.js';
+import { AuthDTO, AuthLoginDTO, AuthRegisterDTO, AuthRegisterDeviceDTO, AuthStartDTO, AuthStatus, AuthTokenContents } from './auth.dto.js';
 import { UserClient } from './entities/userClient.entity.js';
 import { WebAuthnService } from './webAuthn.service.js';
 
@@ -24,6 +24,97 @@ export class AuthService {
     private config: ConfigService,
     @InjectRepository(UserClient) private userClientRepo: EntityRepository<UserClient>
   ) { }
+
+  async start (username: string, registerDevice?: boolean): Promise<AuthStartDTO> {
+    const user = await this.userService.getUserByUsername(username);
+
+    if (!user) {
+      const newUser = await this.userService.createUser({
+        username,
+        email: '',
+        isAdmin: false,
+        needPasswordReset: true,
+        emailConfirmed: false,
+        password: ''
+      });
+
+      return {
+        status: AuthStatus.registerUser,
+        challengeOptions: await this.webAuthnService.startWebAuthnRegistration(newUser.id)
+      }
+    }
+
+    const devices = await this.webAuthnService.getDevicesByUserId(user.id);
+
+    if (devices.length === 0) {
+      return {
+        status: AuthStatus.registerUser,
+        challengeOptions: await this.webAuthnService.startWebAuthnRegistration(user.id)
+      }
+    }
+
+    if (registerDevice) {
+      return {
+        status: AuthStatus.registerDevice,
+        challengeOptions: await this.webAuthnService.startWebAuthnRegistration(user.id)
+      };
+    }
+
+    return {
+      status: AuthStatus.login,
+      challengeOptions: await this.webAuthnService.startWebAuthn(user.id)
+    }
+  }
+
+  async continueDeviceRegistration ({ username, response, deviceName, password }: AuthRegisterDeviceDTO): Promise<User> {
+    const foundUser = await this.userService.getUserByUsername(username);
+
+    if (!foundUser) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (foundUser.password) {
+      const passwordMatches = await this.compareValue(password, foundUser.password);
+  
+      if (!passwordMatches) {
+        throw new BadRequestException('Incorrect password');
+      }
+    }
+
+    const { verified, user } = await this.webAuthnService.verifyWebAuthnRegistration(foundUser.id, deviceName || 'default', response);
+
+    if (!verified) {
+      throw new BadRequestException('Invalid credentials');
+    }
+
+    return user;
+  }
+
+  async continueRegistration (dto: AuthRegisterDTO): Promise<User> {
+    const user = await this.continueDeviceRegistration(dto);
+
+    const password = await this.hashValue(dto.password);
+
+    await this.userService.updateUser(user, { needPasswordReset: false, password, email: dto.email, emailConfirmed: false });
+
+    return user;
+  }
+
+  async continueLogin ({ response, username }: AuthLoginDTO): Promise<User> {
+    const foundUser = await this.userService.getUserByUsername(username);
+
+    if (!foundUser) {
+      throw new BadRequestException('User not found');
+    }
+
+    const { verified, user } = await this.webAuthnService.verifyWebAuthn(foundUser.id, response);
+
+    if (!verified) {
+      throw new BadRequestException('Invalid credentials');
+    }
+
+    return user;
+  }
 
   private async generateEmailVerificationToken() {
     return String(Math.ceil(Math.random() * 999999)).padStart(6, '0');
@@ -69,29 +160,6 @@ export class AuthService {
     const updatedUser = await this.userService.updateUser(user, { emailConfirmed: true, emailToken: null, emailTokenDate: null})
 
     return updatedUser;
-  }
-
-  async registerUser({ email, password }: RegisterUserDTO) {
-    const existingUser = await this.userService.getUserByEmail(email);
-
-    if (existingUser) {
-      const extra = `email ${email}`;
-      throw new BadRequestException(`User with ${extra} already exists`);
-    }
-
-    const newUser: CreateUserDTO = {
-      email,
-      password: await this.hashValue(password),
-      emailConfirmed: false,
-      needPasswordReset: false,
-      isAdmin: false,
-    };
-
-    const createdUser = await this.userService.createUser(newUser);
-
-    await this.initiateEmailVerification(createdUser.id, true);
-
-    return createdUser;
   }
 
 

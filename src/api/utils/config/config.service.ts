@@ -1,10 +1,5 @@
-import { InjectEntityManager, InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService as Config } from '@nestjs/config';
-import webPush from 'web-push';
 import { CONFIG_VARS, FullConfig } from './config.js';
-import { GeneratedConfig } from './generated-config.entity.js';
 import { GENERATED_CONFIG } from './generated-config.provider.js';
 
 @Injectable()

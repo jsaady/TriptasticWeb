@@ -19,6 +19,6 @@ export const LogoutLink = ({ children, className, ...rest }: PropsWithChildren<R
   <a {...rest as any} className={`${className ?? ''} mt-2 cursor-pointer text-blue-400`}>{children}</a>
 );
 
-export const LoginHeading = ({ children, ...rest }: PropsWithChildren<React.HTMLProps<HTMLElement>>) => (
-  <h3 className="text-2xl text-center" {...rest as any}>{children}</h3>
+export const LoginHeading = ({ children, className, ...rest }: PropsWithChildren<React.HTMLProps<HTMLElement>>) => (
+  <h3 className={`${className || ''} text-2xl text-center`} {...rest as any}>{children}</h3>
 );

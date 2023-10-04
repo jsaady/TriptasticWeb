@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAsyncHttp } from '../../utils/useAsync.js';
-import { WebAuthnRegistrationForm } from '../auth/WebAuthnRegistration.js';
 import { useAuthorization } from '../../utils/useAuth.js';
+import { WebAuthnLoginForm } from '../auth/WebAuthnLoginForm.js';
 import { LoginResponse } from '../auth/types.js';
 
 export const WebAuthnDevices = () => {
@@ -46,7 +46,7 @@ export const WebAuthnDevices = () => {
     </ul>
     {!newDeviceVisible && <button onClick={handleNewClick}>Add new device</button>}
     {newDeviceVisible && <>
-      <WebAuthnRegistrationForm onRegistered={handleSubmit} />
+      <WebAuthnLoginForm onRegistered={handleSubmit} />
       <button onClick={handleCancel}>Cancel</button>
     </>}
   </>
