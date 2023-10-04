@@ -2,9 +2,9 @@ import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MockConfigModule } from '../../testFixtures/config.mock.js';
 import { CreateMikroORM } from '../../testFixtures/mikroOrm.mock.js';
+import { CreateUserDTO } from './users.dto.js';
 import { User } from './users.entity.js';
 import { UserService } from './users.service.js';
-import { CreateUserDTO } from './users.dto.js';
 
 const generateMockUser = (email = 'test@test.com', password = '', username = 'test'): CreateUserDTO => ({
   email,
@@ -50,7 +50,7 @@ describe('UserService', () => {
 
   describe('create', () => {
     it('should create a user', async () => {
-      const user = await service.createUser(generateMockUser());
+      const user = await service.create(generateMockUser());
 
       expect(user).toMatchObject({
         email: 'test@test.com',
@@ -65,7 +65,7 @@ describe('UserService', () => {
     });
 
     it('should hash the password', async () => {
-      const user = await service.createUser(generateMockUser());
+      const user = await service.create(generateMockUser());
 
       expect(user).toMatchObject({
         email: 'test@test.com',
@@ -76,7 +76,7 @@ describe('UserService', () => {
 
   describe('findByEmail', () => {
     it('should find a user by email', async () => {
-      const user = await service.createUser(generateMockUser());
+      const user = await service.create(generateMockUser());
 
       const foundUser = await service.getUserByEmail(user.email);
       expect(foundUser).toMatchObject({

@@ -40,7 +40,7 @@ export class WebAuthnService {
     });
   }
 
-  async getDeviceByCredentialId (credentialId: Uint8Array, userId: number) {
+  private async getDeviceByCredentialId (credentialId: Uint8Array, userId: number) {
     return this.userDeviceRepo.findOne({
       user: {
         id: userId

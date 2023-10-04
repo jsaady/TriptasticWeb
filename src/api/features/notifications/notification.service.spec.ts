@@ -79,8 +79,6 @@ describe('NotificationService', () => {
 
       const result = await service.removeSubscription(userId);
 
-      console.log(result);
-
       expect(result).toBeDefined();
       expect(result).toBeGreaterThan(0);
     });

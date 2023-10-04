@@ -2,7 +2,6 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AuthenticationResponseJSON } from '@simplewebauthn/typescript-types';
 import { compare, hash } from 'bcrypt';
 import { EMAIL_VERIFICATION_EXPIRATION } from '../../utils/config/config.js';
 import { ConfigService } from '../../utils/config/config.service.js';
@@ -29,7 +28,7 @@ export class AuthService {
     const user = await this.userService.getUserByUsername(username);
 
     if (!user) {
-      const newUser = await this.userService.createUser({
+      const newUser = await this.userService.create({
         username,
         email: '',
         isAdmin: false,
@@ -44,9 +43,9 @@ export class AuthService {
       }
     }
 
-    const devices = await this.webAuthnService.getDevicesByUserId(user.id);
+    const devices = await this.webAuthnService.getDeviceCountByUserId(user.id);
 
-    if (devices.length === 0) {
+    if (devices === 0) {
       return {
         status: AuthStatus.registerUser,
         challengeOptions: await this.webAuthnService.startWebAuthnRegistration(user.id)
@@ -66,7 +65,7 @@ export class AuthService {
     }
   }
 
-  async continueDeviceRegistration ({ username, response, deviceName, password }: AuthRegisterDeviceDTO): Promise<User> {
+  async continueDeviceRegistration ({ username, response, deviceName = 'default', password }: AuthRegisterDeviceDTO): Promise<User> {
     const foundUser = await this.userService.getUserByUsername(username);
 
     if (!foundUser) {
@@ -81,7 +80,7 @@ export class AuthService {
       }
     }
 
-    const { verified, user } = await this.webAuthnService.verifyWebAuthnRegistration(foundUser.id, deviceName || 'default', response);
+    const { verified, user } = await this.webAuthnService.verifyWebAuthnRegistration(foundUser.id, deviceName, response);
 
     if (!verified) {
       throw new BadRequestException('Invalid credentials');
@@ -122,6 +121,10 @@ export class AuthService {
 
   async initiateEmailVerification(userIdOrUser: number|User, force: boolean) {
     const user = typeof userIdOrUser === 'number' ? await this.userService.getUserById(userIdOrUser) : userIdOrUser;
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
 
     if (force || !user.emailTokenDate || (user.emailTokenDate.getTime() < (Date.now() - EMAIL_VERIFICATION_EXPIRATION * 1000))) {
       const token = await this.generateEmailVerificationToken();
@@ -289,7 +292,7 @@ export class AuthService {
   }
 
   async registerUserClientIdentifier(userId: number, clientID: string): Promise<void> {
-    const newClient = this.userClientRepo.create({ user: { id: userId }, clientID });
-    await this.userClientRepo.nativeInsert(newClient);
+    const newClient = this.userClientRepo.getEntityManager().create(UserClient, { user: { id: userId }, clientID });
+    await this.userClientRepo.getEntityManager().flush();
   }
 }
