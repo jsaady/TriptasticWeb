@@ -1,7 +1,10 @@
 import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import PgBoss, { Job } from 'pg-boss';
+import { ProcessQueue, ScheduledQueue } from '../../utils/queue/queue.decorator.js';
+import { InjectPGBoss } from '../../utils/queue/queue.module.js';
 import { ChatService, InjectChat } from '../ai/chat.service.js';
 import { EmbeddingsService, InjectEmbeddingsService } from '../ai/embeddings.service.js';
 import { Note } from './note.entity.js';
@@ -14,7 +17,8 @@ export class NotesService {
     @InjectChat()
     private chatService: ChatService,
     @InjectRepository(Note)
-    private noteRepo: EntityRepository<Note>
+    private noteRepo: EntityRepository<Note>,
+    @InjectPGBoss() private pgBoss: PgBoss
   ) { }
 
   private get em(): EntityManager {
@@ -84,12 +88,15 @@ export class NotesService {
     };
   }
 
-  async resyncEmbeddings() {
+  @ScheduledQueue('* * * * *')
+  async resyncEmbeddings(job: Job) {
     const notes = await this.em.find(Note, { hasEmbeddings: false });
 
     let i = 0;
     for (const note of notes) {
+      job;
       note.embeddings = await this.embeddingsService.getEmbeddings(note.note);
+      note.hasEmbeddings = true;
       console.log(`${++i} of ${notes.length} re-embedded`);
     }
 

@@ -4,13 +4,9 @@
 
 ## Getting started
 
-Make sure to update the variables under ci/cd to ensure auto-devops works correctly
-```bash
-KUBE_CONTEXT=jteq/cluster:node-2
-KUBE_INGRESS_BASE_DOMAIN=auto.holyham.cloud
-KUBE_NAMESPACE=<group>-<repo_name>
-POSTGRES_ENABLED=true
-```
+### TODO
+- Socket support
+
 
 ## Commands
 

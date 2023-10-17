@@ -9,7 +9,7 @@ import { NotesService } from './notes.service.js';
 
 @Module({
   imports: [
-    AiModule.forRoot(AIProvider.openai),
+    AiModule,
     MikroOrmModule.forFeature([Note]),
     AuthModule,
     ConfigModule

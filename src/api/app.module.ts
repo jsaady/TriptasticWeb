@@ -1,18 +1,19 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { ConfigService, ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
 import { MigrationModule } from './db/migration.provider.js';
+import { AIProvider, AiModule } from './features/ai/ai.module.js';
 import { AuthModule } from './features/auth/auth.module.js';
+import { NotesModule } from './features/notes/notes.module.js';
 import { NotificationModule } from './features/notifications/notification.module.js';
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
 import { ContextModule } from './utils/context/context.module.js';
-import { AIProvider, AiModule } from './features/ai/ai.module.js';
-import { NotesModule } from './features/notes/notes.module.js';
+import { QueueModule } from './utils/queue/queue.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -22,6 +23,15 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     MigrationModule,
     ServeStaticModule.forRoot({
       rootPath: resolve(currentDir, '..', 'ui')
+    }),
+    AiModule.forRoot(AIProvider.openai),
+    QueueModule.forRootAsync({
+      useFactory: (config) => ({
+        connectionString: config.getOrThrow('DATABASE_URL'),
+        password: config.getOrThrow('DATABASE_PASSWORD')
+      }),
+      inject: [ConfigService],
+      imports: [NestConfigModule]
     }),
     ContextModule,
     AuthModule,
@@ -34,11 +44,6 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     }),
     MikroOrmModule.forRootAsync({
       useFactory: (config: NestConfigService) => {
-        // let url = config.get('DATABASE_URL')!;
-
-        // if (!url) {
-        //   url = `${}`
-        // }
 
         const url = config.getOrThrow('DATABASE_URL')!;
 

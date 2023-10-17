@@ -34,9 +34,4 @@ export class NotesController {
   ) {
     return this.notesService.getMostRelevantNotes(note, sub);
   }
-
-  @Post('/sync')
-  async syncEmbeddings () {
-    await this.notesService.resyncEmbeddings();
-  }
 }

@@ -47,6 +47,7 @@ export class AiModule {
         providerOrConfig.chat
     )
     return {
+      global: true,
       module: AiModule,
       imports: [ConfigModule],
       providers: [embeddingProvider, chatProvider],
