@@ -18,6 +18,10 @@ export const Authenticated = withSidebar(withNotifications(() => {
       icon: 'house',
       label: 'Home',
       link: '/'
+    }, {
+      icon: 'pen',
+      label: 'Notes',
+      link: '/notes'
     }];
   }, []);
 

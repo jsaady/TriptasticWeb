@@ -1,8 +1,8 @@
 import { ChangeEvent, FormEvent, MutableRefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface FormItemProps {
-  ref: MutableRefObject<HTMLInputElement | null>;
-  onChange: (value: ChangeEvent<HTMLInputElement>) => void;
+  ref: MutableRefObject<any | null>;
+  onChange: (value: ChangeEvent<any>) => void;
   name: string;
   required?: boolean;
 }
@@ -31,7 +31,7 @@ const applyConstraints = (props: FormItemProps, constraints: Constraints<any, an
   }
 
   if ('pattern' in constraints) {
-    props.ref.current!.pattern = constraints.pattern!.source;
+    (props.ref.current as any)!.pattern = constraints.pattern!.source;
   }
 };
 
@@ -51,9 +51,9 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
     if (!props) {
       const ref = createRef<HTMLInputElement>();
       props = {
-        onChange: (value: ChangeEvent<HTMLInputElement>) => {
+        onChange: (value: ChangeEvent<HTMLElement>) => {
           if (constraints && typeof constraints === 'function') {
-            const error = constraints(value.target.value as any, stateRef.current);
+            const error = constraints((value.target as any).value as any, stateRef.current);
 
             if (error) {
               ref.current!.setCustomValidity(error);
@@ -69,7 +69,7 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
 
           setState((s) => ({
             ...s,
-            [name]: value.target.value
+            [name]: (value.target as any).value
           }))
         },
         ref,
@@ -96,7 +96,7 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
     const { ref } = getExistingFormItemProps(formItemProps, controlName);
 
     // todo: actual target the control and update
-    ref.current!.value = value as any;
+    (ref.current! as any).value = value as any;
   };
 
   const submitRef = useRef((_state: T) => {});

@@ -1,0 +1,126 @@
+import type { EntityManager } from '@mikro-orm/core';
+import { Seeder } from '@mikro-orm/seeder';
+import { hash } from 'bcrypt';
+import { AUTH_SALT_ROUNDS } from '../../features/auth/auth.constants.js';
+import { User } from '../../features/users/users.entity.js';
+import { Note } from '../../features/notes/note.entity.js';
+const notes = [
+  "Finished reading 'The Timeless Sea'. Such an emotional roller coaster.",
+  "Went for a midnight stroll. The city looks different under the moonlight.",
+  "Tried the blueberry muffins at Jenna's Café. Heavenly!",
+  "The DIY gardening workshop was so informative. Excited to start my own garden.",
+  "The office retreat was surprisingly fun. Got to know some colleagues better.",
+  "Attended a photography exhibition. Inspired to pick up my camera again.",
+  "The local farmers market had fresh strawberries. Made a delicious smoothie.",
+  "The thunderstorm last night was intense. Lost power for a couple of hours.",
+  "Joined a salsa dance class. A bit challenging but exhilarating!",
+  "Found an old letter from college. Brought back so many memories.",
+  "The rooftop bar has an amazing view of the city skyline. Perfect for sunsets.",
+  "The kids' school play was adorable. Proud of how well they performed.",
+  "Had the spiciest ramen today. My mouth was on fire but it was worth it.",
+  "Spent the day decluttering. Feels good to let go of unnecessary stuff.",
+  "The weekend camping trip was refreshing. Need more nature escapes.",
+  "Went to a vintage car show. The craftsmanship on those classics is impeccable.",
+  "Listened to a live band at the beach. Their vibe was infectious.",
+  "The spa day was just what I needed. The hot stone massage was the highlight.",
+  "Took a pottery class. Made a cute little bowl for my cat.",
+  "Went ziplining for the first time. What an adrenaline rush!",
+  "Cooked a three-course meal for friends. They loved the dessert.",
+  "Attended a silent disco. Such a unique and fun experience.",
+  "The comedy club downtown is a gem. Laughed so hard my cheeks hurt.",
+  "Went on a heritage walk. Learned so much about the city's history.",
+  "The hot air balloon ride was magical. Felt like floating in a dream.",
+  "Spent the evening stargazing. Saw the Milky Way for the first time.",
+  "Took a calligraphy workshop. It's harder than it looks but so satisfying.",
+  "The new bakery in town has the fluffiest croissants.",
+  "Visited an animal sanctuary. The love and care they provide is heartwarming.",
+  "Went snorkeling. The underwater world is mesmerizing.",
+  "Spent the day painting. Experimented with watercolors and loved the outcome.",
+  "Had a picnic in the park. The weather was perfect.",
+  "Attended a wine and paint night. My artwork turned out better than expected.",
+  "The escape room challenge was tough. But our team made it out just in time.",
+  "Had a heart-to-heart conversation with Lisa. Feel so much closer now.",
+  "The annual carnival was a blast. The ferris wheel ride was the highlight.",
+  "Took a scenic train ride through the mountains. The views were breathtaking.",
+  "The chocolate-making workshop was deliciously fun.",
+  "Went paragliding. The freedom of soaring in the sky is indescribable.",
+  "The historical museum had some fascinating exhibits. Time travel feels real.",
+  "Attended a candle-making class. Made a lavender-scented one for the bedroom.",
+  "Tried paddleboarding. Balancing was tough but I managed not to fall.",
+  "Saw a rainbow after the rain. Nature's beauty never ceases to amaze.",
+  "The jazz festival was a musical treat. Discovered some new artists.",
+  "Went on a food truck hop. The variety of flavors was impressive.",
+  "The sand sculpture festival at the beach was mind-blowing.",
+  "Tried aerial yoga. Felt weird but in a good way.",
+  "Went on a scenic bike ride through the countryside. Refreshed and rejuvenated.",
+  "Attended a kite festival. The sky looked like a colorful canvas.",
+  "Went birdwatching in the woods. Spotted a rare golden oriole.",
+  "Met Sam for lunch at the new Thai place. The green curry was fantastic.",
+  "Ordered a new book on Amazon today: 'The Art of Mindfulness'. Hope it's good.",
+  "Had the most amazing cheesecake at Sarah's party. Need to get the recipe.",
+  "The sunset from the park was breathtaking today. Wish I had my camera with me.",
+  "Tried on a new pair of jeans at Macy's. Fit perfectly but a bit overpriced.",
+  "Attended a pottery class. Made a vase but it's a little lopsided!",
+  "Saw a shooting star while walking Max. Made a wish, fingers crossed!",
+  "Mum's homemade apple pie still tastes the best. Memories of childhood.",
+  "Yoga class was extra challenging today. Those new poses were tough!",
+  "Heard a new song on the radio by 'The Echoes'. Need to look them up.",
+  "Binge-watched 'DreamScape'. Season 3 finale was mind-blowing!",
+  "Stumbled upon a quaint little bookstore downtown. Bought three novels.",
+  "The new barista at our local café makes the best cappuccino.",
+  "Had a dream about traveling to Japan. Maybe a sign to plan a trip?",
+  "Jake recommended a new podcast: 'Minds Unleashed'. Will give it a listen.",
+  "Tried making sushi at home. Not bad for a first attempt!",
+  "The art exhibit at the museum was inspiring. Loved the modern art section.",
+  "Got tickets for next week's basketball game. Hope our team wins!",
+  "The winter festival downtown was magical. The light display was stunning.",
+  "The new Italian restaurant is good but misses that authentic touch.",
+  "Went hiking. The view from the peak was worth every step!",
+  "Attended a wine tasting event. Found a new favorite: Pinot Noir.",
+  "Spent the day at the beach. Forgot sunscreen and now I'm sunburnt.",
+  "Visited grandma. She told stories from her youth. Need to note them down.",
+  "The magic show downtown was mesmerizing. How did he do those tricks?",
+  "Attended a workshop on digital art. Might be my new hobby!",
+  "Read a poignant quote today: 'Life is what happens between plans'.",
+  "The lavender scent from the new diffuser is very relaxing.",
+  "Got a new haircut. Feels fresh but I miss my long hair.",
+  "Board game night with friends was hilarious. Need to do it more often.",
+  "The meditation session at the community center was very refreshing.",
+  "Tried a new recipe: Spaghetti Aglio e Olio. Simple yet delicious!",
+  "Danced in the rain after so long. Felt liberating.",
+  "The flea market had some unique trinkets. Bought a vintage clock.",
+  "The new fitness trainer is tough. My muscles are sore!",
+  "Watched a theater play. The lead actor's performance was captivating.",
+  "Participated in a local charity run. Felt good to contribute.",
+  "The chocolate festival was a treat. The Belgian stall was the best!",
+  "Saw a rare bird in the garden today. Need to find out its name.",
+  "Tried a VR game at the mall. Felt like I was in another world.",
+  "The poetry reading at the library was deep. Resonated with my thoughts.",
+  "Visited the planetarium. The vastness of the universe is awe-inspiring.",
+  "Karaoke night was a blast. Sang my heart out to '80s classics.",
+  "The DIY craft workshop was fun. Made a handmade journal.",
+  "Stargazing at the observatory was magical. Saw the Orion Nebula.",
+  "The jazz concert at the park was soothing. Loved the saxophonist.",
+  "Visited a history museum. The ancient artifacts were fascinating.",
+  "Went on a bike ride through the countryside. The scenery was picturesque.",
+  "The stand-up comedy show was hilarious. Laughed till my sides hurt.",
+  "Tried the new virtual escape room with friends. Such an adrenaline rush!"
+]
+export class AdminSeeder extends Seeder {
+  async run(em: EntityManager): Promise<void> {
+
+    const existingNoteCount = await em.count(Note);
+
+    if (existingNoteCount === 0) {
+      console.log('Inserting new root notes');
+      for (const note of notes) {
+        em.create(Note, {
+          note,
+          hasEmbeddings: false,
+          embeddings: [0],
+          createdBy: 1
+        });
+      }
+    }
+  }
+}

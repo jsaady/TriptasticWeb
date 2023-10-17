@@ -11,6 +11,8 @@ import { NotificationModule } from './features/notifications/notification.module
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
 import { ContextModule } from './utils/context/context.module.js';
+import { AIProvider, AiModule } from './features/ai/ai.module.js';
+import { NotesModule } from './features/notes/notes.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -25,6 +27,7 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     AuthModule,
     NotificationModule,
     UsersModule,
+    NotesModule,
     ThrottlerModule.forRoot({
       ttl: RATE_LIMIT_TTL,
       limit: RATE_LIMIT_LIMIT

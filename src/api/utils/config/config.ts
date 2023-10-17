@@ -12,7 +12,13 @@ export const CONFIG_VARS = {
   emailPort: 'EMAIL_PORT',
   emailUser: 'EMAIL_USER',
   emailPassword: 'EMAIL_PASSWORD',
-  emailReplyTo: 'EMAIL_REPLY_TO'
+  emailReplyTo: 'EMAIL_REPLY_TO',
+  ollamaUrl: 'OLLAMA_URL',
+  ollamaModel: 'OLLAMA_MODEL',
+  openaiUrl: 'OPENAI_URL',
+  openaiKey: 'OPENAI_KEY',
+  openaiChatModel: 'OPENAI_CHAT_MODEL',
+  openaiEmbeddingModel: 'OPENAI_EMBEDDING_MODEL'
 };
 
 export const RATE_LIMIT_TTL = 60;

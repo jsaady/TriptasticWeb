@@ -10,6 +10,7 @@ import { UpdatePasswordForm } from './features/auth/UpdatePasswordForm.js';
 import { VerifyEmailForm } from './features/auth/VerifyEmail.js';
 import { WebAuthnLoginForm } from './features/auth/WebAuthnLoginForm.js';
 import { Home } from './features/home/Home.js';
+import { Notes } from './features/notes/Notes.js';
 
 export const router = createBrowserRouter([{
   path: '/',
@@ -45,6 +46,9 @@ export const router = createBrowserRouter([{
     }, {
       path: '',
       element: <Home />
+    }, {
+      path: 'notes',
+      element: <Notes />
     }]
   }],
 }]);

@@ -3,6 +3,7 @@ import { Options } from '@mikro-orm/postgresql';
 export const generateConfig = (url: string, password: string): Options => {
   return {
     type: 'postgresql',
+    name: 'default',
     clientUrl: url,
     password: password,
     entities: ['./**/*.entity.js'],
