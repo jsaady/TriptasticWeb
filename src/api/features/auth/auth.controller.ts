@@ -87,7 +87,7 @@ export class AuthController {
   @Get('/check')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
   async checkAuth(@User() token: AuthTokenContents, @Res({ passthrough: true }) response: Response) {
-    const user = await this.userService.getUserById(token.sub);
+    const user = await this.userService.getUserById(token?.sub);
 
     return await this.processUserLogin(user, response, token.clientIdentifier, token.mfaMethod);
   }

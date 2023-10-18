@@ -1,36 +1,22 @@
-import { MikroORM, RequestContext } from '@mikro-orm/core';
-import { DynamicModule, Inject, InjectionToken, Module, NestModule, Optional, Provider } from '@nestjs/common';
-import { DiscoveryModule, DiscoveryService, ModuleRef } from '@nestjs/core';
+import { DynamicModule, Inject, Logger, Module, NestModule } from '@nestjs/common';
+import { DiscoveryModule } from '@nestjs/core';
 import PgBoss from 'pg-boss';
-import { QueueHandlerType, queueMetadataStore } from './queue.decorator.js';
+import { UnwrapForRootArgs } from '../unwrap-args.js';
+import { InternalQueueMiddlewareService } from './internal-queue-middleware.service.js';
+import { PG_BOSS, PG_BOSS_OPTIONS, PgBossProvider, QueueModuleOptions } from './pg-boss.provider.js';
+import { QueueMiddlewareService } from './queue-middleware.service.js';
+import { QueueExplorer } from './queue.explorer.js';
 
-export const PG_BOSS_OPTIONS = 'PG_BOSS_OPTIONS';
-
-export const PG_BOSS: InjectionToken<PgBoss> = 'PG_BOSS';
-
-export const InjectPGBoss = () => Inject(PG_BOSS)
-
-const PgBossProvider: Provider = {
-  provide: PG_BOSS,
-  useFactory: (opts: PgBoss.ConstructorOptions) => {
-    return new PgBoss(opts);
-  },
-  inject: [PG_BOSS_OPTIONS]
-}
-
-export type UnwrapArgs<A extends any[]> = {
-  [P in keyof A]: InjectionToken<A[P]>
-};
 
 @Module({})
 export class QueueModule implements NestModule {
-  static forRoot(pgBossOptions: PgBoss.ConstructorOptions): DynamicModule {
-    return this.forRootAsync({ useFactory: () => pgBossOptions });
+  static register(pgBossOptions: QueueModuleOptions): DynamicModule {
+    return this.registerAsync({ useFactory: () => pgBossOptions });
   }
 
-  static forRootAsync<A extends any[]>(opts: {
-    useFactory: (...args: A) => PgBoss.ConstructorOptions | Promise<PgBoss.ConstructorOptions>,
-    inject?: UnwrapArgs<A>,
+  static registerAsync<A extends any[]>(opts: {
+    useFactory: (...args: A) => QueueModuleOptions | Promise<QueueModuleOptions>,
+    inject?: UnwrapForRootArgs<A>,
     imports?: DynamicModule['imports'],
   }): DynamicModule {
     return {
@@ -44,51 +30,31 @@ export class QueueModule implements NestModule {
           inject: opts.inject
         },
         PgBossProvider,
+        QueueMiddlewareService,
+        InternalQueueMiddlewareService,
+        QueueExplorer
       ],
       exports: [
-        PgBossProvider
+        PgBossProvider,
+        QueueMiddlewareService
       ]
     }
   }
 
+  logger = new Logger('QueueModule');
+
   constructor (
-    @Inject(PG_BOSS)
-    private pgBoss: PgBoss,
-    private readonly moduleRef: ModuleRef,
-    @Optional() private mikroOrm: MikroORM,
-    private readonly discoveryService: DiscoveryService
+    @Inject(PG_BOSS) private pgBoss: PgBoss,
+    private explorer: QueueExplorer
   ) { }
 
   async configure() {
     await this.pgBoss.start();
 
     this.pgBoss.on('error', (e) => {
-      console.log(e);
+      this.logger.error(e);
     });
 
-    for(const [queueName, value] of queueMetadataStore) {
-      const providerMap = new Map(this.discoveryService.getProviders().filter(({ token }) => value.some(({ provider }) => provider === token)).map(({ instance, token }) => [token, instance]));
-
-      for (const queue of value) {
-        const { key, provider } = queue;
-        const instance = providerMap.get(provider);
-        this.pgBoss.work(queueName, async (job) => {
-          return new Promise<void>((resolve, reject) => {
-            RequestContext.create(this.mikroOrm.em, async () => {
-              try {
-                await instance[key].bind(instance)(job);
-                resolve();
-              } catch(e) {
-                reject(e);
-              }
-            });
-          });
-        });
-
-        if (queue.handlerType === QueueHandlerType.schedule) {
-          await this.pgBoss.schedule(queueName, queue.schedule);
-        }
-      }
-    }
+    await this.explorer.explore();
   }
 }

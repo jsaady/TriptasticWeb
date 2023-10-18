@@ -106,7 +106,7 @@ const notes = [
   "The stand-up comedy show was hilarious. Laughed till my sides hurt.",
   "Tried the new virtual escape room with friends. Such an adrenaline rush!"
 ]
-export class AdminSeeder extends Seeder {
+export class NotesSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
 
     const existingNoteCount = await em.count(Note);

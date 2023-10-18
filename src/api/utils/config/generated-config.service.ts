@@ -1,6 +1,6 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import webPush from 'web-push';
 import { IS_MIGRATED } from '../../db/migration.provider.js';
@@ -8,7 +8,7 @@ import { CONFIG_VARS, FullConfig } from './config.js';
 import { GeneratedConfig } from './generated-config.entity.js';
 @Injectable()
 export class GeneratedConfigService {
-
+  logger = new Logger('GeneratedConfigService');
   constructor(
     private config: ConfigService,
     @Inject(IS_MIGRATED) isMigrated: boolean,
@@ -27,7 +27,7 @@ export class GeneratedConfigService {
     let existingConfig = await this.em.findOne(GeneratedConfig, { id: 1 });
     
     if (!existingConfig) {
-      console.log('Initializing config');
+      this.logger.log('Initializing config');
       const vapidCreds = webPush.generateVAPIDKeys();
       
       existingConfig = this.em.create(GeneratedConfig, {
@@ -39,7 +39,7 @@ export class GeneratedConfigService {
       });
       await this.em.persistAndFlush(existingConfig);
     } else {
-      console.log('Using existing config');
+      this.logger.log('Initializing config');
     }
 
     const config = Object.assign({}, existingConfig, {

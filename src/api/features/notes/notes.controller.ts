@@ -32,6 +32,10 @@ export class NotesController {
     @Body() { note }: { note: string },
     @User() { sub }: AuthTokenContents
   ) {
-    return this.notesService.getMostRelevantNotes(note, sub);
+    const notes = await this.notesService.getReleventNotes(note, sub);
+
+    this.notesService.getChatResponseForRelevantNotes(notes, note, sub);
+
+    return notes.map(note => note.id);
   }
 }

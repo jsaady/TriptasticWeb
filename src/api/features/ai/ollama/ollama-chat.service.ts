@@ -14,4 +14,8 @@ export class OllamaChatService extends OllamaService implements ChatService {
 
     return response;
   }
+
+  async *getReplyStream(message: string, context: string): AsyncGenerator<string, void, void> {
+    yield await this.getReply(message);
+  }
 }

@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { CONFIG_VARS, MFA_ENABLED } from '../../utils/config/config.js';
 import { AuthDTO, AuthTokenContents } from './auth.dto.js';
 import { ConfigService } from '../../utils/config/config.service.js';
+import { AuthService } from './auth.service.js';
 const IS_AUTH_CONFIG = 'IS_AUTH_CONFIG';
 const SKIP_AUTH_CHECK = 'SKIP_AUTH_CHECK';
 
@@ -19,6 +20,7 @@ export class IsAuthenticatedGuard implements CanActivate {
   constructor (
     private jwt: JwtService,
     private reflector: Reflector,
+    private authService: AuthService,
     private configService: ConfigService
   ) { }
 
@@ -30,21 +32,12 @@ export class IsAuthenticatedGuard implements CanActivate {
 
     const { allowExpiredPassword = false, allowUnverifiedEmail = false, allowNoMFA = false } = this.reflector.getAllAndOverride<IsAuthenticatedConfig>(IS_AUTH_CONFIG, [context.getClass(), context.getHandler()]) ?? false;
 
-    const token = this.extractTokenFromCookie(request);
-    if (!token) {
-      throw new UnauthorizedException();
-    }
     try {
-      const payload = await this.jwt.verifyAsync<AuthTokenContents>(
-        token.token,
-        {
-          secret: this.configService.getOrThrow('jwtSecret')
-        }
-      );
-
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
+      const payload = await this.authService.extractAuthDtoFromRequest(request);
       request.user = payload;
+      if (!payload) {
+        throw new UnauthorizedException();
+      }
 
       if (!allowExpiredPassword && payload.needPasswordReset) {
         return false;
@@ -61,18 +54,6 @@ export class IsAuthenticatedGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     return true;
-  }
-
-  private extractTokenFromCookie(request: Request): AuthDTO | undefined {
-    const rawToken = request.signedCookies['Authorization'];
-
-    if (rawToken) {
-      const serializedToken = Buffer.from(rawToken, 'base64').toString('utf-8');
-
-      const parsedToken = JSON.parse(serializedToken);
-
-      return parsedToken;
-    }
   }
 }
 

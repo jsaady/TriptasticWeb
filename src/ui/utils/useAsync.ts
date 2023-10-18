@@ -17,7 +17,6 @@ export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, de
   const trigger = useCallback((...args: A) => {
     (async () => {
       if (loadingRef.current) {
-        console.log('Already loading...');
         return;
       }
   

@@ -25,7 +25,6 @@ import { UserClient } from './entities/userClient.entity.js';
           secret: config.getOrThrow('jwtSecret'),
           signOptions: {
             expiresIn: `${AUTH_TOKEN_EXPIRATION}s`,
-            
           }
         }
       },

@@ -3,6 +3,7 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
+import { Request } from 'express';
 import { EMAIL_VERIFICATION_EXPIRATION } from '../../utils/config/config.js';
 import { ConfigService } from '../../utils/config/config.service.js';
 import { EmailService } from '../email/email.service.js';
@@ -23,6 +24,42 @@ export class AuthService {
     private config: ConfigService,
     @InjectRepository(UserClient) private userClientRepo: EntityRepository<UserClient>
   ) { }
+
+
+  private extractTokenFromCookie(request: Request): AuthDTO | undefined {
+
+
+    const rawToken = request.signedCookies ? request.signedCookies['Authorization'] : request.cookies['Authorization'];
+
+    if (rawToken) {
+      const serializedToken = Buffer.from(rawToken, 'base64').toString('utf-8');
+
+      const parsedToken = JSON.parse(serializedToken);
+
+      return parsedToken;
+    }
+  }
+
+  async extractAuthDtoFromRequest (req: Request) {
+    const token = this.extractTokenFromCookie(req);
+
+    if (!token) return;
+    
+    const payload = await this.jwt.verifyAsync<AuthTokenContents>(
+      token.token,
+      {
+        secret: this.config.getOrThrow('jwtSecret')
+      }
+    );
+
+    return payload;
+  }
+
+  async extractUserIdFromRequest (req: Request) {
+    const { sub } = await this.extractAuthDtoFromRequest(req) ?? {};
+
+    return sub ? '' + sub : undefined;
+  }
 
   async start (username: string, registerDevice?: boolean): Promise<AuthStartDTO> {
     const user = await this.userService.getUserByUsername(username);

@@ -1,5 +1,6 @@
+import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigService, ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -13,7 +14,9 @@ import { NotificationModule } from './features/notifications/notification.module
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
 import { ContextModule } from './utils/context/context.module.js';
-import { QueueModule } from './utils/queue/queue.module.js';
+import { PubSubModule } from './utils/pubSub/pubSub.module.js';
+import { QueueMiddlewareService, QueueModule } from './utils/queue/index.js';
+import { SocketsModule } from './utils/sockets/sockets.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -24,8 +27,11 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     ServeStaticModule.forRoot({
       rootPath: resolve(currentDir, '..', 'ui')
     }),
-    AiModule.forRoot(AIProvider.openai),
-    QueueModule.forRootAsync({
+    AiModule.forRoot({
+      chat: AIProvider.openai,
+      embedding: AIProvider.openai
+    }),
+    QueueModule.registerAsync({
       useFactory: (config) => ({
         connectionString: config.getOrThrow('DATABASE_URL'),
         password: config.getOrThrow('DATABASE_PASSWORD')
@@ -33,6 +39,15 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
       inject: [ConfigService],
       imports: [NestConfigModule]
     }),
+    PubSubModule.registerPostgresAsync({
+      useFactory: (config) => ({
+        connectionString: config.getOrThrow('DATABASE_URL'),
+        password: config.getOrThrow('DATABASE_PASSWORD')
+      }),
+      inject: [ConfigService],
+      imports: [NestConfigModule]
+    }),
+    SocketsModule,
     ContextModule,
     AuthModule,
     NotificationModule,
@@ -75,4 +90,17 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     useClass: ThrottlerGuard
   }],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  constructor (
+    private queueMiddleware: QueueMiddlewareService,
+    private mikroOrm: MikroORM
+  ) { }
+
+  configure(consumer: MiddlewareConsumer) {
+    // consumer.apply();
+
+    this.queueMiddleware.register((_, next) => {
+      RequestContext.create(this.mikroOrm.em.fork(), () => next());
+    });
+  }
+}

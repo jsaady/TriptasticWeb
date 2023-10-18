@@ -8,7 +8,6 @@ export const IS_MIGRATED = 'IS_MIGRATED';
 export const MIGRATION_PROVIDER = {
   provide: IS_MIGRATED,
   useFactory: async (mikroOrm: MikroORM, config: ConfigService) => {
-    console.log('migration')
     if (!config.get('SKIP_MIGRATIONS')) {
       await mikroOrm.getSchemaGenerator().ensureDatabase();
       await mikroOrm.migrator.up();
