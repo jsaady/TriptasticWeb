@@ -17,6 +17,7 @@ import { ContextModule } from './utils/context/context.module.js';
 import { PubSubModule } from './utils/pubSub/pubSub.module.js';
 import { QueueMiddlewareService, QueueModule } from './utils/queue/index.js';
 import { SocketsModule } from './utils/sockets/sockets.module.js';
+import { WorkersModule } from './utils/workers/workers.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -24,12 +25,13 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
   imports: [
     NestConfigModule.forRoot(),
     MigrationModule,
+    WorkersModule,
     ServeStaticModule.forRoot({
       rootPath: resolve(currentDir, '..', 'ui')
     }),
     AiModule.forRoot({
-      chat: AIProvider.openai,
-      embedding: AIProvider.openai
+      chat: AIProvider.local,
+      embedding: AIProvider.local
     }),
     QueueModule.registerAsync({
       useFactory: (config) => ({
@@ -97,8 +99,6 @@ export class AppModule implements NestModule {
   ) { }
 
   configure(consumer: MiddlewareConsumer) {
-    // consumer.apply();
-
     this.queueMiddleware.register((_, next) => {
       RequestContext.create(this.mikroOrm.em.fork(), () => next());
     });

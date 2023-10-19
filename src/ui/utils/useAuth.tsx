@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { LoginResponse } from '../features/auth/types.js';
 import { useAsyncHttp } from './useAsync.js';
 import { useLoggedIn, withLoggedIn } from './useLoggedIn.js';
+import { useGlobalSocket } from './useSocket.js';
 
 export interface AuthState {
   loggedIn: boolean;
@@ -23,6 +24,7 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
   const [me, setMe] = useState<{ sub: number; email: string; }>();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { reconnect: globalSocketReconnect } = useGlobalSocket();
 
   const clientIdentifier = useMemo(() => {
     let storedClientIdentifier = localStorage.getItem('clientIdentifier');
@@ -48,11 +50,12 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
     setLoggedIn(success);
 
     if (success && pathname.startsWith('/login')) {
+      globalSocketReconnect();
       navigate('/');
     }
 
     return success;
-  }, [setLoggedIn, setMe, pathname]);
+  }, [setLoggedIn, setMe, pathname, globalSocketReconnect]);
 
   const [check, { loading }] = useAsyncHttp(async ({ get }) => {
     const response = await get<LoginResponse>('/api/auth/check');
@@ -65,9 +68,10 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
     setSearchParams(searchParams);
 
     await post('/api/auth/logout', {});
+    globalSocketReconnect();
 
     setLoggedIn(false);
-  }, [setLoggedIn]);
+  }, [setLoggedIn, globalSocketReconnect]);
 
   useEffect(() => {
     check();

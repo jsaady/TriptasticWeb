@@ -33,8 +33,7 @@ export class SocketIOPropagatorInterceptor<T> implements NestInterceptor<T, WsRe
                 this.socketIOPropagatorService.emitToSocket({
                     channel: messageName,
                     message: (data.data ?? data) as any,
-                    originSocketId: socket.id,
-                    userId: socket.auth?.userId,
+                    targetSocketId: socket.id,
                 });
             }),
         );

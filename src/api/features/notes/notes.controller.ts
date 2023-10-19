@@ -14,28 +14,25 @@ export class NotesController {
 
   @Post()
   async createNote (
-    @Body() { note }: CreateNotesDto,
-    @User() { sub }: AuthTokenContents
+    @Body() { note }: CreateNotesDto
   ) {
-    return this.notesService.createNote(note, sub);
+    return this.notesService.createNote(note);
   }
 
   @Get()
-  async getNotes (
-    @User() { sub }: AuthTokenContents
-  ) {
-    return this.notesService.getNotesForUser(sub);
+  async getNotes () {
+    return this.notesService.getNotesForUser();
   }
 
   @Post('/search')
   async searchNotes (
-    @Body() { note }: { note: string },
-    @User() { sub }: AuthTokenContents
+    @Body() { note }: { note: string; socketId: string; }
   ) {
-    const notes = await this.notesService.getReleventNotes(note, sub);
+    const notes = await this.notesService.getReleventNotes(note);
+    const noteIds = notes.map(note => note.id);
 
-    this.notesService.getChatResponseForRelevantNotes(notes, note, sub);
+    await this.notesService.scheduleSendChatResponse(noteIds, note);
 
-    return notes.map(note => note.id);
+    return noteIds;
   }
 }

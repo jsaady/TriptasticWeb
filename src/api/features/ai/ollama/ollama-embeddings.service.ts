@@ -6,13 +6,9 @@ import { OllamaService } from './base-ollama.service.js';
 
 @Injectable()
 export class OllamaEmbeddingsService extends OllamaService implements EmbeddingsService {
-  constructor (config: ConfigService) {
-    super(config);
-  }
-
   async getEmbeddings(text: string): Promise<number[]> {
     const { data: { embedding } } = await this.ollamaApi.post('/api/embeddings', {
-      model: this.ollamaModel, 
+      model: this.config.getOrThrow('ollamaEmbeddingModel'), 
       prompt: text
     });
 

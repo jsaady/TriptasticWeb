@@ -100,7 +100,7 @@ export class OpenAIChatService extends OpenAIService implements ChatService {
         const { content = '' } = delta;
         fullContent += content;
       }
-
+      await new Promise<void>(res => setTimeout(() => res(), 1));
       yield fullContent;
     }
   }

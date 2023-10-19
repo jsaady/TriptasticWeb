@@ -55,10 +55,12 @@ export class SocketAdapter extends IoAdapter implements WebSocketAdapter {
       }
 
       try {
-        this.logger.log(`Connecting user ${userId}`);
+        this.logger.log(`Connecting user ${userId}(${socket.id})`);
         this.socketStateService.connect(userId, socket);
 
         socket.on('disconnect', () => {
+          this.logger.log(`Disconnecting user ${userId}(${socket.id})`);
+
           this.socketStateService.disconnect(userId, socket);
 
           socket.removeAllListeners('disconnect');

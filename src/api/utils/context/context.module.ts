@@ -1,19 +1,20 @@
+import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AsyncLocalStorage } from 'async_hooks';
-import { ContextService } from './context.service.js';
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ContextMiddleware } from './context.middleware.js';
+import { ContextMiddleware } from './request-context.middleware.js';
+import { RequestContextService } from './request-context.service.js';
 
 @Module({
   providers: [
-    ContextService,
+    RequestContextService,
     ContextMiddleware,
     {
       provide: AsyncLocalStorage,
       useValue: new AsyncLocalStorage(),
     },
   ],
-  exports: [ContextService],
+  exports: [RequestContextService],
 })
+@Global()
 export class ContextModule implements NestModule {
   configure (consumer: MiddlewareConsumer) {
     consumer.apply(ContextMiddleware).forRoutes('*');

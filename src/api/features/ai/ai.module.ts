@@ -1,15 +1,18 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '../../utils/config/config.module.js';
-import { EMBEDDINGS_SERVICE } from './embeddings.service.js';
-import { OpenAIEmbeddingsService } from './openai/openai-embeddings.service.js';
-import { OllamaEmbeddingsService } from './ollama/ollama-embeddings.service.js';
-import { OllamaChatService } from './ollama/ollama-chat.service.js';
-import { OpenAIChatService } from './openai/openai-chat.service.js';
 import { CHAT_SERVICE } from './chat.service.js';
+import { EMBEDDINGS_SERVICE } from './embeddings.service.js';
+import { LocalBertEmbeddingService } from './local/local-bert-embedding.service.js';
+import { OllamaChatService } from './ollama/ollama-chat.service.js';
+import { OllamaEmbeddingsService } from './ollama/ollama-embeddings.service.js';
+import { OpenAIChatService } from './openai/openai-chat.service.js';
+import { OpenAIEmbeddingsService } from './openai/openai-embeddings.service.js';
+import { LocalLlamaChatService } from './local/local-llama-chat.service.js';
 
 export enum AIProvider {
   openai = 'openai',
-  ollama = 'ollama'
+  ollama = 'ollama',
+  local = 'local'
 }
 
 export interface AIModuleConfig {
@@ -20,13 +23,13 @@ export interface AIModuleConfig {
 const getEmbeddingProvider = (provider: AIProvider): Provider => ({
   provide: EMBEDDINGS_SERVICE,
   useClass: provider === AIProvider.ollama ?
-    OllamaEmbeddingsService :
+    OllamaEmbeddingsService : provider === AIProvider.local ? LocalBertEmbeddingService :
     OpenAIEmbeddingsService
 });
 const getChatProvider = (provider: AIProvider): Provider => ({
   provide: CHAT_SERVICE,
   useClass: provider === AIProvider.ollama ?
-    OllamaChatService :
+    OllamaChatService : provider === AIProvider.local ? LocalLlamaChatService :
     OpenAIChatService
 });
 

@@ -22,19 +22,23 @@ export interface SocketMessage {
   channel: string;
 }
 
-export interface SocketPropagationMessage extends SocketMessage {
+export interface UserSocketPropagationMessage extends SocketMessage {
   /**
    * Target user id to send message to
    */
   userId: string;
+
   /**
-   * Origin socket id to exclude from sending message to
+   * Socket to exclude
    */
   originSocketId?: string;
+}
+
+export interface SpecificSocketPropagationMessage extends SocketMessage {
   /**
    * Target socket id to send message to
    */
-  targetSocketId?: string;
+  targetSocketId: string;
 }
 
 interface WrappedMessage<T extends SocketMessage> {
@@ -43,8 +47,8 @@ interface WrappedMessage<T extends SocketMessage> {
 }
 
 export interface IPropagatorService {
-  emitToSocket (eventInfo: SocketPropagationMessage): Promise<boolean>;
-  emitToUser (eventInfo: SocketPropagationMessage): Promise<boolean>;
+  emitToSocket (eventInfo: SpecificSocketPropagationMessage): Promise<boolean>;
+  emitToUser (eventInfo: UserSocketPropagationMessage): Promise<boolean>;
   emitToAuthenticated (eventInfo: SocketMessage): Promise<boolean>;
   emitToAll (eventInfo: SocketMessage): Promise<boolean>;
 }
@@ -74,7 +78,7 @@ export class SocketIOPropagatorService implements IPropagatorService {
     return this;
   }
 
-  private consumeToSocketSendEvent = async (eventInfo: WrappedMessage<SocketPropagationMessage>) => {
+  private consumeToSocketSendEvent = async (eventInfo: WrappedMessage<SpecificSocketPropagationMessage>) => {
     const { channel, message, targetSocketId } = eventInfo.message;
 
     const socket = this.socketStateService.getBySocketId(targetSocketId ?? '');
@@ -82,17 +86,21 @@ export class SocketIOPropagatorService implements IPropagatorService {
     if (socket) {
       const sent = socket.emit(channel, message);
 
+      this.logger[sent ? 'log' : 'warn'](`${sent ? 'Successfully' : 'Unsuccessfully'} sent message: ${eventInfo.id}`);
+      
       if (sent) {
         await this.publish(SOCKET_EVENT_PEERS, {
           message: eventInfo.id,
           channel: messageEmittedChannel
         });
       }
+    } else {
+      this.logger.warn(`Skipping ${eventInfo.id}`);
     }
 
   };
 
-  private consumeToUserSendEvent = async (eventInfo: WrappedMessage<SocketPropagationMessage>) => {
+  private consumeToUserSendEvent = async (eventInfo: WrappedMessage<UserSocketPropagationMessage>) => {
     const { userId, channel, message, originSocketId } = eventInfo.message;
 
     const sockets = this.socketStateService.getByUserId(userId).filter((socket) => socket.id !== originSocketId);
@@ -121,19 +129,19 @@ export class SocketIOPropagatorService implements IPropagatorService {
     return this.socketStateService.getAll().forEach((socket) => socket.emit(channel, message));
   };
 
-  private consumeFromPeersEvent = (eventInfo: WrappedMessage<SocketPropagationMessage>) => {
+  private consumeFromPeersEvent = (eventInfo: WrappedMessage<SocketMessage>) => {
     const { channel, message } = eventInfo.message;
 
     this.peerMessages$.next({ channel, message });
   };
 
-  async emitToSocket (eventInfo: SocketPropagationMessage): Promise<boolean> {
+  async emitToSocket (eventInfo: SpecificSocketPropagationMessage): Promise<boolean> {
     await this.publish(SOCKET_EVENT_SOCKET, eventInfo);
 
     return true;
   }
 
-  async emitToUser (eventInfo: SocketPropagationMessage): Promise<boolean> {
+  async emitToUser (eventInfo: UserSocketPropagationMessage): Promise<boolean> {
     if (!eventInfo.userId) {
       return false;
     }

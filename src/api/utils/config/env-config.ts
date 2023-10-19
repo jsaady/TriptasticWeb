@@ -7,7 +7,8 @@ export interface EnvironmentConfig {
   emailPassword: string;
   emailReplyTo: string;
   ollamaUrl: string;
-  ollamaModel: string;
+  ollamaChatModel: string;
+  ollamaEmbeddingModel: string;
   openaiUrl: string;
   openaiKey: string;
   openaiChatModel: string;

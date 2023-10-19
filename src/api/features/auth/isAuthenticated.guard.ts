@@ -2,9 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, SetMetadata, UnauthorizedExc
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { CONFIG_VARS, MFA_ENABLED } from '../../utils/config/config.js';
-import { AuthDTO, AuthTokenContents } from './auth.dto.js';
-import { ConfigService } from '../../utils/config/config.service.js';
+import { MFA_ENABLED } from '../../utils/config/config.js';
 import { AuthService } from './auth.service.js';
 const IS_AUTH_CONFIG = 'IS_AUTH_CONFIG';
 const SKIP_AUTH_CHECK = 'SKIP_AUTH_CHECK';
@@ -20,8 +18,7 @@ export class IsAuthenticatedGuard implements CanActivate {
   constructor (
     private jwt: JwtService,
     private reflector: Reflector,
-    private authService: AuthService,
-    private configService: ConfigService
+    private authService: AuthService
   ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

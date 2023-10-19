@@ -41,7 +41,7 @@ export class AuthController {
   async login(@Body() dto: AuthLoginDTO, @Res({ passthrough: true }) response: Response) {
     const result = await this.authService.continueLogin(dto);
 
-    return this.processUserLogin(result, response, dto.clientIdentifier, null);
+    return this.processUserLogin(result, response, dto.clientIdentifier, 'auth'); // TODO: handle proper MFA
   }
 
   @Post('/update-password')

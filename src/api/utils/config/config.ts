@@ -14,7 +14,8 @@ export const CONFIG_VARS = {
   emailPassword: 'EMAIL_PASSWORD',
   emailReplyTo: 'EMAIL_REPLY_TO',
   ollamaUrl: 'OLLAMA_URL',
-  ollamaModel: 'OLLAMA_MODEL',
+  ollamaChatModel: 'OLLAMA_CHAT_MODEL',
+  ollamaEmbeddingModel: 'OLLAMA_EMBEDDING_MODEL',
   openaiUrl: 'OPENAI_URL',
   openaiKey: 'OPENAI_KEY',
   openaiChatModel: 'OPENAI_CHAT_MODEL',
@@ -22,7 +23,7 @@ export const CONFIG_VARS = {
 };
 
 export const RATE_LIMIT_TTL = 60;
-export const RATE_LIMIT_LIMIT = 100;
+export const RATE_LIMIT_LIMIT = 10_000;
 export const EMAIL_VERIFICATION_EXPIRATION = 300;
 export const APP_NAME = 'Runner';
 export const MFA_ENABLED = true;

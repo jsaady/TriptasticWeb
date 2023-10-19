@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useLoggedIn } from './useLoggedIn.js';
+import { useGlobalSocket, useSocket } from './useSocket.js';
 
 export class FetchError extends Error {
   constructor (public response: Response, public responseText: string) {
@@ -7,10 +8,11 @@ export class FetchError extends Error {
   }
 }
 
-const getHeaders = () => {
+const getHeaders = (socketId: string) => {
   const h = new Headers({
     Accept: 'application/json',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'X-Socket-Id': socketId
   });
 
   return h;
@@ -24,11 +26,12 @@ export interface HTTPClient {
 
 export const useHttp = (): HTTPClient => {
   const { setLoggedIn } = useLoggedIn();
+  const globalSocketState = useGlobalSocket();
 
   const makeRequest = useCallback(async (path: string, method: 'get'|'post'|'patch'|'put'|'delete', signal: AbortSignal, body?: unknown) => {
     const originalResponse = await fetch(path, {
       body: JSON.stringify(body),
-      headers: getHeaders(),
+      headers: getHeaders(globalSocketState.socket?.id ?? ''),
       method,
       signal
     });
@@ -51,7 +54,7 @@ export const useHttp = (): HTTPClient => {
     }
 
     return '';
-  }, [setLoggedIn]);
+  }, [setLoggedIn, globalSocketState]);
   
   const get = useCallback(async (path: string, signal: AbortSignal) => {
     return makeRequest(path, 'get', signal);

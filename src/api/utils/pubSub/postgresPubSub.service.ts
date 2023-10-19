@@ -47,7 +47,6 @@ export class PgPubSubService<T = any> implements PubSubService<T> {
     this.listenerMap = new Map();
 
     this.pgPublish.on('notification', (message) => {
-      this.logger.log(`Received message on ${message.channel}: ${message.payload}`)
       const normalChannel = this.normalizeChannel(message.channel);
       this.listenerMap?.get(normalChannel)?.forEach(handler => handler(message.payload));
     });
@@ -74,6 +73,7 @@ export class PgPubSubService<T = any> implements PubSubService<T> {
         
         try {
           const decoded = Buffer.from(payload, 'base64').toString('utf-8');
+          this.logger.log(`Received message on ${channel}: ${decoded}`)
           parsed = JSON.parse(decoded);
         } catch (e) {
           parsed = payload;

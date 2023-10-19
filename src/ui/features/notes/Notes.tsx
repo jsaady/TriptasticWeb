@@ -7,19 +7,19 @@ import { useAsyncHttp } from '../../utils/useAsync.js';
 import { useSocket } from '../../utils/useSocket.js';
 
 export const Notes = () => {
-  const [fetch, notes$] = useAsyncHttp((http) => http.get<{ note: string; id: number; hasEmbeddings: boolean; }[]>('/api/notes'), []);
-  const [search, searchNotes$] = useAsyncHttp((http, note: string) => http.post<number[]>('/api/notes/search', { note }), []);
-  const [createNote, createNote$] = useAsyncHttp((http, note: { note: string; }) => http.post<{ note: string; id: number; }>('/api/notes', note), []);
-
   const [note$] = useSocket('notes:updated');
   const [chatToken$] = useSocket('chatbot:new_token');
+
+  const [fetch, notes$] = useAsyncHttp((http) => http.get<{ note: string; id: number; hasEmbeddings: boolean; }[]>('/api/notes'), []);
+  const [search, searchNotes$] = useAsyncHttp((http, note: string) => http.post<number[]>('/api/notes/search', { note, socketId: chatToken$.id }), []);
+  const [createNote, createNote$] = useAsyncHttp((http, note: { note: string; }) => http.post<{ note: string; id: number; }>('/api/notes', note), []);
+
   const [chatResponse, setChatResponse] = useState('');
 
   useEffect(() => {
+    console.log('Appending ', chatToken$.data);
     setChatResponse(resp => {
       const newMessage = resp + (chatToken$.data ?? '');
-
-      console.log(chatToken$.data, newMessage);
 
       return newMessage;
     });
@@ -47,10 +47,10 @@ export const Notes = () => {
   }, [search, state.note]);
 
   return <div className='flex flex-col w-full'>
-    {notes$.loading && <Icon icon='circle-half' />}
     {notes$.result?.length > 0 ? <div className="flex max-h-[25em] my-4 shadow-md border p-2 dark:border-neutral-700 flex-col overflow-scroll">
-      {notes$.result?.map(({ id, note, hasEmbeddings }) => <div className={`flex items-center border-b p-2 dark:border-neutral-700 last:border-none ${ids.has(id) ? 'bg-neutral-500' : ''}`}>
-        <p className={(ids.has(id) ? 'font-bold' : 'font-light')} key={id}>
+      {notes$.loading && <Icon icon='circle-half' className='self-end mr-[-1.5rem] mt-[-1.5rem] z-10 text-xl' />}
+      {notes$.result?.map(({ id, note, hasEmbeddings }) => <div  key={id} className={`flex items-center border-b p-2 dark:border-neutral-700 last:border-none ${ids.has(id) ? 'bg-neutral-500' : ''}`}>
+        <p className={(ids.has(id) ? 'font-bold' : 'font-light')}>
           #{id}: {note}
         </p>
         <Icon className={`ml-2 ${hasEmbeddings ? "text-green-500" : 'text-yellow-500'}`} icon={hasEmbeddings ? 'check-circle' : 'question-circle'} />
