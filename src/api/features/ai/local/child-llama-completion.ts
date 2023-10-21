@@ -1,12 +1,15 @@
-import type { Generate } from '@llama-node/llama-cpp';
+import { LlamaChatSession, LlamaContext, LlamaModel } from "node-llama-cpp";
 import { Logger } from '@nestjs/common';
-import { LLM } from 'llama-node';
-import { LLamaCpp, LoadConfig } from 'llama-node/dist/llm/llama-cpp.js';
 import { resolve } from 'path';
 
-const model = resolve(process.cwd(), "./models/llama2-7b-chat");
+const modelPath = resolve(process.cwd(), "./models/mistral-7b-instruct.bin");
 
-const llama = new LLM(LLamaCpp);
+const model = new LlamaModel({
+  modelPath,
+  useMlock: true
+});
+const llamaContext = new LlamaContext({ model });
+
 
 const logger = new Logger('ChatWorker');
 
@@ -28,23 +31,7 @@ export interface Message<T extends ChildEvents|ParentEvents> {
 }
 
 const loadModel = () => {
-  const loadConfig: LoadConfig = {
-    modelPath: model,
-    enableLogging: true,
-    nCtx: 1024,
-    seed: 0,
-    f16Kv: false,
-    logitsAll: false,
-    vocabOnly: false,
-    useMlock: false,
-    embedding: false,
-    useMmap: true,
-    nGpuLayers: 0
-  };
-  
-  llama.load(loadConfig).then(() => {
-    process.send?.({ event: ChildEvents.loaded });
-  });
+  process.send?.({ event: ChildEvents.loaded });
 }
 
 const createCompletion = async (
@@ -52,40 +39,33 @@ const createCompletion = async (
   context: string,
   id: string
 ) => {
-  const prompt = `
-  ${context}
+  // const prompt = `
+  // <s>
+  // [INST]
+  // ${context}
 
-  ### Prompt: ${message}
+  // User's message ${message}
+  // [/INST]`;
 
-  ### Reply:`;
+  const session = new LlamaChatSession({ context: llamaContext, systemPrompt: context });
 
-  const params: Generate = {
-    nThreads: 4,
-    nTokPredict: 2048,
-    topK: 40,
-    topP: 0.1,
-    temp: 0.7,
-    repeatPenalty: 1.5,
-    prompt,
-  };
+  console.log(session);
 
-
-  await llama.createCompletion(params, (response) => {
-    logger.log(response);
-    
-    if (response.completed) {
-      process.send?.({
-        event: ChildEvents.complete,
-        id,
-        data: response.token
-      })
-    } else {
+  const response = await session.prompt(message, {
+    onToken: (token) => {
       process.send?.({
         event: ChildEvents.newToken,
         id,
-        data: response.token
+        data: llamaContext.decode(token)
       });
     }
+  });
+
+
+  process.send?.({
+    event: ChildEvents.complete,
+    id,
+    data: response
   });
 }
 

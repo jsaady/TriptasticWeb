@@ -2,10 +2,10 @@ import { Link, NavLink } from 'react-router-dom';
 import { noop } from 'rxjs';
 import { Clickable } from './Clickable.js';
 import { Dropdown } from './Dropdown.js';
-import { BootstrapIcon, Icon } from './Icon.js';
+import { BootstrapIcon, FeatherIcon, Icon } from './Icon.js';
 
 export interface NavBarItem {
-  icon: BootstrapIcon;
+  icon: FeatherIcon;
   label: string;
   iconVisible?: boolean;
   disabled?: boolean;
@@ -21,7 +21,7 @@ export interface OnClickNavBarItem extends NavBarItem {
 
 export interface NavBarProps {
   navItems: LinkNavBarItem[];
-  rightIcon: BootstrapIcon;
+  rightIcon: FeatherIcon;
   rightItems: (LinkNavBarItem|OnClickNavBarItem)[];
 }
 
@@ -53,7 +53,7 @@ export const NavBar = ({ navItems, rightIcon, rightItems }: NavBarProps) => (
     </div>
 
     <div className='flex px-4 items-center'>
-      <Dropdown trigger={{ icon: rightIcon, className: 'bg-transparent hover:bg-transparent hover:text-white dark:text-neutral-400' }}>
+      <Dropdown trigger={{ icon: rightIcon, className: 'bg-transparent hover:bg-transparent hover:text-white dark:text-neutral-400 text-black' }}>
         {rightItems.map((item, i) => (
           <NavBarItem {...item} key={i} iconVisible />
         ))}

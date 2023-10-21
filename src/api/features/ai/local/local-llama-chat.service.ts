@@ -1,32 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LLM } from "llama-node";
-import { LLamaCpp, LoadConfig } from "llama-node/dist/llm/llama-cpp.js";
 import { resolve } from 'path';
-import { ChatService } from '../chat.service.js';
-// import { LLMRS } from "llama-node/dist/llm/llm-rs.js";
-// import { Generate, ModelType } from '@llama-node/core';
-import { Generate } from '@llama-node/llama-cpp';
 import { filter, firstValueFrom, map } from 'rxjs';
 import { v4 } from 'uuid';
 import { WorkerService } from '../../../utils/workers/worker.service.js';
 import { Runtime } from '../../../utils/workers/workers.config.js';
+import { ChatService } from '../chat.service.js';
 import { ChildEvents, Message, ParentEvents } from './child-llama-completion.js';
 
-const model = resolve(process.cwd(), "./models/llama2-7b-chat");
-const llama = new LLM(LLamaCpp);
-const loadConfig: LoadConfig = {
-  modelPath: model,
-  enableLogging: true,
-  nCtx: 1024,
-  seed: 0,
-  f16Kv: false,
-  logitsAll: false,
-  vocabOnly: false,
-  useMlock: false,
-  embedding: false,
-  useMmap: true,
-  nGpuLayers: 0
-};
 @Injectable()
 export class LocalLlamaChatService implements ChatService {
   constructor (
@@ -37,36 +17,15 @@ export class LocalLlamaChatService implements ChatService {
 
   workerLocation = resolve(new URL(import.meta.url).pathname, '..', 'child-llama-completion.js');
   load$: Promise<any>;
-  
-  private async getParams (context: string, message: string) {
-    await llama.load(loadConfig);
-    const prompt = `
-      ${context}
-
-      ### Prompt: ${message}
-
-      ### Reply:`;
-
-    const params: Generate = {
-      nThreads: 4,
-      nTokPredict: 2048,
-      topK: 40,
-      topP: 0.1,
-      temp: 0.7,
-      repeatPenalty: 1.5,
-      prompt,
-    };
-    return params;
-  }
 
   async getReply (message: string, context: string): Promise<string> {
-    const params: Generate = await this.getParams(context, message);
+    let response = '';
 
-    const result = await llama.createCompletion(params, (response) => {
-      console.log(response.token);
-    });
+    for await (const token of this.getReplyStream(message, context)) {
+      response += token;
+    }
 
-    return result.tokens.join('');
+    return response;
   }
 
   async *getReplyStream (message: string, context: string) {

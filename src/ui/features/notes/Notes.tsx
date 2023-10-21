@@ -48,28 +48,28 @@ export const Notes = () => {
 
   return <div className='flex flex-col w-full'>
     {notes$.result?.length > 0 ? <div className="flex max-h-[25em] my-4 shadow-md border p-2 dark:border-neutral-700 flex-col overflow-scroll">
-      {notes$.loading && <Icon icon='circle-half' className='self-end mr-[-1.5rem] mt-[-1.5rem] z-10 text-xl' />}
+      {notes$.loading && <Icon icon='circle' className='animate-ping self-end mr-[-1.5rem] mt-[-1.5rem] z-10 text-xl' />}
       {notes$.result?.map(({ id, note, hasEmbeddings }) => <div  key={id} className={`flex items-center border-b p-2 dark:border-neutral-700 last:border-none ${ids.has(id) ? 'bg-neutral-500' : ''}`}>
         <p className={(ids.has(id) ? 'font-bold' : 'font-light')}>
           #{id}: {note}
         </p>
-        <Icon className={`ml-2 ${hasEmbeddings ? "text-green-500" : 'text-yellow-500'}`} icon={hasEmbeddings ? 'check-circle' : 'question-circle'} />
+        <Icon className={`ml-2 ${hasEmbeddings ? "text-green-500" : 'text-yellow-500'}`} icon={hasEmbeddings ? 'check-circle' : 'help-circle'} />
       </div>)}
     </div> : <p className='my-4'>
       You have not entered any notes, Enter a note and save using the + below
     </p>}
     {chatResponse && <div className="flex max-h-[25em] my-4 shadow-md border p-2 dark:border-neutral-700 flex-col">
-      <Icon icon='stars' className='self-end mr-[-1.5rem] mt-[-1.5rem] z-10 text-xl' />
+      <Icon icon='loader' className='self-end mr-[-1.5rem] mt-[-1.5rem] z-10 text-xl' />
       {chatResponse}
     </div>}
     <form className="flex" {...registerForm(doCreate)}>
       <Textarea disabled={createNote$.loading} {...register('note')} />
       <div>
         <Button type='button' className='mr-4 bg-transparent border border-x-0 border-t-0 rounded-none border-b-neutral-500 dark:border-neutral-500' disabled={searchNotes$.loading} onClick={doSearch}>
-          <Icon icon={searchNotes$.loading ? 'arrow-clockwise' : 'search'} className={searchNotes$.loading ? 'animate-spin' : ''} />
+          <Icon icon={searchNotes$.loading ? 'circle' : 'search'} className={'text-black dark:text-white font-weight-900 text-xl ' + (searchNotes$.loading ? 'animate-ping' : '')} />
         </Button>
-        <Button type="submit" className='bg-transparent rounded-none'>
-          <Icon icon='plus' />
+        <Button type="submit" className='bg-transparent rounded-none '>
+          <Icon icon='plus' className='text-black font-weight-900 text-2xl dark:text-white ' />
         </Button>
       </div>
     </form>

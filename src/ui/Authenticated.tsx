@@ -1,13 +1,12 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Navigate, Outlet } from 'react-router';
 import { LinkNavBarItem, NavBar, OnClickNavBarItem } from './components/NavBar.js';
+import { Sidebar, useSidebar, withSidebar } from './components/SideBar.js';
 import { useNotifications, withNotifications } from './features/notifications/useNotifications.js';
 import { useAuthorization } from './utils/useAuth.js';
-import { Sidebar, useSidebar, withSidebar } from './components/SideBar.js';
 export const Authenticated = withSidebar(withNotifications(() => {
   const { logout, loggedIn, loading } = useAuthorization();
   const { enabled, supported, subscribe, unsubscribe } = useNotifications();
-  const { setItems } = useSidebar();
 
   const subscribeButtonText = useMemo(() => {
     return !enabled ? 'Subscribe' : 'Unsubscribe';
@@ -15,11 +14,11 @@ export const Authenticated = withSidebar(withNotifications(() => {
 
   const navItems = useMemo<LinkNavBarItem[]>(() => {
     return [{
-      icon: 'house',
+      icon: 'home',
       label: 'Home',
       link: '/'
     }, {
-      icon: 'pen',
+      icon: 'edit-2',
       label: 'Notes',
       link: '/notes'
     }];
@@ -27,7 +26,7 @@ export const Authenticated = withSidebar(withNotifications(() => {
 
   const rightItems = useMemo<(OnClickNavBarItem|LinkNavBarItem)[]>(() => {
     return [{
-      icon: 'fingerprint',
+      icon: 'lock',
       label: 'Account',
       link: '/account'
     }, {
@@ -36,7 +35,7 @@ export const Authenticated = withSidebar(withNotifications(() => {
       onClick: enabled ? unsubscribe : subscribe,
       disabled: !supported
     }, {
-      icon: 'box-arrow-right',
+      icon: 'log-out',
       label: 'Logout',
       onClick: logout
     }];
@@ -50,7 +49,7 @@ export const Authenticated = withSidebar(withNotifications(() => {
   }
 
   return <div className='flex flex-col lg:max-w-[75em] lg:m-auto'>
-    <NavBar navItems={navItems} rightIcon='person-circle' rightItems={rightItems} />
+    <NavBar navItems={navItems} rightIcon='user' rightItems={rightItems} />
     <div className='flex'>
       <Sidebar />
       <Outlet />

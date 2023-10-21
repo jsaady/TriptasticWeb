@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Button } from './Button.js';
-import { BootstrapIcon, Icon } from './Icon.js';
+import { BootstrapIcon, FeatherIcon, Icon } from './Icon.js';
 
 interface OnClickDropdownItem {
   onClick: () => void;
@@ -20,7 +20,7 @@ interface Trigger {
 }
 
 interface IconTrigger {
-  icon: BootstrapIcon;
+  icon: FeatherIcon;
 }
 
 interface LabelTrigger {
