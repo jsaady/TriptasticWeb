@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import { WorkerService } from '../../../utils/workers/worker.service.js';
 import { Runtime } from '../../../utils/workers/workers.config.js';
 import { EmbeddingsService } from '../embeddings.service.js';
-import { ChildEmbedEvents, EmbedMessage, ParentEmbedEvents } from './child-bert-embedding.js';
+import { ChildEmbedWorkerEvents, EmbedWorkerMessage, ParentEmbedWorkerEvents } from './embed-worker-types.js';
 @Injectable()
 export class LocalBertEmbeddingService implements EmbeddingsService {
   load$: Promise<any>;
@@ -21,13 +21,13 @@ export class LocalBertEmbeddingService implements EmbeddingsService {
     const embeddingCtx = v4();
 
     this.postToWorker({
-      event: ParentEmbedEvents.createEmbeddings,
+      event: ParentEmbedWorkerEvents.createEmbeddings,
       data: texts,
       id: embeddingCtx
     });
 
     const embeddings = await firstValueFrom(this.workerService.getMessages(this.workerLocation)
-      .pipe(filter(({ event, id }) => event === ChildEmbedEvents.complete && id === embeddingCtx))
+      .pipe(filter(({ event, id }) => event === ChildEmbedWorkerEvents.complete && id === embeddingCtx))
       .pipe(map(({ data }) => data)));
 
     return embeddings;
@@ -43,17 +43,17 @@ export class LocalBertEmbeddingService implements EmbeddingsService {
     this.workerService.createWorker(this.workerLocation, { runtime: Runtime.child_process_fork });
 
     this.postToWorker({
-      event: ParentEmbedEvents.load,
+      event: ParentEmbedWorkerEvents.load,
       data: {},
       id: v4()
     });
   
-    await firstValueFrom(this.workerService.getMessages<EmbedMessage<ChildEmbedEvents>>(this.workerLocation)
-      .pipe(filter((e) => e.event === ChildEmbedEvents.loaded))
+    await firstValueFrom(this.workerService.getMessages<EmbedWorkerMessage<ChildEmbedWorkerEvents>>(this.workerLocation)
+      .pipe(filter((e) => e.event === ChildEmbedWorkerEvents.loaded))
       .pipe(map(() => true)));
   }
 
-  postToWorker (message: EmbedMessage<ParentEmbedEvents>) {
+  postToWorker (message: EmbedWorkerMessage<ParentEmbedWorkerEvents>) {
     return this.workerService.sendMessageToWorker(this.workerLocation, message);
   }
 }

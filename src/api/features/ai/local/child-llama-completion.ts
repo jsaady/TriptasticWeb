@@ -1,6 +1,7 @@
-import { LlamaChatSession, LlamaContext, LlamaModel } from "node-llama-cpp";
 import { Logger } from '@nestjs/common';
+import { LlamaChatSession, LlamaContext, LlamaModel } from "node-llama-cpp";
 import { resolve } from 'path';
+import { ChatWorkerMessage, ChildChatWorkerEvents, ParentChatWorkerEvents } from './chat-worker-types.js';
 
 const modelPath = resolve(process.cwd(), "./models/mistral-7b-instruct.bin");
 
@@ -13,25 +14,8 @@ const llamaContext = new LlamaContext({ model });
 
 const logger = new Logger('ChatWorker');
 
-export enum ChildEvents {
-  loaded = 'loaded',
-  newToken = 'newToken',
-  complete = 'complete'
-}
-
-export enum ParentEvents {
-  load = 'load',
-  createCompletion = 'createCompletion'
-}
-
-export interface Message<T extends ChildEvents|ParentEvents> {
-  event: T;
-  id: string;
-  data?: any;
-}
-
 const loadModel = () => {
-  process.send?.({ event: ChildEvents.loaded });
+  process.send?.({ event: ChildChatWorkerEvents.loaded });
 }
 
 const createCompletion = async (
@@ -54,7 +38,7 @@ const createCompletion = async (
   const response = await session.prompt(message, {
     onToken: (token) => {
       process.send?.({
-        event: ChildEvents.newToken,
+        event: ChildChatWorkerEvents.newToken,
         id,
         data: llamaContext.decode(token)
       });
@@ -63,7 +47,7 @@ const createCompletion = async (
 
 
   process.send?.({
-    event: ChildEvents.complete,
+    event: ChildChatWorkerEvents.complete,
     id,
     data: response
   });
@@ -71,14 +55,14 @@ const createCompletion = async (
 
 logger.log('Worker started');
 
-process.on('message', ({ event, data, id }: Message<ParentEvents>) => {
+process.on('message', ({ event, data, id }: ChatWorkerMessage<ParentChatWorkerEvents>) => {
   logger.log(`Worker received ${event} (${id})`);
 
   switch (event) {
-    case ParentEvents.load:
+    case ParentChatWorkerEvents.load:
       loadModel();
       break;
-    case ParentEvents.createCompletion:
+    case ParentChatWorkerEvents.createCompletion:
       createCompletion(data.message, data.context, id);
       break;
   }

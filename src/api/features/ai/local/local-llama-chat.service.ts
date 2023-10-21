@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import { WorkerService } from '../../../utils/workers/worker.service.js';
 import { Runtime } from '../../../utils/workers/workers.config.js';
 import { ChatService } from '../chat.service.js';
-import { ChildEvents, Message, ParentEvents } from './child-llama-completion.js';
+import { ChatWorkerMessage, ChildChatWorkerEvents, ParentChatWorkerEvents } from './chat-worker-types.js';
 
 @Injectable()
 export class LocalLlamaChatService implements ChatService {
@@ -36,7 +36,7 @@ export class LocalLlamaChatService implements ChatService {
         message,
         context,
       },
-      event: ParentEvents.createCompletion,
+      event: ParentChatWorkerEvents.createCompletion,
       id: streamContextId
     });
 
@@ -45,12 +45,12 @@ export class LocalLlamaChatService implements ChatService {
     const queue: string[] = [];
     const nextItem = () => new Promise<void>(resolve => push = resolve);
 
-    const handleWorkerData = (evt: Message<ChildEvents>) => {
+    const handleWorkerData = (evt: ChatWorkerMessage<ChildChatWorkerEvents>) => {
       this.logger.log(`Main received ${evt.event}(${evt.id})`);
       if (evt.id !== streamContextId) return;
 
       switch (evt.event) {
-        case ChildEvents.newToken:
+        case ChildChatWorkerEvents.newToken:
           queue.push(evt.data);
           if (push) {
             push();
@@ -58,13 +58,13 @@ export class LocalLlamaChatService implements ChatService {
           }
           break;
 
-        case ChildEvents.complete:
+        case ChildChatWorkerEvents.complete:
           completed = true;
           break;
       }
     };
 
-    const sub = this.workerService.getMessages<Message<ChildEvents>>(this.workerLocation)
+    const sub = this.workerService.getMessages<ChatWorkerMessage<ChildChatWorkerEvents>>(this.workerLocation)
       .pipe(filter(e => e.id === streamContextId))
       .subscribe((e) => {
         handleWorkerData(e);
@@ -89,17 +89,17 @@ export class LocalLlamaChatService implements ChatService {
     this.workerService.createWorker(this.workerLocation, { runtime: Runtime.child_process_fork });
 
     this.postToWorker({
-      event: ParentEvents.load,
+      event: ParentChatWorkerEvents.load,
       data: {},
       id: v4()
     });
   
-    await firstValueFrom(this.workerService.getMessages<Message<ChildEvents>>(this.workerLocation)
-      .pipe(filter((e) => e.event === ChildEvents.loaded))
+    await firstValueFrom(this.workerService.getMessages<ChatWorkerMessage<ChildChatWorkerEvents>>(this.workerLocation)
+      .pipe(filter((e) => e.event === ChildChatWorkerEvents.loaded))
       .pipe(map(() => true)));
   }
 
-  postToWorker (message: Message<ParentEvents>) {
+  postToWorker (message: ChatWorkerMessage<ParentChatWorkerEvents>) {
     return this.workerService.sendMessageToWorker(this.workerLocation, message);
   }
 }
