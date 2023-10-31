@@ -6,7 +6,7 @@ import { Socket } from 'socket.io';
 import { AppModule } from './app.module.js';
 import { AuthService } from './features/auth/auth.service.js';
 import { ConfigService } from './utils/config/config.service.js';
-import { initSocketAdapters } from './utils/sockets/sockets.init.js';
+import { initSocketAdapters } from '@nestjs-enhanced/sockets';
 
 
 

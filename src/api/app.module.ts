@@ -1,5 +1,8 @@
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { QueueMiddlewareService, QueueModule } from '@nestjs-enhanced/pg-boss';
+import { PubSubModule } from '@nestjs-enhanced/pub-sub';
+import { SocketsModule } from '@nestjs-enhanced/sockets';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigService, ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -13,11 +16,8 @@ import { NotesModule } from './features/notes/notes.module.js';
 import { NotificationModule } from './features/notifications/notification.module.js';
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
-import { ContextModule } from './utils/context/context.module.js';
-import { PubSubModule } from './utils/pubSub/pubSub.module.js';
-import { QueueMiddlewareService, QueueModule } from './utils/queue/index.js';
-import { SocketsModule } from './utils/sockets/sockets.module.js';
-import { WorkersModule } from './utils/workers/workers.module.js';
+import { ContextModule } from '@nestjs-enhanced/context';
+import { WorkersModule } from '@nestjs-enhanced/workers';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -30,8 +30,9 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
       rootPath: resolve(currentDir, '..', 'ui')
     }),
     AiModule.forRoot({
-      chat: AIProvider.local,
-      embedding: AIProvider.local
+      chat: AIProvider.openai,
+      embedding: AIProvider.local,
+      stt: AIProvider.openai
     }),
     QueueModule.registerAsync({
       useFactory: (config) => ({

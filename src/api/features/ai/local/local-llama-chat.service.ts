@@ -2,10 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { resolve } from 'path';
 import { filter, firstValueFrom, map } from 'rxjs';
 import { v4 } from 'uuid';
-import { WorkerService } from '../../../utils/workers/worker.service.js';
-import { Runtime } from '../../../utils/workers/workers.config.js';
 import { ChatService } from '../chat.service.js';
 import { ChatWorkerMessage, ChildChatWorkerEvents, ParentChatWorkerEvents } from './chat-worker-types.js';
+import { Runtime, WorkerService } from '@nestjs-enhanced/workers';
 
 @Injectable()
 export class LocalLlamaChatService implements ChatService {

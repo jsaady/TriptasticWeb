@@ -4,4 +4,13 @@ node_modules
 .vscode
 dist
 .env
+*.env
 README.md
+models
+chart
+.vscode
+.github
+coverage
+.git
+.gitattributes
+.gitignore

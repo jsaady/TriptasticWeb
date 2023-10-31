@@ -10,8 +10,8 @@ export class OpenAIService {
   constructor (
     protected config: ConfigService,
   ) {
-    this.openaiApiUrl = this.config.get('openaiUrl') ?? 'https://api.openai.com';
-    this.openaiApiKey = this.config.getOrThrow('openaiKey')
+    this.openaiApiUrl = this.config.get('openaiUrl', 'https://api.openai.com');
+    this.openaiApiKey = this.config.getOrThrow('openaiKey');
     this.openaiApi = axios.create({
       baseURL: this.openaiApiUrl,
       headers: {

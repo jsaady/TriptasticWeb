@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { resolve } from 'path';
 import { filter, firstValueFrom, map } from 'rxjs';
 import { v4 } from 'uuid';
-import { WorkerService } from '../../../utils/workers/worker.service.js';
-import { Runtime } from '../../../utils/workers/workers.config.js';
 import { EmbeddingsService } from '../embeddings.service.js';
 import { ChildEmbedWorkerEvents, EmbedWorkerMessage, ParentEmbedWorkerEvents } from './embed-worker-types.js';
+import { Runtime, WorkerService } from '@nestjs-enhanced/workers';
 @Injectable()
 export class LocalBertEmbeddingService implements EmbeddingsService {
   load$: Promise<any>;

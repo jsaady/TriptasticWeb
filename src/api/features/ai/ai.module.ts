@@ -8,6 +8,9 @@ import { OllamaEmbeddingsService } from './ollama/ollama-embeddings.service.js';
 import { OpenAIChatService } from './openai/openai-chat.service.js';
 import { OpenAIEmbeddingsService } from './openai/openai-embeddings.service.js';
 import { LocalLlamaChatService } from './local/local-llama-chat.service.js';
+import { ProdInputs } from '@tensorflow/tfjs';
+import { STT_SERVICE } from './stt.service.js';
+import { OpenAISTTService } from './openai/openai-stt.service.js';
 
 export enum AIProvider {
   openai = 'openai',
@@ -18,6 +21,7 @@ export enum AIProvider {
 export interface AIModuleConfig {
   embedding: AIProvider;
   chat: AIProvider;
+  stt: AIProvider;
 }
 
 const getEmbeddingProvider = (provider: AIProvider): Provider => ({
@@ -31,6 +35,10 @@ const getChatProvider = (provider: AIProvider): Provider => ({
   useClass: provider === AIProvider.ollama ?
     OllamaChatService : provider === AIProvider.local ? LocalLlamaChatService :
     OpenAIChatService
+});
+const getSTTProvider = (provider: AIProvider): Provider => ({
+  provide: STT_SERVICE,
+  useClass: provider === AIProvider.openai ? OpenAISTTService : Error
 });
 
 
@@ -48,13 +56,20 @@ export class AiModule {
       typeof(providerOrConfig) === 'string' ?
         providerOrConfig :
         providerOrConfig.chat
-    )
+    );
+
+    const STTProvider = getSTTProvider(
+      typeof(providerOrConfig) === 'string' ?
+        providerOrConfig :
+        providerOrConfig.stt
+    );
+
     return {
       global: true,
       module: AiModule,
       imports: [ConfigModule],
-      providers: [embeddingProvider, chatProvider],
-      exports: [embeddingProvider, chatProvider]
+      providers: [embeddingProvider, chatProvider, STTProvider],
+      exports: [embeddingProvider, chatProvider, STTProvider]
     };
   }
 }

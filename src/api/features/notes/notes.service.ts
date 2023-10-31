@@ -3,13 +3,14 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable, Logger } from '@nestjs/common';
 import PgBoss, { Job } from 'pg-boss';
-import { RequestContextService } from '../../utils/context/request-context.service.js';
-import { InjectPGBoss } from '../../utils/queue/index.js';
-import { ProcessQueue, ScheduledQueue } from '../../utils/queue/queue.decorator.js';
-import { SocketIOPropagatorService } from '../../utils/sockets/socket.propagator.js';
+import { SocketIOPropagatorService } from '@nestjs-enhanced/sockets';
 import { ChatService, InjectChat } from '../ai/chat.service.js';
 import { EmbeddingsService, InjectEmbeddingsService } from '../ai/embeddings.service.js';
+import { InjectSTTService, STTService } from '../ai/stt.service.js';
 import { Note } from './note.entity.js';
+import { NoteSearchResult } from './notes.dto.js';
+import { ProcessQueue, ScheduledQueue } from '@nestjs-enhanced/pg-boss';
+import { RequestContextService } from '@nestjs-enhanced/context';
 
 @Injectable()
 export class NotesService {
@@ -19,9 +20,11 @@ export class NotesService {
     private embeddingsService: EmbeddingsService,
     @InjectChat()
     private chatService: ChatService,
+    @InjectSTTService()
+    private sttService: STTService,
     @InjectRepository(Note)
     private noteRepo: EntityRepository<Note>,
-    @InjectPGBoss() private pgBoss: PgBoss,
+    private pgBoss: PgBoss,
     private sockets: SocketIOPropagatorService,
 
     private context: RequestContextService
@@ -51,13 +54,10 @@ export class NotesService {
   scheduleSendChatResponse (notes: number[], prompt: string) {
     const socketId = this.context.getContext()?.get('x-socket-id');
 
-    return this.pgBoss.send({
-      name: 'send_chat_response',
-      data: {
-        socketId,
-        notes,
-        prompt,
-      }
+    return this.pgBoss.send('send_chat_response', {
+      socketId,
+      notes,
+      prompt,
     });
   }
   
@@ -83,11 +83,8 @@ export class NotesService {
 
     await em.persistAndFlush(newNote);
 
-    this.pgBoss.send({
-      name: 'set_embeddings',
-      data: {
-        id: newNote.id
-      }
+    this.pgBoss.send('set_embeddings', {
+      id: newNote.id
     });
 
     return newNote;
@@ -97,22 +94,24 @@ export class NotesService {
     return this.noteRepo.find({ createdBy: this.context.getContext()?.user.sub });
   }
 
-  async getReleventNotes(prompt: string) {
+  async getReleventNotes(prompt: string): Promise<NoteSearchResult[]> {
     const embeddings = await this.embeddingsService.getEmbeddings(prompt);
-
-    const qb = this.em.createQueryBuilder(Note)
-      .getKnex()
+    const knex = this.em.getKnex();
+    const foundNotes: any[] = await this.em.createQueryBuilder(Note).getKnex()
       .select('*')
+      .select(knex.raw('embeddings <-> ? as embeddings_distance', [JSON.stringify(embeddings)]))
       .where({
         created_by: this.context.getContext()?.user.sub,
         has_embeddings: true,
       })
-      .orderByRaw('embeddings <-> ?', [JSON.stringify(embeddings)])
-      .limit(5);
+      .orderByRaw('embeddings_distance')
+      .limit(25);
 
-    const foundNotes: any[] = await qb;
 
-    return foundNotes.map((foundNote: Record<string, any>) => this.noteRepo.map(foundNote));
+    return foundNotes.map((foundNote: Record<string, any>) => ({
+      note: this.noteRepo.map(foundNote),
+      distance: +foundNote.embeddings_distance
+    }));
   }
 
   async getChatResponseForRelevantNotes(notes: Note[], note: string, socketId: string) {
@@ -136,9 +135,17 @@ Please provide a response using common sense and ideally related to the notes ab
     }
   }
 
+  async transcribeText(file: Express.Multer.File) {
+    let data = '';
 
+    for await (const chunk of this.sttService.audioStreamToText(Buffer.from(file.buffer))) {
+      data += chunk;
+    }
 
-  @ScheduledQueue('*/3 * * * *')
+    return data;
+  }
+
+  @ScheduledQueue('* * * * *')
   async resyncEmbeddings(job: Job) {
     const notes = await this.em.find(Note, { hasEmbeddings: false });
 
