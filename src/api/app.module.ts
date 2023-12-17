@@ -1,8 +1,10 @@
 import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { ContextModule } from '@nestjs-enhanced/context';
 import { QueueMiddlewareService, QueueModule } from '@nestjs-enhanced/pg-boss';
 import { PubSubModule } from '@nestjs-enhanced/pub-sub';
 import { SocketsModule } from '@nestjs-enhanced/sockets';
+import { WorkersModule } from '@nestjs-enhanced/workers';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigService, ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -16,8 +18,6 @@ import { NotesModule } from './features/notes/notes.module.js';
 import { NotificationModule } from './features/notifications/notification.module.js';
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
-import { ContextModule } from '@nestjs-enhanced/context';
-import { WorkersModule } from '@nestjs-enhanced/workers';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -31,7 +31,7 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     }),
     AiModule.forRoot({
       chat: AIProvider.openai,
-      embedding: AIProvider.local,
+      embedding: AIProvider.openai,
       stt: AIProvider.openai
     }),
     QueueModule.registerAsync({

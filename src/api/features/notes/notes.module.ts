@@ -6,6 +6,7 @@ import { AuthModule } from '../auth/auth.module.js';
 import { Note } from './note.entity.js';
 import { NotesController } from './notes.controller.js';
 import { NotesService } from './notes.service.js';
+import { SocketGateway } from './notes.gateway.js';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { NotesService } from './notes.service.js';
     ConfigModule
   ],
   controllers: [NotesController],
-  providers: [NotesService]
+  providers: [NotesService, SocketGateway]
 })
 export class NotesModule { }
