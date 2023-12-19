@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 
 import USE, { UniversalSentenceEncoder } from '@tensorflow-models/universal-sentence-encoder';
 // import { UniversalSentenceEncoderQnA } from '@tensorflow-models/universal-sentence-encoder/dist/use_qna.js';
-import '@tensorflow/tfjs-node-gpu';
+import '@tensorflow/tfjs-node';
 import { ChildEmbedWorkerEvents, EmbedWorkerMessage, ParentEmbedWorkerEvents } from './embed-worker-types.js';
 // import { UniversalSentenceEncoderQnA } from '@tensorflow-models/universal-sentence-encoder/dist/use_qna.js';
 
