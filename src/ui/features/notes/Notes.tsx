@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '../../components/Button.js';
 import { Icon } from '../../components/Icon.js';
 import { Textarea } from '../../components/Textarea.js';
@@ -11,10 +11,13 @@ export const Notes = () => {
   const [note$] = useSocket('notes:updated');
   const [chatToken$] = useSocket('chatbot:new_token');
 
+  const [chatPending, setChatPending] = useState(false);
+
   const [fetch, notes$] = useAsyncHttp((http) => http.get<{ note: string; id: number; hasEmbeddings: boolean; }[]>('/api/notes'), []);
-  const [search, searchNotes$] = useAsyncHttp((http, note: string) => http.post<[number, number][]>('/api/notes/search', { note, socketId: chatToken$.id }), []);
+  const [search, searchNotes$] = useAsyncHttp((http, note: string, chat?: boolean) => http.post<[number, number][]>(`/api/notes/search${chat ? '?chat=true' : ''}`, { note, socketId: chatToken$.id }), []);
   const [createNote, createNote$] = useAsyncHttp((http, note: { note: string; }) => http.post<{ note: string; id: number; }>('/api/notes', note), []);
-  const ids = useMemo(() => {
+  const [ids, setIds] = useState(new Map<number, [number, string]>());
+  useEffect(() => {
     const distanceMap = new Map<number, [number, string]>();
 
     let min = 0, max = 0;
@@ -43,9 +46,8 @@ export const Notes = () => {
       distanceMap.set(id, [distance, shade]);
     }
 
-    console.log(distanceMap, min, max);
-    return distanceMap;
-  }, [searchNotes$]);
+    setIds(distanceMap);
+  }, [searchNotes$.result]);
 
   const allNotes = useMemo(() => {
     return notes$.result?.sort((a, b) => {
@@ -68,6 +70,7 @@ export const Notes = () => {
   const [chatResponse, setChatResponse] = useState('');
 
   useEffect(() => {
+    if (chatToken$.data) setChatPending(false);
     setChatResponse(resp => {
       const newMessage = resp + (chatToken$.data ?? '');
 
@@ -77,7 +80,7 @@ export const Notes = () => {
 
 
   useEffect(() => {
-    fetch()
+    fetch();
   }, [createNote$.result, note$.messageTs]);
 
 
@@ -86,7 +89,11 @@ export const Notes = () => {
   });
 
   useEffect(() => {
-    search(state.note);
+    if (state.note) {
+      search(state.note);
+    } else if (ids.size > 0) {
+      setIds(new Map());
+    }
   }, [state.note]);
 
   const doCreate = useCallback((props: { note: string; }) => {
@@ -96,7 +103,8 @@ export const Notes = () => {
 
   const doSearch = useCallback(() => {
     setChatResponse('');
-    return search(state.note);
+    setChatPending(true);
+    return search(state.note, true);
   }, [search, state.note]);
 
   const onRecorderText = useCallback((newText: string) => {
@@ -107,10 +115,12 @@ export const Notes = () => {
     {allNotes.length > 0 ? <div className="flex max-h-[25em] my-4 shadow-md border p-2 dark:border-neutral-700 flex-col overflow-scroll">
       {notes$.loading && <Icon icon='circle' className='animate-ping self-end mr-[-1.5rem] mt-[-1.5rem] z-10 text-xl' />}
       {allNotes.map(({ id, note, hasEmbeddings }) => <div key={id} className={`flex items-center border-b p-2 dark:border-neutral-700 last:border-none ${ids.has(id) ? ids.get(id)![1] : ''}`}>
+        <div>
+          #{id}:&nbsp;
+        </div>
         <p className={(ids.has(id) ? 'font-bold' : 'font-light')}>
-          #{id}: {note}
+          {note}
         </p>
-        <Icon className={`ml-2 ${hasEmbeddings ? "text-green-500" : 'text-yellow-500'}`} icon={hasEmbeddings ? 'check-circle' : 'help-circle'} />
       </div>)}
     </div> : <p className='my-4'>
       You have not entered any notes, Enter a note and save using the + below
@@ -123,7 +133,7 @@ export const Notes = () => {
       <Textarea disabled={createNote$.loading} {...register('note')} />
       <div>
         <Button type='button' className='mr-4 bg-transparent border border-x-0 border-t-0 rounded-none border-b-neutral-500 dark:border-neutral-500' disabled={searchNotes$.loading} onClick={doSearch}>
-          <Icon icon={searchNotes$.loading ? 'circle' : 'search'} className={'text-black dark:text-white font-weight-900 text-xl ' + (searchNotes$.loading ? 'animate-ping' : '')} />
+          <Icon icon={chatPending ? 'circle' : 'search'} className={'text-black dark:text-white font-weight-900 text-xl ' + (chatPending ? 'animate-ping' : '')} />
         </Button>
         <Button type="submit" className='bg-transparent rounded-none '>
           <Icon icon='plus' className='text-black font-weight-900 text-2xl dark:text-white ' />

@@ -1,0 +1,143 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: noter-4
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-image-pull-secret
+  namespace: noter-4
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: eyJhdXRocyI6IHsiZ2hjci5pbyI6IHsidXNlcm5hbWUiOiAianNhYWR5IiwicGFzc3dvcmQiOiAiZ2hwX3RuZGtoMEVxS2QwUVc3U1hiMEdod3BwVmx0UFhGWjNueHdLOSIsImF1dGgiOiAiYW5OaFlXUjVPbWRvY0Y5MGJtUnJhREJGY1V0a01GRlhOMU5ZWWpCSGFIZHdjRlpzZEZCWVJsb3pibmgzU3prPSJ9fX0K
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: noter-deployment
+  namespace: noter-4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: noter
+  template:
+    metadata:
+      labels:
+        app: noter
+    spec:
+      containers:
+        - name: noter
+          image: ghcr.io/jsaady/noter:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: static-config
+      imagePullSecrets:
+        - name: github-image-pull-secret
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: noter-ingress
+  namespace: noter-4
+spec:
+  rules:
+    - host: noter.holyham.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: noter-service
+                port:
+                  number: 3000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: noter-service
+  namespace: noter-4
+spec:
+  selector:
+    app: noter
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: static-config
+  namespace: noter-4
+data:
+  ENVIRONMENT_URL: noter.holyham.dev
+  ENVIRONMENT_NAME: dev
+  EMAIL_HOST: mail.holyham.cloud
+  EMAIL_PORT: "587"
+  EMAIL_USER: app@holyham.cloud
+  EMAIL_REPLY_TO: app@holyham.cloud
+  DATABASE_URL: postgres://postgres:password@postgres-service:5432/app
+  DATABASE_PASSWORD: password
+  EMAIL_PASSWORD: Oxygen-Glorify1-Designing
+  OPENAI_KEY: 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
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: noter-4
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: noter-4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: ankane/pgvector:latest
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: app
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "100m"
+              memory: "256Mi"

@@ -2,20 +2,20 @@ import { Logger } from '@nestjs/common';
 
 
 import USE, { UniversalSentenceEncoder } from '@tensorflow-models/universal-sentence-encoder';
-import '@tensorflow/tfjs-node';
+// import { UniversalSentenceEncoderQnA } from '@tensorflow-models/universal-sentence-encoder/dist/use_qna.js';
+import '@tensorflow/tfjs-node-gpu';
 import { ChildEmbedWorkerEvents, EmbedWorkerMessage, ParentEmbedWorkerEvents } from './embed-worker-types.js';
-import { UniversalSentenceEncoderQnA } from '@tensorflow-models/universal-sentence-encoder/dist/use_qna.js';
-import { parentPort } from 'worker_threads';
+// import { UniversalSentenceEncoderQnA } from '@tensorflow-models/universal-sentence-encoder/dist/use_qna.js';
 
 const logger = new Logger('EmbeddingsWorker');
 
 let use: UniversalSentenceEncoder;
-let qna: UniversalSentenceEncoderQnA;
+// let qna: UniversalSentenceEncoderQnA;
 
 const loadModel = async () => {
   use = await USE.load();
-  qna = await USE.loadQnA();
-  await qna.load();
+  // qna = await USE.loadQnA();
+  // await qna.load();
   process.send?.({ event: ChildEmbedWorkerEvents.loaded });
 }
 

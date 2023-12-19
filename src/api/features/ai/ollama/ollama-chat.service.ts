@@ -21,6 +21,7 @@ export class OllamaChatService extends OllamaService implements ChatService {
       body: JSON.stringify({
         model: this.config.getOrThrow('ollamaChatModel'),
         prompt: message,
+        temperature: 1.0,
         system: context,
         stream: true,
       })
