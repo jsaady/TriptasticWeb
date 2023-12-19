@@ -81,7 +81,7 @@ metadata:
   name: static-config
   namespace: noter-4
 data:
-  ENVIRONMENT_URL: noter.holyham.dev
+  ENVIRONMENT_URL: https://noter.holyham.dev
   ENVIRONMENT_NAME: dev
   EMAIL_HOST: mail.holyham.cloud
   EMAIL_PORT: "587"
