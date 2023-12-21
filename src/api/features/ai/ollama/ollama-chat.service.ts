@@ -9,7 +9,7 @@ export class OllamaChatService extends OllamaService implements ChatService, OnM
     let attempt = 0;
     this.logger.log(`Pulling model (${this.config.getOrThrow('ollamaChatModel')}) from Ollama...`);
 
-    while (attempt < 5) {
+    while (attempt < 600) {
       try {
         await this.pullModel();
         this.logger.log(`Model pulled successfully`);
@@ -18,7 +18,7 @@ export class OllamaChatService extends OllamaService implements ChatService, OnM
         const error = e as Error;
         this.logger.error(`Failed to pull model: ${error.message}`);
         // Pause for 250ms
-        await new Promise(resolve => setTimeout(resolve, 250));
+        await new Promise(resolve => setTimeout(resolve, 500));
         attempt++;
       }
     }
