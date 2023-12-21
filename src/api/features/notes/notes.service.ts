@@ -105,7 +105,7 @@ export class NotesService {
         has_embeddings: true,
       })
       .orderByRaw('embeddings_distance')
-      .limit(25);
+      .limit(5);
 
 
     return foundNotes.map((foundNote: Record<string, any>) => ({
