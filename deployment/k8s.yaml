@@ -1,14 +1,7 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: noter-4
----
 apiVersion: v1
 kind: Secret
 metadata:
   name: github-image-pull-secret
-  namespace: noter-4
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: eyJhdXRocyI6IHsiZ2hjci5pbyI6IHsidXNlcm5hbWUiOiAianNhYWR5IiwicGFzc3dvcmQiOiAiZ2hwX3RuZGtoMEVxS2QwUVc3U1hiMEdod3BwVmx0UFhGWjNueHdLOSIsImF1dGgiOiAiYW5OaFlXUjVPbWRvY0Y5MGJtUnJhREJGY1V0a01GRlhOMU5ZWWpCSGFIZHdjRlpzZEZCWVJsb3pibmgzU3prPSJ9fX0K
@@ -17,7 +10,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: noter-deployment
-  namespace: noter-4
 spec:
   replicas: 1
   selector:
@@ -45,7 +37,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: noter-ingress
-  namespace: noter-4
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt"
@@ -71,7 +62,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: noter-service
-  namespace: noter-4
 spec:
   selector:
     app: noter
@@ -86,7 +76,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: static-config
-  namespace: noter-4
 data:
   ENVIRONMENT_URL: https://noter2.holyham.dev
   ENVIRONMENT_NAME: dev
@@ -106,7 +95,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres-service
-  namespace: noter-4
 spec:
   selector:
     app: postgres
@@ -121,7 +109,6 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
-  namespace: noter-4
 spec:
   storageClassName: do-block-storage
   accessModes:
@@ -136,7 +123,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  namespace: noter-4
 spec:
   replicas: 1
   selector:
@@ -180,7 +166,6 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: ollama-pvc
-  namespace: noter-4
 spec:
   storageClassName: do-block-storage
   accessModes:
@@ -195,7 +180,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ollama
-  namespace: noter-4
 spec:
   replicas: 1
   selector:
@@ -231,7 +215,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ollama-service
-  namespace: noter-4
 spec:
   selector:
     app: ollama
