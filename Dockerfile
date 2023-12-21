@@ -6,7 +6,7 @@ COPY . .
 RUN npm run build
 
 FROM node:20
-RUN apk add --no-cache python3 make g++
+# RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/package*.json /app/
