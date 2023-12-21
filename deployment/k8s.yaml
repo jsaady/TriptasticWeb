@@ -52,10 +52,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - noter.holyham.dev
+        - noter2.holyham.dev
       secretName: noter-tls
   rules:
-    - host: noter.holyham.dev
+    - host: noter2.holyham.dev
       http:
         paths:
           - path: /
@@ -88,7 +88,7 @@ metadata:
   name: static-config
   namespace: noter-4
 data:
-  ENVIRONMENT_URL: https://noter.holyham.dev
+  ENVIRONMENT_URL: https://noter2.holyham.dev
   ENVIRONMENT_NAME: dev
   EMAIL_HOST: mail.holyham.cloud
   EMAIL_PORT: "587"
@@ -212,6 +212,9 @@ spec:
           ports:
             - containerPort: 11434
           resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
             limits:
               cpu: "1"
               memory: "2Gi"
