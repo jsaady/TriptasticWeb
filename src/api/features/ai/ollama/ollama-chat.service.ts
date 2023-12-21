@@ -1,9 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ChatService } from '../chat.service.js';
 import { OllamaService } from './base-ollama.service.js';
 
 @Injectable()
-export class OllamaChatService extends OllamaService implements ChatService {
+export class OllamaChatService extends OllamaService implements ChatService, OnModuleInit {
+  private logger = new Logger('OllamaChatService');
+  async onModuleInit() {
+    let attempt = 0;
+    this.logger.log(`Pulling model (${this.config.getOrThrow('ollamaChatModel')}) from Ollama...`);
+
+    while (attempt < 5) {
+      try {
+        await this.pullModel();
+        this.logger.log(`Model pulled successfully`);
+        break;
+      } catch (e) {
+        const error = e as Error;
+        this.logger.error(`Failed to pull model: ${error.message}`);
+        // Pause for 250ms
+        await new Promise(resolve => setTimeout(resolve, 250));
+        attempt++;
+      }
+    }
+  }
+
+  async pullModel () {
+    await this.ollamaApi.post('/api/pull', {
+      name: this.config.getOrThrow('ollamaChatModel'),
+    });
+  }
   async getReply(prompt: string, context: string): Promise<string> {
     const { data: { response } } = await this.ollamaApi.post('/api/generate', {
       model: this.config.getOrThrow('ollamaChatModel'),

@@ -115,13 +115,25 @@ export class NotesService {
   }
 
   async getChatResponseForRelevantNotes(notes: Note[], note: string, socketId: string) {
-    const rootContext = `You are a personal assistant tasked with helping the user with something. The user is using an app that keeps track of relevant notes and can provide useful context about the user's prompt. Your responses should be very short (3-5 sentences) and be very condensed`;
+    const rootContext = `
+# Context:
+You are an intelligent personal assistant chatbot. Your primary role is to assist the user by providing suggestions and advice based on their stored notes. Your responses should be brief, precise, and directly related to the user's queries.
+
+# User Interaction:
+The user engages with you through an app that has a repository of their personal notes. These notes contain various pieces of information that the user has found important.
+
+# Your Task:
+Provide responses that are concise (3-5 sentences) and to the point.
+Make sure to address the user directly in your responses.
+Use markdown for clarity where appropriate.
+Refer to the user's notes when providing suggestions or advice. Highlight how specific notes are relevant to their current query.
+If the user's notes don't directly relate to their query, guide them on what kind of information could be useful for similar future inquiries.    
+`;
     const noNoteContext = 'The user has not entered any notes yet, please give them some pointers on what kinds of notes you would find useful to help them in the future. Be sure to mention the fact that they have not entered any notes yet and this app will not be very useful without them';
-    const withNoteContext = `Below is a list of notes the user has entered that could be related to this subject:
+    const withNoteContext = `# User's Notes:
+    Here are some examples of notes the user might have:    
 
 ${notes.map(n => `#${n.id} (${n.createdAt}) - "${n.note.replace(/\"/g, "'")}"`).join('\n')}
-
-Please provide a response using common sense and ideally related to the notes above. Please also prioritize reminding the user of things they've mentioned in their notes. If nothing seems relevant give the user some pointers on what to take note of in the near future.
     `;
 
     const fullContext = rootContext + '\n\n' + (notes.length ? withNoteContext : noNoteContext);

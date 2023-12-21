@@ -20,7 +20,7 @@ const GlobalSocketContext = createContext<GlobalSocketState>(null as any);
 export const useGlobalSocket = () => useContext(GlobalSocketContext);
 
 export const GlobalSocketProvider = ({ children, url = '/' }: GlobalSocketProvider) => {
-  const initialGlobalSocket = useMemo(() => io(url, { transports: ['websocket'] }), [url]);
+  const initialGlobalSocket = useMemo(() => io(url, { transports: ['websocket'] } as any), [url]);
   const [globalSocket, setGlobalSocket] = useState<Socket|null>(null);
   const [connected, setConnected] = useState(false);
 
