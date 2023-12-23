@@ -57,6 +57,7 @@ export class GeneratedConfigService {
       openaiKey: this.config.get(CONFIG_VARS.openaiKey),
       openaiChatModel: this.config.get(CONFIG_VARS.openaiChatModel),
       openaiEmbeddingModel: this.config.get(CONFIG_VARS.openaiEmbeddingModel),
+      relevantNoteWindowSize: +this.config.get(CONFIG_VARS.relevantNoteWindowSize, 5),
     });
 
     return config;

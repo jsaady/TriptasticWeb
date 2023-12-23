@@ -11,6 +11,7 @@ import { Note } from './note.entity.js';
 import { NoteSearchResult } from './notes.dto.js';
 import { ProcessQueue, ScheduledQueue } from '@nestjs-enhanced/pg-boss';
 import { RequestContextService } from '@nestjs-enhanced/context';
+import { ConfigService } from '../../utils/config/config.service.js';
 
 @Injectable()
 export class NotesService {
@@ -26,6 +27,7 @@ export class NotesService {
     private noteRepo: EntityRepository<Note>,
     private pgBoss: PgBoss,
     private sockets: SocketIOPropagatorService,
+    private config: ConfigService,
 
     private context: RequestContextService
   ) { }
@@ -105,7 +107,7 @@ export class NotesService {
         has_embeddings: true,
       })
       .orderByRaw('embeddings_distance')
-      .limit(5);
+      .limit(+this.config.get('relevantNoteWindowSize', '5'))
 
 
     return foundNotes.map((foundNote: Record<string, any>) => ({

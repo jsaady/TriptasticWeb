@@ -19,7 +19,8 @@ export const CONFIG_VARS = {
   openaiUrl: 'OPENAI_URL',
   openaiKey: 'OPENAI_KEY',
   openaiChatModel: 'OPENAI_CHAT_MODEL',
-  openaiEmbeddingModel: 'OPENAI_EMBEDDING_MODEL'
+  openaiEmbeddingModel: 'OPENAI_EMBEDDING_MODEL',
+  relevantNoteWindowSize: 'RELEVANT_NOTE_WINDOW_SIZE',
 };
 
 export const RATE_LIMIT_TTL = 60;

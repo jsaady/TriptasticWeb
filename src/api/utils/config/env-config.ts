@@ -13,4 +13,5 @@ export interface EnvironmentConfig {
   openaiKey: string;
   openaiChatModel: string;
   openaiEmbeddingModel: string;
+  relevantNoteWindowSize: number;
 }
