@@ -107,7 +107,7 @@ export class NotesService {
         has_embeddings: true,
       })
       .orderByRaw('embeddings_distance')
-      .limit(+this.config.get('relevantNoteWindowSize', '5'))
+      .limit(+this.config.get('relevantNoteWindowSize', 5))
 
 
     return foundNotes.map((foundNote: Record<string, any>) => ({
