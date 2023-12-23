@@ -136,7 +136,7 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     env:
-      FULL_IMAGE_TAG: ${{ needs.jobs.build.outputs.tags }}
+      FULL_IMAGE_TAG: ${{ needs.build.outputs.tags }}
     needs:
       - build
       # - test
