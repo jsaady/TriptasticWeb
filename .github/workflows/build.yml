@@ -138,7 +138,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: debug
-      run: echo $DOCKER_METADATA_OUTPUT_TAGS
+      run: env
     - name: Replace old image with new image
       run: |
         sed -i "s|image: ghcr.io/jsaady/noter:.*|image: ghcr.io/jsaady/noter:$DOCKER_METADATA_OUTPUT_TAGS|g" ./deployment/k8s.yaml
