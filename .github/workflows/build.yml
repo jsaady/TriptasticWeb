@@ -88,13 +88,13 @@ jobs:
     - uses: actions/checkout@v3
     - name: Replace old image with new image
       run: |
-        sed -i "s|image: ghcr.io/jsaady/noter:.*|image: ghcr.io/jsaady/noter:${{ env.TAG_NAME }}|g" ./deployment/k8s.yaml
+        sed -i "s|image: ghcr.io/jsaady/noter:.*|image: ghcr.io/jsaady/noter:${{ github.sha }}|g" ./deployment/k8s.yaml
     - name: Push to repo
       run: |
         git config --global user.email "john@holyham.cloud"
         git config --global user.name "John Saady"
         git add ./deployment/k8s.yaml
-        git commit -m "Update image tag to ${{ env.TAG_NAME }} [skip ci]"
+        git commit -m "Update image tag to ${{ github.sha }} [skip ci]"
         git push
     # - name: Extract env vars
     #   uses: jsaady/actions/extract-env-vars@main
