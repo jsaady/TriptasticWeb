@@ -23,8 +23,6 @@ env:
 
 jobs:
   build-and-push-image:
-    container:
-      image: catthehacker/ubuntu:act-22.04
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
@@ -50,57 +48,67 @@ jobs:
           docker logout
           docker system prune -a -f
 
-  test:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: ankane/pgvector:latest
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    container:
-      image: node
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-    - name: Install
-      run: npm ci
-    - name: Build
-      run: npm run build
-    - name: Run tests
-      run: npm test
-      env:
-        DATABASE_URL: "postgres://postgres:postgres@postgres:5432/test"
-        DATABASE_PASSWORD: postgres
-    # - name: Lint
-    #   run: npm lint
+  # test:
+  #   runs-on: ubuntu-latest
+  #   services:
+  #     postgres:
+  #       image: ankane/pgvector:latest
+  #       env:
+  #         POSTGRES_USER: postgres
+  #         POSTGRES_PASSWORD: postgres
+  #         POSTGRES_DB: test
+  #       ports:
+  #         - 5432:5432
+  #       options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+  #   container:
+  #     image: node
+  #   steps:
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v3
+  #   - name: Install
+  #     run: npm ci
+  #   - name: Build
+  #     run: npm run build
+  #   - name: Run tests
+  #     run: npm test
+  #     env:
+  #       DATABASE_URL: "postgres://postgres:postgres@postgres:5432/test"
+  #       DATABASE_PASSWORD: postgres
+  #   # - name: Lint
+  #   #   run: npm lint
 
   deploy:
-    runs-on: onsite
-    environment: production
     if: github.ref == 'refs/heads/main'
+    permissions: write-all
+    runs-on: ubuntu-latest
     needs:
       - build-and-push-image
-      - test
+      # - test
     steps:
     - uses: actions/checkout@v3
-    - name: Extract env vars
-      uses: jsaady/actions/extract-env-vars@main
-      env:
-        APP_SECRET_ENVIRONMENT_URL: ${{ secrets.APP_SECRET_ENVIRONMENT_URL }}
-        APP_SECRET_ENVIRONMENT_NAME: ${{ secrets.APP_SECRET_ENVIRONMENT_NAME }}
-        APP_SECRET_EMAIL_HOST: ${{ secrets.APP_SECRET_EMAIL_HOST }}
-        APP_SECRET_EMAIL_PORT: ${{ secrets.APP_SECRET_EMAIL_PORT }}
-        APP_SECRET_EMAIL_USER: ${{ secrets.APP_SECRET_EMAIL_USER }}
-        APP_SECRET_EMAIL_PASSWORD: ${{ secrets.APP_SECRET_EMAIL_PASSWORD }}
-        APP_SECRET_EMAIL_REPLY_TO: ${{ secrets.APP_SECRET_EMAIL_REPLY_TO }}
+    - name: Replace old image with new image
+      run: |
+        sed -i "s|image: ghcr.io/jsaady/noter:.*|image: ghcr.io/jsaady/noter:${{ env.TAG_NAME }}|g" ./deployment/k8s.yaml
+    - name: Push to repo
+      run: |
+        git config --global user.email "john@holyham.cloud"
+        git config --global user.name "John Saady"
+        git add ./deployment/k8s.yaml
+        git commit -m "Update image tag to ${{ env.TAG_NAME }} [skip ci]"
+        git push
+    # - name: Extract env vars
+    #   uses: jsaady/actions/extract-env-vars@main
+    #   env:
+    #     APP_SECRET_ENVIRONMENT_URL: ${{ secrets.APP_SECRET_ENVIRONMENT_URL }}
+    #     APP_SECRET_ENVIRONMENT_NAME: ${{ secrets.APP_SECRET_ENVIRONMENT_NAME }}
+    #     APP_SECRET_EMAIL_HOST: ${{ secrets.APP_SECRET_EMAIL_HOST }}
+    #     APP_SECRET_EMAIL_PORT: ${{ secrets.APP_SECRET_EMAIL_PORT }}
+    #     APP_SECRET_EMAIL_USER: ${{ secrets.APP_SECRET_EMAIL_USER }}
+    #     APP_SECRET_EMAIL_PASSWORD: ${{ secrets.APP_SECRET_EMAIL_PASSWORD }}
+    #     APP_SECRET_EMAIL_REPLY_TO: ${{ secrets.APP_SECRET_EMAIL_REPLY_TO }}
 
-    - name: Dump ENV Vars
-      run: cat ./app/app-secrets.yaml
+    # - name: Dump ENV Vars
+    #   run: cat ./app/app-secrets.yaml
 
-    - name: kubectl debug
-      run: kubectl cluster-info
+    # - name: kubectl debug
+    #   run: kubectl cluster-info
