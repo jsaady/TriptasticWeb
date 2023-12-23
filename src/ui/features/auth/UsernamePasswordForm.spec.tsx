@@ -5,6 +5,7 @@ import { setupServer } from 'msw/node';
 import { BrowserRouter } from 'react-router-dom';
 import { withAuthorization } from '../../utils/useAuth.js';
 import { UsernamePasswordForm } from './UsernamePasswordForm.js';
+import { withGlobalSocketProvider } from '../../utils/useSocket.js';
 jest.mock('@simplewebauthn/browser', () => ({
   startAuthentication() {
     return {};
@@ -33,7 +34,7 @@ test('login screen should render', async () => {
   
       return res(ctx.json({ success: true }));
     })
-  )
+  );
   const Wrapped = withAuthorization(UsernamePasswordForm);
 
   const { findByTestId } = render(<Wrapped />, { wrapper: BrowserRouter as React.FC });

@@ -24,7 +24,7 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
   const [me, setMe] = useState<{ sub: number; email: string; }>();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { reconnect: globalSocketReconnect } = useGlobalSocket();
+  const { reconnect: globalSocketReconnect } = useGlobalSocket() ?? { reconnect: () => {} };
 
   const clientIdentifier = useMemo(() => {
     let storedClientIdentifier = localStorage.getItem('clientIdentifier');
