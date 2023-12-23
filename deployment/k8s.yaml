@@ -89,7 +89,8 @@ data:
   OPENAI_KEY: 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
   OLLAMA_CHAT_MODEL: phi:latest
   OLLAMA_URL: http://ollama-service:11434
-  RELEVANT_NOTE_WINDOW_SIZE: 25
+  RELEVANT_NOTE_WINDOW_SIZE: "25"
+
 ---
 
 apiVersion: v1
