@@ -36,10 +36,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - noter2.holyham.dev
+        - noter3.holyham.dev
       secretName: noter-tls
   rules:
-    - host: noter2.holyham.dev
+    - host: noter3.holyham.dev
       http:
         paths:
           - path: /
