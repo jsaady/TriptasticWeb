@@ -21,6 +21,17 @@ spec:
           envFrom:
             - configMapRef:
                 name: static-config
+          env:
+            - name: OPENAI_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: noter_secrets
+                  key: openai_key
+            - name: EMAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: noter_secrets
+                  key: email_password
       imagePullSecrets:
         - name: gh-pull-secret
 
@@ -78,8 +89,6 @@ data:
   EMAIL_REPLY_TO: app@holyham.cloud
   DATABASE_URL: postgres://postgres:password@postgres-service:5432/app
   DATABASE_PASSWORD: password
-  EMAIL_PASSWORD: Oxygen-Glorify1-Designing
-  OPENAI_KEY: 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
   OLLAMA_CHAT_MODEL: phi:latest
   OLLAMA_URL: http://ollama-service:11434
   RELEVANT_NOTE_WINDOW_SIZE: "25"
