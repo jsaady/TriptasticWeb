@@ -20,7 +20,7 @@ spec:
             - containerPort: 3000
           envFrom:
             - configMapRef:
-              name: static-config
+                name: static-config
           env:
             - name: OPENAI_KEY
               valueFrom:
