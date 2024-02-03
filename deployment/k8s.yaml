@@ -20,17 +20,17 @@ spec:
             - containerPort: 3000
           envFrom:
             - configMapRef:
-                name: static-config
+              name: static-config
           env:
             - name: OPENAI_KEY
               valueFrom:
                 secretKeyRef:
-                  name: noter_secrets
+                  name: noter-secrets
                   key: openai_key
             - name: EMAIL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: noter_secrets
+                  name: noter-secrets
                   key: email_password
       imagePullSecrets:
         - name: gh-pull-secret
