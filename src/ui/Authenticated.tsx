@@ -14,10 +14,6 @@ export const Authenticated = withSidebar(withNotifications(() => {
 
   const navItems = useMemo<LinkNavBarItem[]>(() => {
     return [{
-      icon: 'home',
-      label: 'Home',
-      link: '/'
-    }, {
       icon: 'edit-2',
       label: 'Notes',
       link: '/notes'

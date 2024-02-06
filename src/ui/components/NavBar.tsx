@@ -1,8 +1,7 @@
 import { Link, NavLink } from 'react-router-dom';
-import { noop } from 'rxjs';
 import { Clickable } from './Clickable.js';
 import { Dropdown } from './Dropdown.js';
-import { BootstrapIcon, FeatherIcon, Icon } from './Icon.js';
+import { FeatherIcon, Icon } from './Icon.js';
 
 export interface NavBarItem {
   icon: FeatherIcon;
@@ -39,7 +38,7 @@ export const NavBar = ({ navItems, rightIcon, rightItems }: NavBarProps) => (
   <div className='w-full border-b flex justify-between sticky top-0 dark:border-neutral-700'>
     <div className='flex'>
       <Link to='/'>
-        <h2 className='px-4 py-6'>Template app</h2>
+        <h2 className='px-4 py-6'>Noter</h2>
       </Link>
     </div>
     <div className='px-4 flex items-center flex-grow'>

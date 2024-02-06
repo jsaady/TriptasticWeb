@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { Authenticated } from './Authenticated.js';
 import { Root } from './Root.js';
 import { Account } from './features/account/Account.js';
@@ -45,7 +45,7 @@ export const router = createBrowserRouter([{
       element: <Account />
     }, {
       path: '',
-      element: <Home />
+      element: <Navigate to='/notes' />
     }, {
       path: 'notes',
       element: <Notes />

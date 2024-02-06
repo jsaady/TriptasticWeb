@@ -30,7 +30,7 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
       rootPath: resolve(currentDir, '..', 'ui')
     }),
     AiModule.forRoot({
-      chat: AIProvider.ollama,
+      chat: AIProvider.openai,
       embedding: AIProvider.local,
       stt: AIProvider.openai
     }),
