@@ -81,7 +81,7 @@ kind: ConfigMap
 metadata:
   name: static-config
 data:
-  ENVIRONMENT_URL: https://noter2.holyham.dev
+  ENVIRONMENT_URL: https://noter3.holyham.dev
   ENVIRONMENT_NAME: dev
   EMAIL_HOST: mail.holyham.cloud
   EMAIL_PORT: "587"
