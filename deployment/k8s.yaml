@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: noter
-          image: ghcr.io/jsaady/noter:sha-1d884b5
+          image: ghcr.io/jsaady/noter:sha-590d875
           ports:
             - containerPort: 3000
           envFrom:
