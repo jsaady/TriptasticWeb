@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: noter
-          image: ghcr.io/jsaady/noter:sha-8cb2192
+          image: ghcr.io/jsaady/TriptasticWeb:sha-8cb2192
           ports:
             - containerPort: 3000
           envFrom:
