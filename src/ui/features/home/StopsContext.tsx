@@ -40,7 +40,7 @@ export const StopsProvider = ({ children }: PropsWithChildren) => {
       location: new LatLng(stopEnt.latitude, stopEnt.longitude),
       photos: [] as string[],
       notes: '',
-      createdAt: stopEnt.createdAt,
+      createdAt: stopEnt.createdAt as any,
     })))
 
     return response;
