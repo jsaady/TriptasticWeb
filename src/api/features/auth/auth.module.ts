@@ -1,5 +1,5 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '../../utils/config/config.module.js';
 import { ConfigService } from '../../utils/config/config.service.js';
@@ -34,6 +34,7 @@ import { UserClient } from './entities/userClient.entity.js';
   ],
   controllers: [AuthController],
   providers: [AuthService, IsAuthenticatedGuard, WebAuthnService],
-  exports: [AuthService, IsAuthenticatedGuard, JwtModule]
+  exports: [AuthService, IsAuthenticatedGuard, JwtModule],
 })
+@Global()
 export class AuthModule { }

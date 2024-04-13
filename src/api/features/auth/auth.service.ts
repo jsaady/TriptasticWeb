@@ -13,6 +13,8 @@ import { AUTH_SALT_ROUNDS, AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
 import { AuthDTO, AuthLoginDTO, AuthRegisterDTO, AuthRegisterDeviceDTO, AuthStartDTO, AuthStatus, AuthTokenContents } from './auth.dto.js';
 import { UserClient } from './entities/userClient.entity.js';
 import { WebAuthnService } from './webAuthn.service.js';
+import { RequestContextService } from '@nestjs-enhanced/context';
+import { AuthenticatedRequest } from './authenticated-request.type.js';
 
 @Injectable()
 export class AuthService {
@@ -22,13 +24,12 @@ export class AuthService {
     private emailService: EmailService,
     private webAuthnService: WebAuthnService,
     private config: ConfigService,
+    private ctx: RequestContextService,
     @InjectRepository(UserClient) private userClientRepo: EntityRepository<UserClient>
   ) { }
 
 
   private extractTokenFromCookie(request: Request): AuthDTO | undefined {
-
-
     const rawToken = request.signedCookies ? request.signedCookies['Authorization'] : request.cookies['Authorization'];
 
     if (rawToken) {
@@ -59,6 +60,18 @@ export class AuthService {
     const { sub } = await this.extractAuthDtoFromRequest(req) ?? {};
 
     return sub ? '' + sub : undefined;
+  }
+
+  private isAuthenticatedRequest(req?: Request): req is AuthenticatedRequest {
+    return !!req && 'user' in req;
+  }
+
+  getCurrentUserId() {
+    const req = this.ctx.getContext();
+
+    if (!this.isAuthenticatedRequest(req)) throw new UnauthorizedException();
+
+    return req.user.sub;
   }
 
   async start (username: string, registerDevice?: boolean): Promise<AuthStartDTO> {

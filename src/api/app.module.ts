@@ -12,12 +12,11 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
 import { MigrationModule } from './db/migration.provider.js';
-import { AIProvider, AiModule } from './features/ai/ai.module.js';
 import { AuthModule } from './features/auth/auth.module.js';
-import { NotesModule } from './features/notes/notes.module.js';
 import { NotificationModule } from './features/notifications/notification.module.js';
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
+import { StopsModule } from './features/stops/stops.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -28,11 +27,6 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     WorkersModule,
     ServeStaticModule.forRoot({
       rootPath: resolve(currentDir, '..', 'ui')
-    }),
-    AiModule.forRoot({
-      chat: AIProvider.openai,
-      embedding: AIProvider.local,
-      stt: AIProvider.openai
     }),
     QueueModule.registerAsync({
       useFactory: (config) => ({
@@ -54,8 +48,8 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     ContextModule,
     AuthModule,
     NotificationModule,
+    StopsModule,
     UsersModule,
-    NotesModule,
     ThrottlerModule.forRoot({
       ttl: RATE_LIMIT_TTL,
       limit: RATE_LIMIT_LIMIT

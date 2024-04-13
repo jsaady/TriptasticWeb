@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { MFA_ENABLED } from '../../utils/config/config.js';
 import { AuthService } from './auth.service.js';
+import { AuthenticatedRequest } from './authenticated-request.type.js';
 const IS_AUTH_CONFIG = 'IS_AUTH_CONFIG';
 const SKIP_AUTH_CHECK = 'SKIP_AUTH_CHECK';
 
@@ -22,7 +23,7 @@ export class IsAuthenticatedGuard implements CanActivate {
   ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request: Request = context.switchToHttp().getRequest();
+    const request: AuthenticatedRequest = context.switchToHttp().getRequest();
     const skipAuthCheck = this.reflector.getAllAndOverride(SKIP_AUTH_CHECK, [context.getClass(), context.getHandler()]) ?? false;
 
     if (skipAuthCheck) return true;
@@ -31,10 +32,10 @@ export class IsAuthenticatedGuard implements CanActivate {
 
     try {
       const payload = await this.authService.extractAuthDtoFromRequest(request);
-      request.user = payload;
       if (!payload) {
         throw new UnauthorizedException();
       }
+      request.user = payload;
 
       if (!allowExpiredPassword && payload.needPasswordReset) {
         return false;

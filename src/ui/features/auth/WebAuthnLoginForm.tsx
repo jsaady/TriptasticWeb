@@ -130,7 +130,7 @@ export const WebAuthnLoginForm = () => {
         <Input {...register('email')} label='Email' type='email' />
     </div>
     <div className={`flex flex-col w-full transition-all overflow-hidden ${showPassword ? '' : 'h-0'}`}>
-        <Input {...register('password')} label='Password' type='password' />
+        <Input {...register('password')} label='Password' type={showPassword ? 'password' : 'hidden'} autoComplete={!showPassword ? 'false' : undefined} />
     </div>
     <Button className="w-full my-6" type="submit">{showEmail || showPassword ? 'REGISTER' : 'LOGIN'}</Button>
     {showRegisterLink && <div className='my-4'>

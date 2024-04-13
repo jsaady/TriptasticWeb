@@ -15,8 +15,8 @@ export const Authenticated = withSidebar(withNotifications(() => {
   const navItems = useMemo<LinkNavBarItem[]>(() => {
     return [{
       icon: 'edit-2',
-      label: 'Notes',
-      link: '/notes'
+      label: 'Home',
+      link: '/'
     }];
   }, []);
 
@@ -45,8 +45,8 @@ export const Authenticated = withSidebar(withNotifications(() => {
   }
 
   return <div className='flex flex-col lg:max-w-[75em] lg:m-auto'>
-    <NavBar navItems={navItems} rightIcon='user' rightItems={rightItems} />
-    <div className='flex'>
+    <NavBar name='Triptastic' navItems={navItems} rightIcon='user' rightItems={rightItems} />
+    <div className='w-full'>
       <Sidebar />
       <Outlet />
     </div>

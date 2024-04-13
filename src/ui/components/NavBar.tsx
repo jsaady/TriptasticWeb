@@ -22,6 +22,7 @@ export interface NavBarProps {
   navItems: LinkNavBarItem[];
   rightIcon: FeatherIcon;
   rightItems: (LinkNavBarItem|OnClickNavBarItem)[];
+  name: string;
 }
 
 export const NavBarItem = ({icon, label, iconVisible, ...rest}: LinkNavBarItem|OnClickNavBarItem) => {
@@ -34,11 +35,11 @@ export const NavBarItem = ({icon, label, iconVisible, ...rest}: LinkNavBarItem|O
 }
 
 
-export const NavBar = ({ navItems, rightIcon, rightItems }: NavBarProps) => (
-  <div className='w-full border-b flex justify-between sticky top-0 dark:border-neutral-700'>
+export const NavBar = ({ navItems, rightIcon, rightItems, name }: NavBarProps) => (
+  <div className='w-full border-b flex justify-between sticky top-0 dark:border-neutral-700 z-[1002] dark:bg-neutral-900 bg-white'>
     <div className='flex'>
       <Link to='/'>
-        <h2 className='px-4 py-6'>Noter</h2>
+        <h2 className='px-4 py-6'>{name}</h2>
       </Link>
     </div>
     <div className='px-4 flex items-center flex-grow'>
@@ -51,7 +52,7 @@ export const NavBar = ({ navItems, rightIcon, rightItems }: NavBarProps) => (
       ))}
     </div>
 
-    <div className='flex px-4 items-center'>
+    <div className='flex px-4 items-center z-auto'>
       <Dropdown trigger={{ icon: rightIcon, className: 'bg-transparent hover:bg-transparent hover:text-white dark:text-neutral-400 text-black' }}>
         {rightItems.map((item, i) => (
           <NavBarItem {...item} key={i} iconVisible />

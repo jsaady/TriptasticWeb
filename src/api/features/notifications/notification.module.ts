@@ -6,11 +6,12 @@ import { Subscription } from './subscription.entity.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { WEB_PUSH_PROVIDER } from './webPush.provider.js';
 import { ConfigModule } from '../../utils/config/config.module.js';
+import { NotificationGateway } from './notification.gateway.js';
 
 @Module({
   imports: [ConfigModule, MikroOrmModule.forFeature([Subscription]), AuthModule],
   controllers: [NotificationController],
-  providers: [NotificationService, WEB_PUSH_PROVIDER],
+  providers: [NotificationService, WEB_PUSH_PROVIDER, NotificationGateway],
   exports: [NotificationService]
 })
 export class NotificationModule { }
