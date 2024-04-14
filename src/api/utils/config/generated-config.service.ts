@@ -50,14 +50,6 @@ export class GeneratedConfigService {
       emailReplyTo: this.config.getOrThrow(CONFIG_VARS.emailReplyTo),
       envUrl: this.config.getOrThrow(CONFIG_VARS.envUrl),
       envName: this.config.getOrThrow(CONFIG_VARS.envName),
-      ollamaUrl: this.config.get(CONFIG_VARS.ollamaUrl),
-      ollamaChatModel: this.config.get(CONFIG_VARS.ollamaChatModel),
-      ollamaEmbeddingModel: this.config.get(CONFIG_VARS.ollamaEmbeddingModel),
-      openaiUrl: this.config.get(CONFIG_VARS.openaiUrl),
-      openaiKey: this.config.get(CONFIG_VARS.openaiKey),
-      openaiChatModel: this.config.get(CONFIG_VARS.openaiChatModel),
-      openaiEmbeddingModel: this.config.get(CONFIG_VARS.openaiEmbeddingModel),
-      relevantNoteWindowSize: +this.config.get(CONFIG_VARS.relevantNoteWindowSize, 5),
     });
 
     return config;

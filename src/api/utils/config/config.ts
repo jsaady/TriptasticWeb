@@ -13,14 +13,6 @@ export const CONFIG_VARS = {
   emailUser: 'EMAIL_USER',
   emailPassword: 'EMAIL_PASSWORD',
   emailReplyTo: 'EMAIL_REPLY_TO',
-  ollamaUrl: 'OLLAMA_URL',
-  ollamaChatModel: 'OLLAMA_CHAT_MODEL',
-  ollamaEmbeddingModel: 'OLLAMA_EMBEDDING_MODEL',
-  openaiUrl: 'OPENAI_URL',
-  openaiKey: 'OPENAI_KEY',
-  openaiChatModel: 'OPENAI_CHAT_MODEL',
-  openaiEmbeddingModel: 'OPENAI_EMBEDDING_MODEL',
-  relevantNoteWindowSize: 'RELEVANT_NOTE_WINDOW_SIZE',
 };
 
 export const RATE_LIMIT_TTL = 60;

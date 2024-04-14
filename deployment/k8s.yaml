@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: noter-deployment
+  name: triptastic-deployment
 spec:
   replicas: 1
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: noter
+      app: triptastic
   template:
     metadata:
       labels:
-        app: noter
+        app: triptastic
     spec:
       containers:
-        - name: noter
+        - name: triptastic
           image: ghcr.io/jsaady/triptasticweb:sha-6e22a59
           ports:
             - containerPort: 3000
@@ -22,15 +22,10 @@ spec:
             - configMapRef:
                 name: static-config
           env:
-            - name: OPENAI_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: noter-secrets
-                  key: openai_key
             - name: EMAIL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: noter-secrets
+                  name: triptastic-secrets
                   key: email_password
       imagePullSecrets:
         - name: gh-pull-secret
@@ -40,24 +35,24 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: noter-ingress
+  name: triptastic-ingress
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "letsencrypt"
+    cert-manager.io/cluster-issuer: "staging-do"
 spec:
   tls:
     - hosts:
-        - noter.holyham.dev
-      secretName: noter-tls
+        - triptastic.holyham.dev
+      secretName: triptastic-tls
   rules:
-    - host: noter.holyham.dev
+    - host: triptastic.holyham.dev
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: noter-service
+                name: triptastic-service
                 port:
                   number: 3000
 
@@ -65,10 +60,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: noter-service
+  name: triptastic-service
 spec:
   selector:
-    app: noter
+    app: triptastic
   ports:
     - protocol: TCP
       port: 3000
@@ -81,7 +76,7 @@ kind: ConfigMap
 metadata:
   name: static-config
 data:
-  ENVIRONMENT_URL: https://noter.holyham.dev
+  ENVIRONMENT_URL: https://triptastic.holyham.dev
   ENVIRONMENT_NAME: dev
   EMAIL_HOST: mail.holyham.cloud
   EMAIL_PORT: "587"
@@ -89,10 +84,6 @@ data:
   EMAIL_REPLY_TO: app@holyham.cloud
   DATABASE_URL: postgres://postgres:password@postgres-service:5432/app
   DATABASE_PASSWORD: password
-  OLLAMA_CHAT_MODEL: phi:latest
-  OLLAMA_URL: http://ollama-service:11434
-  RELEVANT_NOTE_WINDOW_SIZE: "25"
-  OPENAI_CHAT_MODEL: gpt-4-turbo-preview
 
 ---
 
@@ -165,65 +156,4 @@ spec:
           persistentVolumeClaim:
             claimName: postgres-pvc
 
---- 
 
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: ollama-pvc
-spec:
-  storageClassName: do-block-storage
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ollama
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ollama
-  template:
-    metadata:
-      labels:
-        app: ollama
-    spec:
-      containers:
-        - name: ollama
-          image: ollama/ollama:latest
-          ports:
-            - containerPort: 11434
-          resources:
-            requests:
-              cpu: "1"
-              memory: "2Gi"
-            limits:
-              cpu: "1"
-              memory: "2Gi"
-          volumeMounts:
-            - name: ollama-storage
-              mountPath: /root/.ollama
-      volumes:
-        - name: ollama-storage
-          persistentVolumeClaim:
-            claimName: ollama-pvc
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: ollama-service
-spec:
-  selector:
-    app: ollama
-  ports:
-    - protocol: TCP
-      port: 11434
-      targetPort: 11434
