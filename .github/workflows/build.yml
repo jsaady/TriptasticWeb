@@ -154,7 +154,7 @@ jobs:
       run: |
         git config --global user.email "john@holyham.cloud"
         git config --global user.name "John Saady"
-        git add ./deployment/k8s.yaml
+        git add ./deployment/ci.yaml
         git commit -m "Update image tag to $FULL_IMAGE_TAG [skip ci]"
         git push
     # - name: Extract env vars
