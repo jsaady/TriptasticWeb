@@ -42,10 +42,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - triptastic.holyham.dev
+        - triptastic-ci.holyham.dev
       secretName: triptastic-tls
   rules:
-    - host: triptastic.holyham.dev
+    - host: triptastic-ci.holyham.dev
       http:
         paths:
           - path: /
@@ -76,8 +76,8 @@ kind: ConfigMap
 metadata:
   name: static-config
 data:
-  ENVIRONMENT_URL: https://triptastic.holyham.dev
-  ENVIRONMENT_NAME: dev
+  ENVIRONMENT_URL: https://triptastic-ci.holyham.dev
+  ENVIRONMENT_NAME: ci
   EMAIL_HOST: mail.holyham.cloud
   EMAIL_PORT: "587"
   EMAIL_USER: app@holyham.cloud
