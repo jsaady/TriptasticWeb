@@ -26,7 +26,13 @@ import { initSocketAdapters } from '@nestjs-enhanced/sockets';
 
   // app.use(csurf());
 
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        "img-src": ["'self'", "data:", "https://*.tile.openstreetmap.org"],
+      }
+    }
+  }));
 
   app.setGlobalPrefix('/api');
 
