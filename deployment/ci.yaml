@@ -78,7 +78,7 @@ metadata:
 data:
   ENVIRONMENT_URL: https://triptastic-ci.holyham.dev
   ENVIRONMENT_NAME: ci
-  EMAIL_HOST: mail.mahi-shark.ts.net
+  EMAIL_HOST: mail.holyham.cloud
   EMAIL_PORT: "587"
   EMAIL_USER: app@holyham.cloud
   EMAIL_REPLY_TO: app@holyham.cloud
