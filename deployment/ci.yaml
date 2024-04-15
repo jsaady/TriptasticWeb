@@ -30,7 +30,7 @@ spec:
       imagePullSecrets:
         - name: gh-pull-secret
 
----
+--- 
 
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -78,7 +78,7 @@ metadata:
 data:
   ENVIRONMENT_URL: https://triptastic-ci.holyham.dev
   ENVIRONMENT_NAME: ci
-  EMAIL_HOST: mail.holyham.cloud
+  EMAIL_HOST: mail.mahi-shark.ts.net
   EMAIL_PORT: "587"
   EMAIL_USER: app@holyham.cloud
   EMAIL_REPLY_TO: app@holyham.cloud
