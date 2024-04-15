@@ -38,12 +38,12 @@ metadata:
   name: triptastic-ingress
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "staging-do"
+    cert-manager.io/cluster-issuer: "prod-do"
 spec:
   tls:
     - hosts:
         - triptastic-ci.holyham.dev
-      secretName: triptastic-tls
+      secretName: triptastic-prod-tls
   rules:
     - host: triptastic-ci.holyham.dev
       http:
