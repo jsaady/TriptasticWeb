@@ -150,7 +150,8 @@ export const Home = withStopsProvider(() => {
       zoom={11}
       style={{ width: '100%' }}>
       <TileLayer
-        url="/api/map/{s}/{z}/{x}/{y}.png"
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        // url="/api/map/{s}/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       <MapEventBridge onNewStop={handleNewStop} />
