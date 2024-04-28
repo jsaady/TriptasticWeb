@@ -2,6 +2,8 @@ import { BadRequestException, Body, Controller, Delete, Get, Param, Post } from 
 import { IsAuthenticated } from '../auth/isAuthenticated.guard.js';
 import { Stop } from './entities/stop.entity.js';
 import { StopsService } from './stops.service.js';
+import { HasRole } from '../../utils/checkRole.js';
+import { UserRole } from '../users/userRole.enum.js';
 
 @Controller('stops')
 @IsAuthenticated()
@@ -11,11 +13,13 @@ export class StopsController {
   ) {}
 
   @Post()
+  @HasRole(UserRole.ADMIN)
   create(@Body() body: Pick<Stop, 'latitude'|'longitude'|'name'>) {
     return this.stopService.create(body);
   }
 
   @Delete(':id')
+  @HasRole(UserRole.ADMIN)
   deleteStop(
     @Param('id') id: number
   ) {

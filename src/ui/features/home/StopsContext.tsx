@@ -3,6 +3,7 @@ import { ComponentType, PropsWithChildren, createContext, useCallback, useContex
 import { useAsync, useAsyncHttp } from '../../utils/useAsync.js';
 import type { Stop as StopEntity } from '../../../api/features/stops/entities/stop.entity.js';
 import { useLocalStorage } from '../../utils/useLocalStorage.js';
+import { useGeolocation } from '../../utils/useGeolocation.js';
 export interface Stop {
   id: number;
   name: string;
@@ -28,7 +29,6 @@ export type NewStop = Omit<Stop, 'id'>;
 export interface StopsState {
   stops: Stop[];
   filteredStops: Stop[];
-  lastLocation: LatLngTuple;
   addStop: (stop: Stop) => void;
   removeStop: (id: number) => void;
   updateStop: (id: number, stop: Stop) => void;
@@ -36,16 +36,15 @@ export interface StopsState {
   searchByBounds: (bounds: LatLng[]) => void;
   searchByLatLngAndZoom: (latlng: LatLng, zoom: number) => void;
   fetchStops: () => () => void;
-  setLastLocation: (location: LatLngTuple) => void;
 }
 
 const StopsContext = createContext<StopsState>(null as any);
-const London = [51.505, -0.09] as LatLngTuple;
+const London = [51.505, -0.09] as [number, number];
 
 export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
   const [stops, setStops] = useState<Stop[]>([]);
   const [filteredStops, setFilteredStops] = useState<Stop[]>([]);
-  const [lastLocation, setLastLocation] = useLocalStorage<LatLngTuple>('last-location', London);
+  const { lastLocation, currentLocation } = useGeolocation();
 
   const [fetchStops] = useAsyncHttp(async ({ get }) => {
     const response: StopEntity[] = await get('/api/stops/trip/1');
@@ -120,7 +119,6 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
   return <StopsContext.Provider value={{
     stops,
     filteredStops,
-    lastLocation,
     addStop,
     removeStop,
     updateStop,
@@ -128,7 +126,6 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     searchByBounds,
     searchByLatLngAndZoom,
     fetchStops,
-    setLastLocation,
   }}>
     <Component {...props} />
   </StopsContext.Provider>;

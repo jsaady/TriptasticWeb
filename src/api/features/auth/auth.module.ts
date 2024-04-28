@@ -12,6 +12,7 @@ import { UserDevice } from './entities/userDevice.entity.js';
 import { IsAuthenticatedGuard } from './isAuthenticated.guard.js';
 import { WebAuthnService } from './webAuthn.service.js';
 import { UserClient } from './entities/userClient.entity.js';
+import { CheckRoleGuard } from '../../utils/checkRole.js';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { UserClient } from './entities/userClient.entity.js';
     })
   ],
   controllers: [AuthController],
-  providers: [AuthService, IsAuthenticatedGuard, WebAuthnService],
+  providers: [AuthService, IsAuthenticatedGuard, WebAuthnService, CheckRoleGuard],
   exports: [AuthService, IsAuthenticatedGuard, JwtModule],
 })
 @Global()

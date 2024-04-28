@@ -32,12 +32,18 @@ export const NewNoteStop = ({ close, addStop, latlng, initialName = '' }: NewNot
     close();
   }, [addStop, close]);
 
+  const handleSubmitClick = useCallback(() => {
+    submit(state);
+  }, [submit, state]);
+
   return (
-    <StyledModal onClose={close}>
+    <StyledModal
+      onClose={close}
+      primaryText='Save'
+      onPrimaryClick={handleSubmitClick}
+      title='New stop'
+      cancelText='Cancel'>
       <form {...registerForm(submit)}>
-        <h1 className='text-2xl font-bold mb-4'>
-          New Stop
-        </h1>
         <div>
           <label htmlFor='name'>Name</label>
           <Input {...register('name')} />
@@ -49,15 +55,6 @@ export const NewNoteStop = ({ close, addStop, latlng, initialName = '' }: NewNot
         <div>
           <label htmlFor='photos'>Photos & Videos</label>
           <Input type='file' multiple />
-        </div>
-        <div className='mt-4'>
-          <Button type="submit">
-            Save
-          </Button>
-
-          <Button type='button' onClick={close}>
-            Close
-          </Button>
         </div>
       </form>
     </StyledModal>

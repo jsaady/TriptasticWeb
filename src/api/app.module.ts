@@ -52,10 +52,10 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     StopsModule,
     UsersModule,
     MapModule,
-    ThrottlerModule.forRoot({
+    ThrottlerModule.forRoot([{
       ttl: RATE_LIMIT_TTL,
       limit: RATE_LIMIT_LIMIT
-    }),
+    }]),
     MikroOrmModule.forRootAsync({
       useFactory: (config: NestConfigService) => {
 

@@ -1,4 +1,5 @@
 import { PropsWithChildren, ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { Button, LinkButton, PrimaryButton, SecondaryButton } from '../components/Button.js';
 
 interface ModalState {
   content: ReactNode;
@@ -64,11 +65,33 @@ export const Modal = ({ children, onClose }: ModalProps) => {
   return null;
 };
 
-export const StyledModal = ({ children, onClose }: ModalProps) => {
+export interface StyledModalProps extends ModalProps {
+  title?: string;
+  primaryText?: string;
+  onPrimaryClick?: () => void;
+  secondaryText?: string;
+  onSecondaryClick?: () => void;
+  cancelText?: string;
+}
+
+export const StyledModal = ({ title, children, cancelText, primaryText, secondaryText, onPrimaryClick, onSecondaryClick, onClose }: StyledModalProps) => {
   return <Modal onClose={onClose}>
     {/* TODO: Finish styling and add animations */}
     <div className='bg-white dark:bg-neutral-900 dark:text-white p-5 rounded-lg shadow-lg z-[1002] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[50rem]'>
+      {title && (
+      <h2
+        className='text-2xl font-bold mb-3 pb-3 border-b border-gray-300 dark:border-neutral-700'>
+          {title}
+        </h2>
+      )}
       {children}
+      <div className='mt-3 pt-3 border-t border-gray-300 dark:border-neutral-700 flex justify-between'>
+        {cancelText && <LinkButton onClick={onClose}>{cancelText}</LinkButton>}
+        <div>
+          {primaryText && onPrimaryClick && <PrimaryButton onClick={onPrimaryClick}>{primaryText}</PrimaryButton>}
+          {secondaryText && onSecondaryClick && <SecondaryButton onClick={onSecondaryClick}>{secondaryText}</SecondaryButton>}
+        </div>
+      </div>
     </div>
   </Modal>
 };

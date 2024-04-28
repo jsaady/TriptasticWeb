@@ -4,7 +4,8 @@ import { LinkNavBarItem, NavBar, OnClickNavBarItem } from './components/NavBar.j
 import { Sidebar, useSidebar, withSidebar } from './components/SideBar.js';
 import { useNotifications, withNotifications } from './features/notifications/useNotifications.js';
 import { useAuthorization } from './utils/useAuth.js';
-export const Authenticated = withSidebar(withNotifications(() => {
+import { withGeolocation } from './utils/useGeolocation.js';
+export const Authenticated = withGeolocation(withSidebar(withNotifications(() => {
   const { logout, loggedIn, loading } = useAuthorization();
   const { enabled, supported, subscribe, unsubscribe } = useNotifications();
 
@@ -51,4 +52,4 @@ export const Authenticated = withSidebar(withNotifications(() => {
       <Outlet />
     </div>
   </div>
-}));
+})));
