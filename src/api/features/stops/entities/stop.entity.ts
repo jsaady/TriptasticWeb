@@ -1,5 +1,6 @@
-import { Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { User } from '../../users/users.entity.js';
+import { Attachment } from './attachment.entity.js';
 import { Trip } from './trip.entity.js';
 
 @Entity()
@@ -14,6 +15,9 @@ export class Stop {
 
   @Property()
   name!: string;
+
+  @Property({ nullable: true, type: 'text' })
+  notes?: string;
 
   @Property()
   createdAt: Date;
@@ -32,4 +36,7 @@ export class Stop {
 
   @ManyToOne()
   trip!: Trip;
+
+  @OneToMany(() => Attachment, attachment => attachment.stop, { cascade: [Cascade.REMOVE] })
+  attachments = new Collection<Attachment>(this);
 }

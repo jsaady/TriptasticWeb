@@ -66,6 +66,7 @@ export const useAsyncHttp = <T, A extends any[]>(call: (http: AsyncHTTPClient, .
     post: (path: string, body: any) => {
       return httpClient.post(path, body, controller.signal)
     },
+    put: (path: string, body: any) => httpClient.put(path, body, controller.signal),
     del: (path: string) => httpClient.del(path, controller.signal)
   }), [httpClient, controller]);
 

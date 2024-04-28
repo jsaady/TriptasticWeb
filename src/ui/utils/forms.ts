@@ -1,10 +1,15 @@
 import { ChangeEvent, FormEvent, MutableRefObject, createRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-interface FormItemProps {
+
+interface FormChangeEvent {
+  target: any;
+}
+export interface FormItemProps {
   ref: MutableRefObject<any | null>;
-  onChange: (value: ChangeEvent<any>) => void;
+  onChange: (value: FormChangeEvent) => void;
   name: string;
   required?: boolean;
+  value: any;
 }
 
 type FormItemPropsState<T> = Partial<Record<string&keyof T, FormItemProps>>;
@@ -46,14 +51,32 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
     setStateRef.current = setState;
   }, [state, setState]);
 
+  const patchValue = useCallback((name: keyof T&string, value: any) => {
+    setState((s) => ({
+      ...s,
+      [name]: value
+    }));
+
+    setFormItemProps(fip => ({
+      ...fip,
+      [name]: {
+        ...getExistingFormItemProps(fip, name),
+        value
+      }
+    }));
+
+    console.log('patched', name, value);
+  }, [setState, setFormItemProps]);
+
   const register = <K extends keyof T&string>(name: K, constraints?: Constraints<T, K>) => {
     let props = formItemProps[name];
     if (!props) {
       const ref = createRef<HTMLInputElement>();
       props = {
-        onChange: (value: ChangeEvent<HTMLElement>) => {
+        onChange: (event: FormChangeEvent) => {
+          console.log('uh oh');
           if (constraints && typeof constraints === 'function') {
-            const error = constraints((value.target as any).value as any, stateRef.current);
+            const error = constraints((event.target as any).value as any, stateRef.current);
 
             if (error) {
               ref.current!.setCustomValidity(error);
@@ -67,14 +90,21 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
             }
           }
 
-          setState((s) => ({
-            ...s,
-            [name]: (value.target as any).value
-          }))
+          const target = event.target as HTMLInputElement;
+          let value: any = target.value;
+
+          if (target.type === 'file') {
+            value = target.multiple ? target.files! : target.files![0];
+          }
+
+          patchValue(name, value);
         },
         ref,
         name,
+        value: stateRef.current?.[name] as any,
       };
+
+      console.log('registering', name, props, stateRef.current?.[name]);
 
       if (constraints) applyConstraints(props, constraints);
 
@@ -84,20 +114,12 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
       }));
     }
 
-    return props;
+    return props as FormItemProps;
   };
 
-  const setValue = <K extends string&keyof T>(controlName: K, value: T[K]) => {
-    setState(v => ({
-      ...v,
-      [controlName]: value
-    }));
-
-    const { ref } = getExistingFormItemProps(formItemProps, controlName);
-
-    // todo: actual target the control and update
-    (ref.current! as any).value = value as any;
-  };
+  const setValue = useCallback(<K extends string&keyof T>(controlName: K, value: T[K]) => {
+    patchValue(controlName, value);
+  }, [patchValue, formItemProps]);
 
   const submitRef = useRef((_state: T) => {});
 

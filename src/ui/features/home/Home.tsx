@@ -1,16 +1,17 @@
 import { LatLng } from 'leaflet';
 import 'leaflet-geosearch/dist/geosearch.css';
+import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 import 'leaflet/dist/leaflet.css';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { ConfirmModal } from '../../components/ConfirmModal.js';
-import { StopMarker } from '../../components/StopMarker.js';
-import { MapBridge } from './MapBridge.js';
-import { NewNoteStop } from './NewNoteStop.js';
-import { Stop, useStops, withStopsProvider } from './StopsContext.js';
-import { useGeolocation } from '../../utils/useGeolocation.js';
 import { LocalSearchResult, SearchBox } from '../../components/SearchBox.js';
-import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
+import { StopMarker } from '../../components/StopMarker.js';
+import { useGeolocation } from '../../utils/useGeolocation.js';
+import { EditNoteStop } from './EditNoteStop.js';
+import { MapBridge } from './MapBridge.js';
+import { Stop, useStops, withStopsProvider } from './StopsContext.js';
+import { ViewStopDetails } from './ViewStopDetails.js';
 
 export enum StopType {
   PHOTO = 'PHOTO',
@@ -21,14 +22,17 @@ export enum StopType {
 export const Home = withStopsProvider(memo(() => {
   const [newModalOpen, setNewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [detailModalId, setDetailModalId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isSearch, setIsSearch] = useState(false);
   const [newLocationLatLng, setNewLocationLatLng] = useState<LatLng | null>(null);
   const [searchResultBounds, setSearchResultBounds] = useState<BoundsTuple | null>(null);
+  const [editStop, setEditStop] = useState<Stop | null>(null);
 
   const {
     stops,
     addStop,
+    updateStop,
     fetchStops,
     removeStop
   } = useStops();
@@ -51,6 +55,11 @@ export const Home = withStopsProvider(memo(() => {
     addStop(stop);
   }, []);
 
+  const handleUpdateStop = useCallback((stop: Stop) => {
+    updateStop(stop.id, stop);
+  }, []);
+
+
   const handleDeleteStop = useCallback(() => {
     if (deleteId) {
       removeStop(deleteId);
@@ -58,7 +67,10 @@ export const Home = withStopsProvider(memo(() => {
     }
   }, [deleteId]);
 
-  const closeModal = useCallback(() => setNewModalOpen(false), []);
+  const closeModal = useCallback(() => {
+    setNewModalOpen(false);
+    setEditStop(null);
+  }, []);
 
   const handleDeleteClick = useCallback((id: number) => {
     setDeleteId(id);
@@ -67,8 +79,6 @@ export const Home = withStopsProvider(memo(() => {
 
   const handleSearchSelected = useCallback((result: LocalSearchResult) => {
     setSearchResultBounds(result.bounds);
-
-    console.log(result);
   }, []);
 
   useEffect(() => {
@@ -95,17 +105,27 @@ export const Home = withStopsProvider(memo(() => {
             stop={stop}
             key={stop.id}
             onDeleteClicked={() => handleDeleteClick(stop.id)}
+            onDetailClicked={() => setDetailModalId(stop.id)}
+            onEditClicked={() => setEditStop(stop)}
           />
         ))
       }
     </MapContainer>
 
     {newModalOpen && newLocationLatLng && (
-      <NewNoteStop latlng={newLocationLatLng} close={closeModal} addStop={handleAddStop} />
+      <EditNoteStop latlng={newLocationLatLng} close={closeModal} saveStop={handleAddStop} />
+    )}
+
+    {editStop && (
+      <EditNoteStop latlng={editStop.location} existingStop={editStop} close={closeModal} saveStop={handleUpdateStop} />
     )}
 
     {deleteModalOpen && deleteId && (
       <ConfirmModal title='Delete stop' message='Are you sure you want to delete this stop?' onCancel={() => setDeleteModalOpen(false)} onConfirm={handleDeleteStop} />
+    )}
+
+    {detailModalId && (
+      <ViewStopDetails onClose={() => setDetailModalId(null)} stopId={detailModalId} />
     )}
   </div>;
 }));

@@ -1,14 +1,13 @@
-import { LatLng, LatLngTuple } from 'leaflet';
-import { ComponentType, PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { useAsync, useAsyncHttp } from '../../utils/useAsync.js';
+import { LatLng } from 'leaflet';
+import { ComponentType, createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { Stop as StopEntity } from '../../../api/features/stops/entities/stop.entity.js';
-import { useLocalStorage } from '../../utils/useLocalStorage.js';
+import { useAsyncHttp } from '../../utils/useAsync.js';
 import { useGeolocation } from '../../utils/useGeolocation.js';
 export interface Stop {
   id: number;
   name: string;
   location: LatLng;
-  photos: string[];
+  attachments: FileList | File[];
   notes: string;
   createdAt: number;
 }
@@ -16,6 +15,7 @@ export interface Stop {
 export interface StopDTO {
   id: number;
   name: string;
+  notes: string;
   createdAt: string;
   updatedAt: string;
   latitude: number;
@@ -35,6 +35,7 @@ export interface StopsState {
   getStop: (id: number) => Stop | undefined;
   searchByBounds: (bounds: LatLng[]) => void;
   searchByLatLngAndZoom: (latlng: LatLng, zoom: number) => void;
+  persistAttachments: (id: number, files: FileList | File[]) => void;
   fetchStops: () => () => void;
 }
 
@@ -44,6 +45,7 @@ const London = [51.505, -0.09] as [number, number];
 export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
   const [stops, setStops] = useState<Stop[]>([]);
   const [filteredStops, setFilteredStops] = useState<Stop[]>([]);
+  const [pendingAttachments, setPendingAttachments] = useState<File[] | FileList>([]);
   const { lastLocation, currentLocation } = useGeolocation();
 
   const [fetchStops] = useAsyncHttp(async ({ get }) => {
@@ -53,43 +55,63 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       id: stopEnt.id,
       name: stopEnt.name,
       location: new LatLng(stopEnt.latitude, stopEnt.longitude),
-      photos: [] as string[],
-      notes: '',
+      attachments: stopEnt.attachments as any,
+      notes: stopEnt.notes ?? '',
       createdAt: stopEnt.createdAt as any,
     })));
 
     return response;
   }, [setStops]);
 
-  const [persistStop, { result }] = useAsyncHttp(async ({ post }, body: Pick<StopEntity, 'latitude'|'longitude'|'name'>) => {
+  const [persistStop, { result }] = useAsyncHttp(async ({ post }, body: Pick<StopEntity, 'latitude'|'longitude'|'name'|'notes'>) => {
     return post<StopDTO>('/api/stops', body);
+  }, []);
+
+  const [persistStopChanges] = useAsyncHttp(async ({ put }, id: number, body: Pick<StopEntity, 'latitude'|'longitude'|'name'|'notes'>) => {
+    return put<StopDTO>('/api/stops/' + id, body);
+  }, []);
+
+  const [persistAttachments, { result: attachmentResult }] = useAsyncHttp(async ({ post }, id: number, files: FileList|File[]) => {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('file', file);
+    }
+
+    return post(`/api/stops/${id}/attach`, formData);
   }, []);
 
   const [deleteStop] = useAsyncHttp(async ({ del }, id: number) => {
     return del('/api/stops/' + id);
   }, []);
 
-
   const addStop = useCallback((stop: Stop) => {
+    if (stop.attachments) {
+      setPendingAttachments(stop.attachments as any);
+    }
     persistStop({
       name: stop.name,
       latitude: stop.location.lat,
-      longitude: stop.location.lng
+      longitude: stop.location.lng,
+      notes: stop.notes,
     });
   }, []);
 
   useEffect(() => {
     if (result) {
+      if (pendingAttachments?.length) {
+        persistAttachments(result.id, pendingAttachments);
+      }
+
       setStops(stops => [...stops, {
         id: result.id,
         name: result.name,
         createdAt: Date.parse(result.createdAt),
         location: new LatLng(result.latitude, result.longitude),
-        photos: [] as string[],
-        notes: ''
+        attachments: [] as File[],
+        notes: result.notes
       }]);
     }
-  }, [result])
+  }, [result, pendingAttachments])
 
   const removeStop = useCallback((id: number) => {
     setStops(stops => stops.filter((s) => s.id !== id));
@@ -98,6 +120,12 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
 
   const updateStop = useCallback((id: number, stop: Stop) => {
     setStops(stops => stops.map((s) => s.id === id ? stop : s));
+    persistStopChanges(id, {
+      name: stop.name,
+      latitude: stop.location.lat,
+      longitude: stop.location.lng,
+      notes: stop.notes,
+    });
   }, []);
 
   const getStop = useCallback((id: number) => {
@@ -126,6 +154,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     searchByBounds,
     searchByLatLngAndZoom,
     fetchStops,
+    persistAttachments,
   }}>
     <Component {...props} />
   </StopsContext.Provider>;

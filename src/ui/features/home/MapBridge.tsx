@@ -15,13 +15,16 @@ export interface MapBridgeProps {
 
 export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
   const [newPosition, setNewPosition] = useState<LatLng | null>(null);
+  const [popupOpen, setPopupOpen] = useState(false);
   const { currentLocation } = useGeolocation();
 
   const map = useMapEvents({
     click: (e) => {
+      if (popupOpen) return;
       onNewStop(StopType.NOTE, e.latlng);
     },
-    zoom: (e) => console.log(e.target)
+    popupopen: (e) => setPopupOpen(true),
+    popupclose: (e) => setPopupOpen(false),
   });
 
   useEffect(() => {
