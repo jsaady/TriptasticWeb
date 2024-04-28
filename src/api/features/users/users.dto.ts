@@ -1,8 +1,10 @@
+import { UserRole } from './userRole.enum.js';
+
 export class UserDTO {
   gitlabId?: string|number;
   username!: string;
   email!: string;
-  isAdmin!: boolean;
+  role!: UserRole;
   needPasswordReset!: boolean;
   emailConfirmed!: boolean;
 }

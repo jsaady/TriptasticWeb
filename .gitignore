@@ -7,3 +7,5 @@ coverage
 models/*
 !models/.gitkeep
 .DS_Store
+cache/*
+!cache/.gitkeep

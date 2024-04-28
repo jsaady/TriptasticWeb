@@ -1,6 +1,6 @@
 import { wrap } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service.js';
 import { Stop } from './entities/stop.entity.js';
 import { Trip } from './entities/trip.entity.js';
@@ -18,6 +18,16 @@ export class StopsService {
     stop.creator = this.em.getReference(User, this.auth.getCurrentUserId());
     stop.trip = this.em.getReference(Trip, 1);
     await this.em.persist(stop).flush();
+
+    return stop;
+  }
+
+  async delete(id: number): Promise<Stop> {
+    const stop = await this.em.findOne(Stop, { id });
+
+    if (!stop) throw new NotFoundException(`Stop not found`);
+
+    await this.em.removeAndFlush(stop);
 
     return stop;
   }

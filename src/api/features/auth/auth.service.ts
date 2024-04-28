@@ -15,6 +15,7 @@ import { UserClient } from './entities/userClient.entity.js';
 import { WebAuthnService } from './webAuthn.service.js';
 import { RequestContextService } from '@nestjs-enhanced/context';
 import { AuthenticatedRequest } from './authenticated-request.type.js';
+import { UserRole } from '../users/userRole.enum.js';
 
 @Injectable()
 export class AuthService {
@@ -81,7 +82,7 @@ export class AuthService {
       const newUser = await this.userService.create({
         username,
         email: '',
-        isAdmin: false,
+        role: UserRole.USER,
         needPasswordReset: true,
         emailConfirmed: false,
         password: ''
@@ -219,7 +220,7 @@ export class AuthService {
   async mintDTOForUser(user: User, clientIdentifier: string, mfaMethod: string|null): Promise<[AuthDTO, AuthTokenContents]> {
     const contents: AuthTokenContents = {
       sub: user.id,
-      isAdmin: user.isAdmin,
+      role: user.role,
       email: user.email,
       emailConfirmed: user.emailConfirmed,
       needPasswordReset: user.needPasswordReset,

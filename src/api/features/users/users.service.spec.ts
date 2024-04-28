@@ -5,12 +5,13 @@ import { CreateMikroORM } from '../../testFixtures/mikroOrm.mock.js';
 import { CreateUserDTO } from './users.dto.js';
 import { User } from './users.entity.js';
 import { UserService } from './users.service.js';
+import { UserRole } from './userRole.enum.js';
 
 const generateMockUser = (email = 'test@test.com', password = '', username = 'test'): CreateUserDTO => ({
   email,
   password,
   username,
-  isAdmin: false,
+  role: UserRole.USER,
   needPasswordReset: false,
   emailConfirmed: false,
 });

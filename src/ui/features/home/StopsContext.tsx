@@ -1,7 +1,8 @@
-import { LatLng } from 'leaflet';
-import { ComponentType, PropsWithChildren, createContext, useCallback, useContext, useState } from 'react';
+import { LatLng, LatLngTuple } from 'leaflet';
+import { ComponentType, PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useAsync, useAsyncHttp } from '../../utils/useAsync.js';
 import type { Stop as StopEntity } from '../../../api/features/stops/entities/stop.entity.js';
+import { useLocalStorage } from '../../utils/useLocalStorage.js';
 export interface Stop {
   id: number;
   name: string;
@@ -11,47 +12,66 @@ export interface Stop {
   createdAt: number;
 }
 
+export interface StopDTO {
+  id: number;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  latitude: number;
+  longitude: number;
+  creator: number;
+  trip: number;
+}
+
+export type NewStop = Omit<Stop, 'id'>;
+
 export interface StopsState {
   stops: Stop[];
   filteredStops: Stop[];
+  lastLocation: LatLngTuple;
   addStop: (stop: Stop) => void;
   removeStop: (id: number) => void;
   updateStop: (id: number, stop: Stop) => void;
   getStop: (id: number) => Stop | undefined;
   searchByBounds: (bounds: LatLng[]) => void;
   searchByLatLngAndZoom: (latlng: LatLng, zoom: number) => void;
-  fetchStops: () => void;
+  fetchStops: () => () => void;
+  setLastLocation: (location: LatLngTuple) => void;
 }
 
 const StopsContext = createContext<StopsState>(null as any);
+const London = [51.505, -0.09] as LatLngTuple;
 
-export const StopsProvider = ({ children }: PropsWithChildren) => {
+export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
   const [stops, setStops] = useState<Stop[]>([]);
   const [filteredStops, setFilteredStops] = useState<Stop[]>([]);
+  const [lastLocation, setLastLocation] = useLocalStorage<LatLngTuple>('last-location', London);
 
   const [fetchStops] = useAsyncHttp(async ({ get }) => {
     const response: StopEntity[] = await get('/api/stops/trip/1');
 
-    console.log(response);
-
-    setStops(() => response.map(stopEnt => ({
+    setStops(response.map(stopEnt => ({
       id: stopEnt.id,
       name: stopEnt.name,
       location: new LatLng(stopEnt.latitude, stopEnt.longitude),
       photos: [] as string[],
       notes: '',
       createdAt: stopEnt.createdAt as any,
-    })))
+    })));
 
     return response;
   }, [setStops]);
 
-  const [persistStop] = useAsyncHttp(async ({ post }, body: Pick<StopEntity, 'latitude'|'longitude'|'name'>) => {
-    return post('/api/stops', body);
+  const [persistStop, { result }] = useAsyncHttp(async ({ post }, body: Pick<StopEntity, 'latitude'|'longitude'|'name'>) => {
+    return post<StopDTO>('/api/stops', body);
   }, []);
 
+  const [deleteStop] = useAsyncHttp(async ({ del }, id: number) => {
+    return del('/api/stops/' + id);
+  }, []);
+
+
   const addStop = useCallback((stop: Stop) => {
-    setStops(stops => [...stops, stop]);
     persistStop({
       name: stop.name,
       latitude: stop.location.lat,
@@ -59,8 +79,22 @@ export const StopsProvider = ({ children }: PropsWithChildren) => {
     });
   }, []);
 
+  useEffect(() => {
+    if (result) {
+      setStops(stops => [...stops, {
+        id: result.id,
+        name: result.name,
+        createdAt: Date.parse(result.createdAt),
+        location: new LatLng(result.latitude, result.longitude),
+        photos: [] as string[],
+        notes: ''
+      }]);
+    }
+  }, [result])
+
   const removeStop = useCallback((id: number) => {
     setStops(stops => stops.filter((s) => s.id !== id));
+    deleteStop(id);
   }, []);
 
   const updateStop = useCallback((id: number, stop: Stop) => {
@@ -86,6 +120,7 @@ export const StopsProvider = ({ children }: PropsWithChildren) => {
   return <StopsContext.Provider value={{
     stops,
     filteredStops,
+    lastLocation,
     addStop,
     removeStop,
     updateStop,
@@ -93,15 +128,10 @@ export const StopsProvider = ({ children }: PropsWithChildren) => {
     searchByBounds,
     searchByLatLngAndZoom,
     fetchStops,
+    setLastLocation,
   }}>
-    {children}
-  </StopsContext.Provider>;
-};
-
-export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
-  return <StopsProvider>
     <Component {...props} />
-  </StopsProvider>
+  </StopsContext.Provider>;
 };
 
 export const useStops = () => useContext(StopsContext);

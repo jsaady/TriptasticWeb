@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { CreateUserDTO } from './users.dto.js';
 import { User } from './users.entity.js';
+import { UserRole } from './userRole.enum.js';
 
 @Injectable()
 export class UserService {
@@ -35,11 +36,21 @@ export class UserService {
       username
     });
   }
+
   async updateUser(user: User, updates: Partial<User>) {
     const newUser = wrap(user).assign(updates, { em: this.em });
     await this.em.flush();
 
     return newUser;
+  }
+
+  async updateRole(userId: number, role: UserRole) {
+    const user = await this.getUserById(userId);
+    user.role = role;
+  
+    await this.em.flush();
+
+    return user;
   }
 
   private get em () {

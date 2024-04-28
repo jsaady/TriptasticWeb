@@ -8,6 +8,7 @@ import { User } from '../users/users.entity.js';
 import { UserService } from '../users/users.service.js';
 import { UserDevice } from './entities/userDevice.entity.js';
 import { WebAuthnService } from './webAuthn.service.js';
+import { UserRole } from '../users/userRole.enum.js';
 
 jest.mock('@simplewebauthn/server', () => ({
   generateRegistrationOptions: jest.fn(),
@@ -467,7 +468,7 @@ describe('webAuthnService', () => {
         email: 'fake2@fake.com',
         password: 'password',
         currentWebAuthnChallenge: null,
-        isAdmin: false,
+        role: UserRole.USER,
         emailConfirmed: false,
         needPasswordReset: false,
         username: 'fake2',

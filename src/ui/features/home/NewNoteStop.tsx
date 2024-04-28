@@ -1,10 +1,11 @@
+import { LatLng } from 'leaflet';
 import { useCallback } from 'react';
 import { Button } from '../../components/Button.js';
 import { Input } from '../../components/Input.js';
 import { useForm } from '../../utils/forms.js';
-import { Modal, StyledModal } from '../../utils/modals.js';
-import { Stop, useStops } from './StopsContext.js';
-import { LatLng } from 'leaflet';
+import { StyledModal } from '../../utils/modals.js';
+import { Stop } from './StopsContext.js';
+import { Textarea } from '../../components/Textarea.js';
 
 export interface NewNoteStopProps {
   close: () => void;
@@ -21,7 +22,7 @@ export const NewNoteStop = ({ close, addStop, latlng, initialName = '' }: NewNot
 
   const submit = useCallback((data: typeof state) => {
     addStop({
-      id: Math.random().toString(36).substring(7),
+      id: Math.random() * -100000,
       name: data.name,
       notes: data.notes,
       photos: [],
@@ -34,16 +35,30 @@ export const NewNoteStop = ({ close, addStop, latlng, initialName = '' }: NewNot
   return (
     <StyledModal onClose={close}>
       <form {...registerForm(submit)}>
+        <h1 className='text-2xl font-bold mb-4'>
+          New Stop
+        </h1>
         <div>
+          <label htmlFor='name'>Name</label>
           <Input {...register('name')} />
         </div>
-        <Button className="w-full my-6" type="submit">
-          Save
-        </Button>
+        <div>
+          <label htmlFor='notes'>Notes</label>
+          <Textarea {...register('notes')} />
+        </div>
+        <div>
+          <label htmlFor='photos'>Photos & Videos</label>
+          <Input type='file' multiple />
+        </div>
+        <div className='mt-4'>
+          <Button type="submit">
+            Save
+          </Button>
 
-        <Button onClick={close}>
-          Close
-        </Button>
+          <Button type='button' onClick={close}>
+            Close
+          </Button>
+        </div>
       </form>
     </StyledModal>
   );

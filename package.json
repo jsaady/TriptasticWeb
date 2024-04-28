@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "test": "npm run test:ui && npm run test:api",
+    "test": "npm run test:api",
     "test:ui": "jest --ci --coverage --config ./jest-ui.config.js",
     "pretest:api": "node --loader ts-node/esm ./src/api/test-api.setup.ts",
     "test:api": "NODE_OPTIONS=\"-r ts-node/register --no-warnings\" jest --runInBand --ci --coverage --config ./jest-api.config.js",

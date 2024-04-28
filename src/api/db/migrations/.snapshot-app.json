@@ -135,14 +135,14 @@
           "nullable": false,
           "mappedType": "string"
         },
-        "is_admin": {
-          "name": "is_admin",
-          "type": "boolean",
+        "role": {
+          "name": "role",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "boolean"
+          "mappedType": "string"
         },
         "need_password_reset": {
           "name": "need_password_reset",

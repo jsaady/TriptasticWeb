@@ -1,7 +1,7 @@
-import { BadRequestException, Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { StopsService } from './stops.service.js';
-import { Stop } from './entities/stop.entity.js';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { IsAuthenticated } from '../auth/isAuthenticated.guard.js';
+import { Stop } from './entities/stop.entity.js';
+import { StopsService } from './stops.service.js';
 
 @Controller('stops')
 @IsAuthenticated()
@@ -13,6 +13,13 @@ export class StopsController {
   @Post()
   create(@Body() body: Pick<Stop, 'latitude'|'longitude'|'name'>) {
     return this.stopService.create(body);
+  }
+
+  @Delete(':id')
+  deleteStop(
+    @Param('id') id: number
+  ) {
+    return this.stopService.delete(id);
   }
 
   @Get('trip/:tripId')

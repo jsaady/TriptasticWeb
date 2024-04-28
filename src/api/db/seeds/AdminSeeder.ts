@@ -3,6 +3,7 @@ import { Seeder } from '@mikro-orm/seeder';
 import { hash } from 'bcrypt';
 import { AUTH_SALT_ROUNDS } from '../../features/auth/auth.constants.js';
 import { User } from '../../features/users/users.entity.js';
+import { UserRole } from '../../features/users/userRole.enum.js';
 
 export class AdminSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
@@ -17,7 +18,7 @@ export class AdminSeeder extends Seeder {
         password: await hash('Password123!', AUTH_SALT_ROUNDS),
         needPasswordReset: true,
         emailConfirmed: true,
-        isAdmin: true
+        role: UserRole.ADMIN,
       });
     }
   }

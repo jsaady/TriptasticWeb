@@ -12,6 +12,8 @@ import { AUTH_SALT_ROUNDS } from './auth.constants.js';
 import { AuthService } from './auth.service.js';
 import { UserClient } from './entities/userClient.entity.js';
 import { WebAuthnService } from './webAuthn.service.js';
+import { UserRole } from '../users/userRole.enum.js';
+import { RequestContextService } from '@nestjs-enhanced/context';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('test'),
@@ -33,6 +35,7 @@ describe('AuthService', () => {
     getUserByEmail: jest.fn(),
     getUserByUsername: jest.fn(),
     updateUser: jest.fn(),
+    updateRole: jest.fn(),
   };
   const mockWebAuthnService: Record<keyof WebAuthnService, jest.Mock> = {
     getDeviceCountByUserId: jest.fn(),
@@ -50,6 +53,10 @@ describe('AuthService', () => {
     verify: jest.fn(),
     decode: jest.fn(),
   };
+  const mockRequestContextService: Record<keyof RequestContextService, jest.Mock> = {
+    start: jest.fn(),
+    getContext: jest.fn()
+  }
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
@@ -74,6 +81,10 @@ describe('AuthService', () => {
           provide: WebAuthnService,
           useValue: mockWebAuthnService,
         },
+        {
+          provide: RequestContextService,
+          useValue: mockRequestContextService
+        }
       ],
     }).compile();
 
@@ -146,7 +157,7 @@ describe('AuthService', () => {
       expect(mockUserService.create).toHaveBeenCalledWith({
         username: 'test',
         email: '',
-        isAdmin: false,
+        role: UserRole.USER,
         password: '',
         needPasswordReset: true,
         emailConfirmed: false,
@@ -506,7 +517,7 @@ describe('AuthService', () => {
     it('should return an AuthDTO and AuthTokenContents', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.ADMIN,
         email: 'test@example.com',
         emailConfirmed: true,
         needPasswordReset: false
@@ -524,7 +535,7 @@ describe('AuthService', () => {
       expect(authDTO.refreshToken).toBe('NOT IMPLEMENTED');
       expect(authDTO.refreshTokenExpiresIn).toBe(0);
       expect(authTokenContents.sub).toBe(user.id);
-      expect(authTokenContents.isAdmin).toBe(user.isAdmin);
+      expect(authTokenContents.role).toBe(user.role);
       expect(authTokenContents.email).toBe(user.email);
       expect(authTokenContents.emailConfirmed).toBe(user.emailConfirmed);
       expect(authTokenContents.needPasswordReset).toBe(user.needPasswordReset);
@@ -539,7 +550,7 @@ describe('AuthService', () => {
     it('should return true if the password matches', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.USER,
         email: 'test@test.com',
         emailConfirmed: true,
         needPasswordReset: false,
@@ -564,7 +575,7 @@ describe('AuthService', () => {
     it('should handle an incorrect password', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.USER,
         email: 'test@test.com'
       } as User;
   
@@ -581,7 +592,7 @@ describe('AuthService', () => {
     it('should return true if the user has confirmed their email', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.USER,
         email: 'test@test.com',
         emailConfirmed: true,
       };
@@ -591,7 +602,7 @@ describe('AuthService', () => {
     it('should return true if the user has devices', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.USER,
         email: 'test@test.com',
         emailConfirmed: false,
       };
@@ -628,7 +639,7 @@ describe('AuthService', () => {
     it('should update the password for a user', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.USER,
         email: 'test@test.com',
       };
 
@@ -649,7 +660,7 @@ describe('AuthService', () => {
     it('should send a reset password email', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.USER,
         email: 'test@test.com'
       };
 
@@ -691,7 +702,7 @@ describe('AuthService', () => {
     it('should validate a password reset token', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.USER,
         email: 'test@test.com'
       };
 
@@ -720,7 +731,7 @@ describe('AuthService', () => {
     it('should reset the password for a user', async () => {
       const user = {
         id: 1,
-        isAdmin: false,
+        role: UserRole.USER,
         email: 'test@test.com',
       };
 

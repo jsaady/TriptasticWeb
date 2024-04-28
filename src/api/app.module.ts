@@ -17,6 +17,7 @@ import { NotificationModule } from './features/notifications/notification.module
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
 import { StopsModule } from './features/stops/stops.module.js';
+import { MapModule } from './features/map/map.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -50,6 +51,7 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     NotificationModule,
     StopsModule,
     UsersModule,
+    MapModule,
     ThrottlerModule.forRoot({
       ttl: RATE_LIMIT_TTL,
       limit: RATE_LIMIT_LIMIT
