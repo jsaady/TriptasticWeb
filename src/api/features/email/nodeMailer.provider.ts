@@ -10,8 +10,8 @@ export const NODE_MAILER_PROVIDER: Provider = {
   useFactory: (config: ConfigService) => {
     const host: any = config.getOrThrow('emailHost');
     const port: any = config.getOrThrow('emailPort');
-    const user: any = config.getOrThrow('emailUser');
-    const pass: any = config.getOrThrow('emailPassword');
+    const user: any = config.getOrThrow('emailUser').trim();
+    const pass: any = config.getOrThrow('emailPassword').trim();
 
     const smtpOptions: SMTPTransport.Options = {
       host,
