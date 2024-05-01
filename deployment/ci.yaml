@@ -84,8 +84,8 @@ data:
   EMAIL_REPLY_TO: app@holyham.cloud
   DATABASE_URL: postgres://postgres:password@postgres-service:5432/app
   DATABASE_PASSWORD: password
-  REQUIRE_MFA: false
-  REQUIRE_EMAIL_VERIFICATION: false
+  REQUIRE_MFA: 'false'
+  REQUIRE_EMAIL_VERIFICATION: 'false'
 
 
 ---
