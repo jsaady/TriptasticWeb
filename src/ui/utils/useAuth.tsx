@@ -71,6 +71,8 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
     globalSocketReconnect();
 
     setLoggedIn(false);
+
+    navigate('/login');
   }, [setLoggedIn, globalSocketReconnect]);
 
   useEffect(() => {
