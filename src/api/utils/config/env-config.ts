@@ -6,4 +6,6 @@ export interface EnvironmentConfig {
   emailUser: string;
   emailPassword: string;
   emailReplyTo: string;
+  requireEmailVerification: boolean;
+  requireMFA: boolean;
 }

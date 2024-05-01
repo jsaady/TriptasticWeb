@@ -50,6 +50,8 @@ export class GeneratedConfigService {
       emailReplyTo: this.config.getOrThrow(CONFIG_VARS.emailReplyTo),
       envUrl: this.config.getOrThrow(CONFIG_VARS.envUrl),
       envName: this.config.getOrThrow(CONFIG_VARS.envName),
+      requireEmailVerification: this.config.get(CONFIG_VARS.requireMFA) !== 'false',
+      requireMFA: this.config.get(CONFIG_VARS.requireMFA) !== 'false',
     });
 
     return config;

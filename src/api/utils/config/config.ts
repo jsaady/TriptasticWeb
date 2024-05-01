@@ -13,12 +13,13 @@ export const CONFIG_VARS = {
   emailUser: 'EMAIL_USER',
   emailPassword: 'EMAIL_PASSWORD',
   emailReplyTo: 'EMAIL_REPLY_TO',
+  requireEmailVerification: 'REQUIRE_EMAIL_VERIFICATION',
+  requireMFA: 'REQUIRE_MFA'
 };
 
 export const RATE_LIMIT_TTL = 60;
 export const RATE_LIMIT_LIMIT = 10_000;
 export const EMAIL_VERIFICATION_EXPIRATION = 300;
 export const APP_NAME = 'Runner';
-export const MFA_ENABLED = true;
 
 export type FullConfig = EnvironmentConfig & GeneratedConfig;

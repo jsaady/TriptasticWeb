@@ -1,6 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { MFA_ENABLED } from '../../utils/config/config.js';
 import { User as UserEntity } from '../users/users.entity.js';
 import { UserService } from '../users/users.service.js';
 import { AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
@@ -9,13 +8,15 @@ import { AuthService } from './auth.service.js';
 import { IsAuthenticated } from './isAuthenticated.guard.js';
 import { User } from './user.decorator.js';
 import { WebAuthnService } from './webAuthn.service.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 
 @Controller('/auth')
 export class AuthController {
   constructor (
     private authService: AuthService,
     private webAuthnService: WebAuthnService,
-    private userService: UserService
+    private userService: UserService,
+    private config: ConfigService
   ) { }
 
   @Post('/start')
@@ -110,7 +111,7 @@ export class AuthController {
 
     if (existingUserDevice) {
       mfaMethod = 'client_identifier';
-    } else if (mfaMethod && MFA_ENABLED) {
+    } else if (mfaMethod && this.config.get('requireMFA')) {
       await this.authService.registerUserClientIdentifier(user.id, clientIdentifier);
     }
 
@@ -122,7 +123,7 @@ export class AuthController {
       signed: true
     });
 
-    if (!user.emailConfirmed) {
+    if (!user.emailConfirmed && this.config.get('requireEmailVerification')) {
       return {
         success: false,
         code: 'verify_email',

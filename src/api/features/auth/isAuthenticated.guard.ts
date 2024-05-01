@@ -1,10 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata, UnauthorizedException, UseGuards, applyDecorators } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
-import { MFA_ENABLED } from '../../utils/config/config.js';
 import { AuthService } from './auth.service.js';
 import { AuthenticatedRequest } from './authenticated-request.type.js';
+import { ConfigService } from '../../utils/config/config.service.js';
 const IS_AUTH_CONFIG = 'IS_AUTH_CONFIG';
 const SKIP_AUTH_CHECK = 'SKIP_AUTH_CHECK';
 
@@ -17,7 +15,7 @@ export interface IsAuthenticatedConfig {
 @Injectable()
 export class IsAuthenticatedGuard implements CanActivate {
   constructor (
-    private jwt: JwtService,
+    private config: ConfigService,
     private reflector: Reflector,
     private authService: AuthService
   ) { }
@@ -45,7 +43,7 @@ export class IsAuthenticatedGuard implements CanActivate {
         return false;
       }
 
-      if (MFA_ENABLED && !allowNoMFA && (!payload.mfaEnabled || !payload.mfaMethod)) {
+      if (this.config.get('requireMFA') && !allowNoMFA && (!payload.mfaEnabled || !payload.mfaMethod)) {
         return false;
       }
     } catch {
