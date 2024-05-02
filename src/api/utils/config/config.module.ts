@@ -1,5 +1,5 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigService } from './config.service.js';
 import { GeneratedConfig } from './generated-config.entity.js';
 import { GeneratedConfigModule } from './generated-config.module.js';
@@ -9,4 +9,5 @@ import { GeneratedConfigModule } from './generated-config.module.js';
   providers: [ConfigService],
   exports: [ConfigService]
 })
+@Global()
 export class ConfigModule { }

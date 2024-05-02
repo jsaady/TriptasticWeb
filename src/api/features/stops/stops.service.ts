@@ -73,7 +73,7 @@ export class StopsService {
   }
 
   async getStopsByTrip(tripId: number): Promise<StopDTO[]> {
-    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['id', 'name', 'latitude', 'longitude', 'createdAt'] });
+    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['id', 'name', 'latitude', 'longitude', 'createdAt', 'type'] });
 
     return stops;
   }

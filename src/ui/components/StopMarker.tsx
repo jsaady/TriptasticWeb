@@ -3,6 +3,8 @@ import { Stop } from '../features/home/StopsContext.js';
 import { SmallButton } from './Button.js';
 import { FeatherMarker } from './FeatherMarker.js';
 import { Icon } from './Icon.js';
+import { useMemo } from 'react';
+import { stopOptions } from '../features/home/stopOptions.js';
 
 
 export interface StopMarkerProps {
@@ -12,7 +14,13 @@ export interface StopMarkerProps {
   onEditClicked: () => void;
 }
 export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClicked }: StopMarkerProps) {
-  return <FeatherMarker name='map-pin' position={stop.location}>
+  const stopIcon = useMemo(() => {
+    return stopOptions.find(option => option.value === stop.type)?.icon ?? 'map-pin';
+  }, [stop.type]);
+
+  console.log(stop.type, stopIcon);
+
+  return <FeatherMarker name={stopIcon} position={stop.location}>
     <Popup>
       <h2 className='text-lg font-bold'>
         {stop.name}

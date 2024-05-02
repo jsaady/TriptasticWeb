@@ -1,7 +1,8 @@
-import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { User } from '../../users/users.entity.js';
 import { Attachment } from './attachment.entity.js';
 import { Trip } from './trip.entity.js';
+import { StopType } from './stopType.enum.js';
 
 @Entity()
 export class Stop {
@@ -36,6 +37,9 @@ export class Stop {
 
   @ManyToOne()
   trip!: Trip;
+
+  @Enum(() => StopType)
+  type!: StopType;
 
   @OneToMany(() => Attachment, attachment => attachment.stop, { cascade: [Cascade.REMOVE] })
   attachments = new Collection<Attachment>(this);

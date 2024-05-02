@@ -3,6 +3,7 @@ import { ComponentType, createContext, useCallback, useContext, useEffect, useSt
 import type { Stop as StopEntity } from '../../../api/features/stops/entities/stop.entity.js';
 import { useAsyncHttp } from '../../utils/useAsync.js';
 import { useGeolocation } from '../../utils/useGeolocation.js';
+import { StopType } from '../../../api/features/stops/entities/stopType.enum.js';
 export interface Stop {
   id: number;
   name: string;
@@ -10,6 +11,7 @@ export interface Stop {
   attachments: FileList | File[];
   notes: string;
   createdAt: number;
+  type: StopType;
 }
 
 export interface StopDTO {
@@ -22,6 +24,7 @@ export interface StopDTO {
   longitude: number;
   creator: number;
   trip: number;
+  type: StopType;
 }
 
 export type NewStop = Omit<Stop, 'id'>;
@@ -58,16 +61,17 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       attachments: stopEnt.attachments as any,
       notes: stopEnt.notes ?? '',
       createdAt: stopEnt.createdAt as any,
+      type: stopEnt.type,
     })));
 
     return response;
   }, [setStops]);
 
-  const [persistStop, { result }] = useAsyncHttp(async ({ post }, body: Pick<StopEntity, 'latitude'|'longitude'|'name'|'notes'>) => {
+  const [persistStop, { result }] = useAsyncHttp(async ({ post }, body: Pick<StopEntity, 'latitude'|'longitude'|'name'|'notes'|'type'>) => {
     return post<StopDTO>('/api/stops', body);
   }, []);
 
-  const [persistStopChanges] = useAsyncHttp(async ({ put }, id: number, body: Pick<StopEntity, 'latitude'|'longitude'|'name'|'notes'>) => {
+  const [persistStopChanges] = useAsyncHttp(async ({ put }, id: number, body: Pick<StopEntity, 'latitude'|'longitude'|'name'|'notes'|'type'>) => {
     return put<StopDTO>('/api/stops/' + id, body);
   }, []);
 
@@ -93,6 +97,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       latitude: stop.location.lat,
       longitude: stop.location.lng,
       notes: stop.notes,
+      type: stop.type
     });
   }, []);
 
@@ -108,7 +113,8 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
         createdAt: Date.parse(result.createdAt),
         location: new LatLng(result.latitude, result.longitude),
         attachments: [] as File[],
-        notes: result.notes
+        notes: result.notes,
+        type: result.type
       }]);
     }
   }, [result, pendingAttachments])
@@ -125,6 +131,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       latitude: stop.location.lat,
       longitude: stop.location.lng,
       notes: stop.notes,
+      type: stop.type
     });
   }, []);
 

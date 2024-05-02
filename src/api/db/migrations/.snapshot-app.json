@@ -438,6 +438,22 @@
           "primary": false,
           "nullable": false,
           "mappedType": "integer"
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "NATIONAL_PARK",
+            "HOCKEY_CITY",
+            "PIT_STOP",
+            "HIDDEN_GEM",
+            "FAMILY_AND_FRIENDS"
+          ],
+          "mappedType": "enum"
         }
       },
       "name": "stop",

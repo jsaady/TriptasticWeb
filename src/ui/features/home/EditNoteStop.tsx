@@ -1,12 +1,14 @@
 import { LatLng } from 'leaflet';
 import { useCallback, useEffect } from 'react';
+import { StopType } from '../../../api/features/stops/entities/stopType.enum.js';
+import { ButtonSelect } from '../../components/ButtonSelect.js';
 import { Input } from '../../components/Input.js';
-import { Textarea } from '../../components/Textarea.js';
+import { RichTextarea } from '../../components/RichTextarea.js';
 import { useForm } from '../../utils/forms.js';
 import { StyledModal } from '../../utils/modals.js';
-import { Stop } from './StopsContext.js';
 import { useAsyncHttp } from '../../utils/useAsync.js';
-import { RichTextarea } from '../../components/RichTextarea.js';
+import { Stop } from './StopsContext.js';
+import { stopOptions } from './stopOptions.js';
 
 export interface EditNoteStopProps {
   close: () => void;
@@ -25,6 +27,7 @@ export const EditNoteStop = ({ close, saveStop, latlng, initialName = '', existi
     name: existingStop?.name ?? initialName,
     notes: existingStop?.notes ?? '',
     attachments: null as any as FileList,
+    type: existingStop?.type ?? StopType.NATIONAL_PARK,
   });
 
   const submit = useCallback((data: typeof state) => {
@@ -35,6 +38,7 @@ export const EditNoteStop = ({ close, saveStop, latlng, initialName = '', existi
       attachments: existingStop?.attachments ?? data.attachments,
       location: existingStop?.location ?? latlng,
       createdAt: existingStop?.createdAt ?? Date.now(),
+      type: data.type,
     });
     close();
   }, [saveStop, close]);
@@ -66,6 +70,11 @@ export const EditNoteStop = ({ close, saveStop, latlng, initialName = '', existi
       cancelText='Cancel'>
       <form {...registerForm(submit)}>
         <fieldset disabled={loading}>
+          <div>
+            <label htmlFor='type'>Type</label>
+            <br />
+            <ButtonSelect {...register('type')} options={stopOptions} />
+          </div>
           <div>
             <label htmlFor='name'>Name</label>
             <Input {...register('name')} />
