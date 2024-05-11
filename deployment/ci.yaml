@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: triptastic
-          image: ghcr.io/jsaady/triptasticweb:sha-2e85490
+          image: ghcr.io/jsaady/triptasticweb:sha-ede1ce7
           ports:
             - containerPort: 3000
           envFrom:
