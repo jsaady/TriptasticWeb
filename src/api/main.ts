@@ -29,9 +29,10 @@ import { initSocketAdapters } from '@nestjs-enhanced/sockets';
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
-        "default-src": ["'self'", "data:", "https://*.tile.openstreetmap.org", "https://*.openstreetmap.org"],
-        "img-src": ["'self'", "data:", "https://*.tile.openstreetmap.org"],
-      }
+        "default-src": ["'self'", "data:", "blob:", "'unsafe-inline'", "https://*.tile.openstreetmap.org", "https://*.openstreetmap.org", "https://tiles.stadiamaps.com"],
+        "img-src": ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org"],
+        "script-src": ["'self'", "blob:"],
+      },
     }
   }));
 
