@@ -1,7 +1,6 @@
 // import 'quill/dist/quill.snow.css';
 
-import { Quill } from 'react-quill';
-import { HTMLProps, MutableRefObject, forwardRef, useEffect, useRef } from 'react';
+import { HTMLProps, forwardRef } from 'react';
 import { FormItemProps } from '../utils/forms.js';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';

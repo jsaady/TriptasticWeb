@@ -2,24 +2,21 @@ import { LatLng } from 'leaflet';
 import 'leaflet-geosearch/dist/geosearch.css';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 import 'leaflet/dist/leaflet.css';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { ConfirmModal } from '../../components/ConfirmModal.js';
-import { LocalSearchResult, SearchBox } from '../../components/SearchBox.js';
-import { StopMarker } from '../../components/StopMarker.js';
-import { useGeolocation } from '../../utils/useGeolocation.js';
+import { ConfirmModal } from '@ui/components/ConfirmModal.js';
+import { LocalSearchResult, SearchBox } from '@ui/components/SearchBox.js';
+import { StopMarker } from '@ui/components/StopMarker.js';
+import { useGeolocation } from '@ui/utils/useGeolocation.js';
 import { EditNoteStop } from './EditNoteStop.js';
 import { MapBridge } from './MapBridge.js';
-import { Stop, useStops, withStopsProvider } from './StopsContext.js';
+import { useStops, withStopsProvider } from './StopsContext.js';
 import { ViewStopDetails } from './ViewStopDetails.js';
+import { withOpenStreetMapProvider } from '@ui/utils/osm.js';
+import { MapLibreTileLayer } from './MapLibreTileLayer.js';
+import { CreateStopDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
 
-export enum StopType {
-  PHOTO = 'PHOTO',
-  NOTE = 'NOTE',
-}
-
-
-export const Home = withStopsProvider(memo(() => {
+export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
   const [newModalOpen, setNewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [detailModalId, setDetailModalId] = useState<number | null>(null);
@@ -27,7 +24,7 @@ export const Home = withStopsProvider(memo(() => {
   const [isSearch, setIsSearch] = useState(false);
   const [newLocationLatLng, setNewLocationLatLng] = useState<LatLng | null>(null);
   const [searchResultBounds, setSearchResultBounds] = useState<BoundsTuple | null>(null);
-  const [editStop, setEditStop] = useState<Stop | null>(null);
+  const [editStop, setEditStop] = useState<UpdateStopDTO | null>(null);
 
   const {
     stops,
@@ -43,19 +40,19 @@ export const Home = withStopsProvider(memo(() => {
     getLocation
   } = useGeolocation();
 
-  const handleNewStop = useCallback((type: StopType, stop: LatLng) => {
+  const handleNewStop = useCallback((stop: LatLng) => {
     if (isSearch) return;
 
     setNewModalOpen(true);
     setNewLocationLatLng(stop);
   }, [isSearch]);
 
-  const handleAddStop = useCallback((stop: Stop) => {
+  const handleAddStop = useCallback((stop: CreateStopDTO) => {
     setNewLocationLatLng(null);
     addStop(stop);
   }, []);
 
-  const handleUpdateStop = useCallback((stop: Stop) => {
+  const handleUpdateStop = useCallback((stop: UpdateStopDTO) => {
     updateStop(stop.id, stop);
   }, []);
 
@@ -86,17 +83,21 @@ export const Home = withStopsProvider(memo(() => {
     getLocation();
   }, []);
 
+  const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
+
+  const stadiaTheme = useMemo(() => darkMode ? 'alidade_smooth_dark' : 'alidade_smooth', [darkMode]);
+
+
   return <div className='flex flex-col items-center justify-center'>
     <SearchBox onSelected={handleSearchSelected} onFocusChange={setIsSearch} />
     <MapContainer
-      className='h-[calc(100vh-72px)] text-black dark:text-black invert-hue'
+      className='h-[calc(100vh-72px)] text-black dark:text-black'
       center={currentLocation ?? lastLocation}
       zoom={11}
       style={{ width: '100%' }}>
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        // url="/api/map/{s}/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      <MapLibreTileLayer
+        attribution='&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+        url={`https://tiles.stadiamaps.com/styles/${stadiaTheme}.json`}
       />
       <MapBridge onNewStop={handleNewStop} mapBounds={searchResultBounds} />
       {
@@ -113,11 +114,11 @@ export const Home = withStopsProvider(memo(() => {
     </MapContainer>
 
     {newModalOpen && newLocationLatLng && (
-      <EditNoteStop latlng={newLocationLatLng} close={closeModal} saveStop={handleAddStop} />
+      <EditNoteStop latitude={newLocationLatLng.lat} longitude={newLocationLatLng.lng} close={closeModal} saveStop={handleAddStop} />
     )}
 
     {editStop && (
-      <EditNoteStop latlng={editStop.location} existingStop={editStop} close={closeModal} saveStop={handleUpdateStop} />
+      <EditNoteStop latitude={editStop.latitude} longitude={editStop.longitude} existingStop={editStop} close={closeModal} saveStop={handleUpdateStop} />
     )}
 
     {deleteModalOpen && deleteId && (
@@ -128,6 +129,6 @@ export const Home = withStopsProvider(memo(() => {
       <ViewStopDetails onClose={() => setDetailModalId(null)} stopId={detailModalId} />
     )}
   </div>;
-}));
+})));
 
 

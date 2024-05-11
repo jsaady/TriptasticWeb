@@ -1,9 +1,9 @@
+import { Button } from '@ui/components/Button.js';
+import { Input } from '@ui/components/Input.js';
+import { useForm } from '@ui/utils/forms.js';
+import { useAsyncHttp } from '@ui/utils/useAsync.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
 import { useCallback, useState } from 'react';
-import { Button } from '../../components/Button.js';
-import { Input } from '../../components/Input.js';
-import { useForm } from '../../utils/forms.js';
-import { useAsyncHttp } from '../../utils/useAsync.js';
-import { useAuthorization } from '../../utils/useAuth.js';
 import { LoginForm, LoginHeading, LogoutLink } from './LoginElements.js';
 import { LoginResponse } from './types.js';
 

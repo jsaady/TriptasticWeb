@@ -1,5 +1,5 @@
-import { StopType } from '../../../api/features/stops/entities/stopType.enum.js';
-import { ButtonSelectOption } from '../../components/ButtonSelect.js';
+import { StopType } from '@api/features/stops/entities/stopType.enum.js';
+import { ButtonSelectOption } from '@ui/components/ButtonSelect.js';
 
 export const stopOptions: ButtonSelectOption[] = [
   { value: StopType.NATIONAL_PARK, label: 'National Park', icon: 'compass' },

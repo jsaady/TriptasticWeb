@@ -26,6 +26,12 @@ export class Stop {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date;
 
+  @Property()
+  desiredArrivalDate!: Date;
+
+  @Property()
+  actualArrivalDate!: Date;
+
   @Property({ type: 'double precision' })
   latitude!: number;
 

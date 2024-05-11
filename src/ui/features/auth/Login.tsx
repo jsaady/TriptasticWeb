@@ -1,6 +1,6 @@
+import { useAuthorization } from '@ui/utils/useAuth.js';
 import { useMemo } from 'react';
 import { Outlet, useLocation } from 'react-router';
-import { useAuthorization } from '../../utils/useAuth.js';
 import { LoginHeading, LogoutLink } from './LoginElements.js';
 
 export interface LoginFormState {

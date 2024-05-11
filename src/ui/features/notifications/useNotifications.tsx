@@ -1,5 +1,5 @@
 import { ComponentType, createContext, useContext, useEffect, useMemo } from 'react';
-import { useAsync, useAsyncHttp } from '../../utils/useAsync.js';
+import { useAsync, useAsyncHttp } from '@ui/utils/useAsync.js';
 
 interface NotificationState {
   supported: boolean;

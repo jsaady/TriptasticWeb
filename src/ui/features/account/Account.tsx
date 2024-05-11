@@ -1,5 +1,5 @@
-import { Input } from '../../components/Input.js';
-import { useAuthorization } from '../../utils/useAuth.js';
+import { Input } from '@ui/components/Input.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
 import { UpdatePasswordForm } from '../auth/UpdatePasswordForm.js';
 
 export const Account = () => {

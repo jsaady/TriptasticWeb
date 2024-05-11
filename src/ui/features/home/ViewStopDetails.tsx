@@ -1,8 +1,9 @@
+import { AttachmentDTO } from '@api/features/stops/dto/attachment.dto.js';
+import { StopDetailDTO } from '@api/features/stops/dto/stop.dto.js';
+import type { Serialized } from '@common/serialized.js';
 import { useEffect } from 'react';
-import { AttachmentDTO } from '../../../api/features/stops/dto/attachment.dto.js';
-import { StyledModal } from '../../utils/modals.js';
-import { useAsyncHttp } from '../../utils/useAsync.js';
-import type { Stop } from '../../../api/features/stops/entities/stop.entity.js';
+import { StyledModal } from '@ui/utils/modals.js';
+import { useAsyncHttp } from '@ui/utils/useAsync.js';
 
 export interface ViewStopAttachmentsProps {
   stopId: number;
@@ -11,11 +12,11 @@ export interface ViewStopAttachmentsProps {
 
 export const ViewStopDetails = ({ stopId, onClose }: ViewStopAttachmentsProps) => {
   const [fetchAttachments, { result }] = useAsyncHttp(async ({ get }) => {
-    return await get<AttachmentDTO[]>(`/api/stops/${stopId}/attachments`);
+    return await get<Serialized<AttachmentDTO[]>>(`/api/stops/${stopId}/attachments`);
   }, [stopId]);
 
   const [fetchStop, { result: stop }] = useAsyncHttp(async ({ get }) => {
-    return await get<Stop>(`/api/stops/${stopId}`);
+    return await get<Serialized<StopDetailDTO>>(`/api/stops/${stopId}`);
   }, [stopId]);
 
   useEffect(() => {

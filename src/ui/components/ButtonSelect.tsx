@@ -11,18 +11,20 @@ export interface ButtonSelectOption {
 
 export interface ButtonSelectProps extends FormItemProps {
   options: ButtonSelectOption[];
+  className?: string;
 }
 
-export const ButtonSelect = forwardRef(({ onChange, name, required, value, options }: ButtonSelectProps) => {
+export const ButtonSelect = forwardRef(({ onChange, name, required, value, options, className }: ButtonSelectProps) => {
+  console.log(value);
 
-  return (
-    options.map(option => (
+  return <div className={className}>
+    {options.map(option => (
       <SmallButton
         disabled={value === option.value}
         key={option.value}
         type="button"
-        aria-label={option.label}
-        className={`${option.value !== value ? 'bg-indigo-600' : 'bg-indigo-300  hover:bg-indigo-300'}`}
+        title={option.label}
+        className={`${option.value === value ? 'bg-indigo-600' : 'bg-indigo-300 hover:bg-indigo-300'}`}
         onClick={() => onChange({
           target: { name, value: option.value }
         })}
@@ -30,6 +32,6 @@ export const ButtonSelect = forwardRef(({ onChange, name, required, value, optio
         <Icon icon={option.icon} />
         {/* <span>{option.label}</span> */}
       </SmallButton>
-    ))
-  );
+    ))}
+  </div>
 });

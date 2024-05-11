@@ -1,16 +1,16 @@
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import { AuthenticationResponseJSON, RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
+import { Button } from '@ui/components/Button.js';
+import { Clickable } from '@ui/components/Clickable.js';
+import { Input } from '@ui/components/Input.js';
+import { useForm } from '@ui/utils/forms.js';
+import { useAsyncHttp } from '@ui/utils/useAsync.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button } from '../../components/Button.js';
-import { Input } from '../../components/Input.js';
-import { useForm } from '../../utils/forms.js';
-import { useAsyncHttp } from '../../utils/useAsync.js';
-import { useAuthorization } from '../../utils/useAuth.js';
+import { Link } from 'react-router-dom';
+import { ErrorBanner } from './Banner.js';
 import { LoginForm } from './LoginElements.js';
 import { LoginResponse } from './types.js';
-import { Link } from 'react-router-dom';
-import { Clickable } from '../../components/Clickable.js';
-import { ErrorBanner } from './Banner.js';
 
 export interface LoginFormState {
   username: string;

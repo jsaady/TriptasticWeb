@@ -1,11 +1,10 @@
 import '@testing-library/jest-dom';
-import { act, fireEvent, render, cleanup } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import { withAuthorization } from '@ui/utils/useAuth.js';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { BrowserRouter } from 'react-router-dom';
-import { withAuthorization } from '../../utils/useAuth.js';
 import { UsernamePasswordForm } from './UsernamePasswordForm.js';
-import { withGlobalSocketProvider } from '../../utils/useSocket.js';
 jest.mock('@simplewebauthn/browser', () => ({
   startAuthentication() {
     return {};

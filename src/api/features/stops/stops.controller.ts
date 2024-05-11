@@ -5,6 +5,7 @@ import { IsAuthenticated } from '../auth/isAuthenticated.guard.js';
 import { UserRole } from '../users/userRole.enum.js';
 import { Stop } from './entities/stop.entity.js';
 import { StopsService } from './stops.service.js';
+import { CreateStopDTO, StopDetailDTO, UpdateStopDTO } from './dto/stop.dto.js';
 
 @Controller('stops')
 @IsAuthenticated()
@@ -15,12 +16,12 @@ export class StopsController {
 
   @Post()
   @HasRole(UserRole.ADMIN)
-  create(@Body() body: Pick<Stop, 'latitude'|'longitude'|'name'|'notes'>) {
+  create(@Body() body: CreateStopDTO) {
     return this.stopService.create(body);
   }
 
   @Get(':id')
-  getStop(@Param('id') id: number) {
+  getStop(@Param('id') id: number): Promise<StopDetailDTO> {
     return this.stopService.getStopById(id);
   }
 
@@ -28,7 +29,7 @@ export class StopsController {
   @HasRole(UserRole.ADMIN)
   updateStop(
     @Param('id') id: number,
-    @Body() body: Pick<Stop, 'latitude'|'longitude'|'name'|'notes'>
+    @Body() body: UpdateStopDTO
   ) {
     return this.stopService.update(id, body);
   }

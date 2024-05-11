@@ -1,15 +1,17 @@
-import { Navigate, createBrowserRouter } from 'react-router-dom';
-import { Authenticated } from './Authenticated.js';
-import { Root } from './Root.js';
-import { Account } from './features/account/Account.js';
-import { WebAuthnDevices } from './features/account/WebAuthnDevices.js';
-import { ForgotPasswordForm } from './features/auth/ForgotPassword.js';
-import { Login } from './features/auth/Login.js';
-import { ResetPasswordForm } from './features/auth/ResetPasswordForm.js';
-import { UpdatePasswordForm } from './features/auth/UpdatePasswordForm.js';
-import { VerifyEmailForm } from './features/auth/VerifyEmail.js';
-import { WebAuthnLoginForm } from './features/auth/WebAuthnLoginForm.js';
-import { Home } from './features/home/Home.js';
+import { lazy } from 'react';
+import { createBrowserRouter } from 'react-router-dom';
+
+const Root = lazy(() => import('./Root.js').then(module => ({ default: module.Root })));
+const Home = lazy(() => import('./features/home/Home.js').then(module => ({ default: module.Home })));
+const Login = lazy(() => import('./features/auth/Login.js').then(module => ({ default: module.Login })));
+const WebAuthnDevices = lazy(() => import('./features/account/WebAuthnDevices.js').then(module => ({ default: module.WebAuthnDevices })));
+const ForgotPasswordForm = lazy(() => import('./features/auth/ForgotPassword.js').then(module => ({ default: module.ForgotPasswordForm })));
+const ResetPasswordForm = lazy(() => import('./features/auth/ResetPasswordForm.js').then(module => ({ default: module.ResetPasswordForm })));
+const UpdatePasswordForm = lazy(() => import('./features/auth/UpdatePasswordForm.js').then(module => ({ default: module.UpdatePasswordForm })));
+const VerifyEmailForm = lazy(() => import('./features/auth/VerifyEmail.js').then(module => ({ default: module.VerifyEmailForm })));
+const WebAuthnLoginForm = lazy(() => import('./features/auth/WebAuthnLoginForm.js').then(module => ({ default: module.WebAuthnLoginForm })));
+const Authenticated = lazy(() => import('./Authenticated.js').then(module => ({ default: module.Authenticated })));
+const Account = lazy(() => import('./features/account/Account.js').then(module => ({ default: module.Account })));
 
 export const router = createBrowserRouter([{
   path: '/',

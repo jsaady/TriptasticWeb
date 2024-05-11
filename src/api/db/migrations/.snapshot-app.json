@@ -403,6 +403,26 @@
           "length": 6,
           "mappedType": "datetime"
         },
+        "desired_arrival_date": {
+          "name": "desired_arrival_date",
+          "type": "timestamptz(0)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "actual_arrival_date": {
+          "name": "actual_arrival_date",
+          "type": "timestamptz(0)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
         "latitude": {
           "name": "latitude",
           "type": "double precision",

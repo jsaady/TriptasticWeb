@@ -1,19 +1,6 @@
 import { useRef, useState } from 'react';
 import { Button } from './Button.js';
-import { BootstrapIcon, FeatherIcon, Icon } from './Icon.js';
-
-interface OnClickDropdownItem {
-  onClick: () => void;
-}
-
-interface LinkItem {
-  link: string;
-}
-
-interface Item {
-  label: string;
-  icon?: BootstrapIcon;
-}
+import { FeatherIcon, Icon } from './Icon.js';
 
 interface Trigger {
   className?: string;

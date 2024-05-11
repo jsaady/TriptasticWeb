@@ -1,6 +1,6 @@
+import { useAsyncHttp } from '@ui/utils/useAsync.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
 import { useCallback, useEffect, useState } from 'react';
-import { useAsyncHttp } from '../../utils/useAsync.js';
-import { useAuthorization } from '../../utils/useAuth.js';
 import { WebAuthnLoginForm } from '../auth/WebAuthnLoginForm.js';
 import { LoginResponse } from '../auth/types.js';
 

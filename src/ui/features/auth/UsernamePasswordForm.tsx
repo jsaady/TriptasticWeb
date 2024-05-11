@@ -1,11 +1,11 @@
+import { Button } from '@ui/components/Button.js';
+import { Input } from '@ui/components/Input.js';
+import { useForm } from '@ui/utils/forms.js';
+import { useAsyncHttp } from '@ui/utils/useAsync.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
-import { Button } from '../../components/Button.js';
-import { Input } from '../../components/Input.js';
-import { useForm } from '../../utils/forms.js';
-import { useAsyncHttp } from '../../utils/useAsync.js';
-import { useAuthorization } from '../../utils/useAuth.js';
 import { ErrorBanner, SuccessBanner } from './Banner.js';
 import { LoginFormState } from './Login.js';
 import { LoginForm } from './LoginElements.js';

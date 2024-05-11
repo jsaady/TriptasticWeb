@@ -1,26 +1,26 @@
-import { LatLng } from 'leaflet';
+import { StopDetailDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
 import { useCallback, useEffect } from 'react';
-import { StopType } from '../../../api/features/stops/entities/stopType.enum.js';
-import { ButtonSelect } from '../../components/ButtonSelect.js';
-import { Input } from '../../components/Input.js';
-import { RichTextarea } from '../../components/RichTextarea.js';
-import { useForm } from '../../utils/forms.js';
-import { StyledModal } from '../../utils/modals.js';
-import { useAsyncHttp } from '../../utils/useAsync.js';
-import { Stop } from './StopsContext.js';
+import { StopType } from '@api/features/stops/entities/stopType.enum.js';
+import { ButtonSelect } from '@ui/components/ButtonSelect.js';
+import { Input } from '@ui/components/Input.js';
+import { RichTextarea } from '@ui/components/RichTextarea.js';
+import { useForm } from '@ui/utils/forms.js';
+import { StyledModal } from '@ui/utils/modals.js';
+import { useAsyncHttp } from '@ui/utils/useAsync.js';
 import { stopOptions } from './stopOptions.js';
 
 export interface EditNoteStopProps {
   close: () => void;
-  saveStop: (stop: Stop) => void;
-  latlng: LatLng;
+  saveStop: (stop: UpdateStopDTO) => void;
+  latitude: number;
+  longitude: number;
   initialName?: string;
-  existingStop?: Stop;
+  existingStop?: UpdateStopDTO;
 }
 
-export const EditNoteStop = ({ close, saveStop, latlng, initialName = '', existingStop }: EditNoteStopProps) => {
+export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName = '', existingStop }: EditNoteStopProps) => {
   const [fetchNote, { result, loading }] = useAsyncHttp(async ({ get }) => {
-    return await get<Stop>(`/api/stops/${existingStop?.id}`);
+    return await get<StopDetailDTO>(`/api/stops/${existingStop?.id}`);
   }, [existingStop?.id]);
 
   const { register, registerForm, state, setValue } = useForm({
@@ -28,6 +28,8 @@ export const EditNoteStop = ({ close, saveStop, latlng, initialName = '', existi
     notes: existingStop?.notes ?? '',
     attachments: null as any as FileList,
     type: existingStop?.type ?? StopType.NATIONAL_PARK,
+    desiredArrivalDate: existingStop?.desiredArrivalDate ?? new Date(),
+    actualArrivalDate: existingStop?.actualArrivalDate ?? null,
   });
 
   const submit = useCallback((data: typeof state) => {
@@ -35,11 +37,13 @@ export const EditNoteStop = ({ close, saveStop, latlng, initialName = '', existi
       id: existingStop?.id ?? Math.random() * -100000,
       name: data.name,
       notes: data.notes,
-      attachments: existingStop?.attachments ?? data.attachments,
-      location: existingStop?.location ?? latlng,
-      createdAt: existingStop?.createdAt ?? Date.now(),
+      latitude,
+      longitude,
       type: data.type,
+      desiredArrivalDate: data.desiredArrivalDate,
+      actualArrivalDate: data.actualArrivalDate ?? existingStop?.desiredArrivalDate ?? new Date(),
     });
+
     close();
   }, [saveStop, close]);
 
@@ -57,7 +61,7 @@ export const EditNoteStop = ({ close, saveStop, latlng, initialName = '', existi
   useEffect(() => {
     if (result) {
       setValue('name', result.name);
-      setValue('notes', result.notes);
+      setValue('notes', result.notes ?? '');
     }
   }, [result]);
 
@@ -70,21 +74,30 @@ export const EditNoteStop = ({ close, saveStop, latlng, initialName = '', existi
       cancelText='Cancel'>
       <form {...registerForm(submit)}>
         <fieldset disabled={loading}>
-          <div>
-            <label htmlFor='type'>Type</label>
-            <br />
-            <ButtonSelect {...register('type')} options={stopOptions} />
+          <div className='pb-4'>
+            <label className='font-bold mb-1 block' htmlFor='type'>Type</label>
+            <ButtonSelect {...register('type')} options={stopOptions} className='flex justify-between w-[75%]' />
           </div>
-          <div>
-            <label htmlFor='name'>Name</label>
+          <div className='pb-4'>
+            <label className='font-bold mb-1 block' htmlFor='name'>Name</label>
             <Input {...register('name')} />
           </div>
-          <div>
-            <label htmlFor='notes'>Notes</label>
+          <div className='pb-4'>
+            <label className='font-bold mb-1 block' htmlFor='name'>Arrival Date</label>
+            <Input {...register('desiredArrivalDate')} type='date' />
+          </div>
+
+          {existingStop && <div className='pb-4'>
+            <label className='font-bold mb-1 block' htmlFor='name'>Actual Arrival Date</label>
+            <Input {...register('actualArrivalDate')} type='date' />
+          </div>}
+
+          <div className='pb-4'>
+            <label className='font-bold mb-1 block' htmlFor='notes'>Notes</label>
             <RichTextarea {...register('notes')} />
           </div>
           {!existingStop && <div>
-            <label htmlFor='photos'>Photos & Videos</label>
+            <label className='font-bold mb-1 block' htmlFor='photos'>Photos & Videos</label>
             <Input {...register('attachments')} type='file' multiple accept='image/*,video/*' />
           </div>}
         </fieldset>

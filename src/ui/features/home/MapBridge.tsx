@@ -1,15 +1,14 @@
-import { LatLng, LatLngBounds } from 'leaflet';
+import { LatLng } from 'leaflet';
 import { useCallback, useEffect, useState } from 'react';
 import { Popup, useMapEvents } from 'react-leaflet';
-import { SmallButton } from '../../components/Button.js';
-import { FeatherMarker } from '../../components/FeatherMarker.js';
-import { Icon } from '../../components/Icon.js';
-import { useGeolocation } from '../../utils/useGeolocation.js';
-import { StopType } from './Home.js';
+import { SmallButton } from '@ui/components/Button.js';
+import { FeatherMarker } from '@ui/components/FeatherMarker.js';
+import { Icon } from '@ui/components/Icon.js';
+import { useGeolocation } from '@ui/utils/useGeolocation.js';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 
 export interface MapBridgeProps {
-  onNewStop: (type: StopType, stop: LatLng) => void;
+  onNewStop: (stop: LatLng) => void;
   mapBounds: BoundsTuple | null;
 }
 
@@ -21,7 +20,7 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
   const map = useMapEvents({
     click: (e) => {
       if (popupOpen) return;
-      onNewStop(StopType.NOTE, e.latlng);
+      onNewStop(e.latlng);
     },
     popupopen: (e) => setPopupOpen(true),
     popupclose: (e) => setPopupOpen(false),
@@ -43,7 +42,7 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
 
   const handleNoteClick = useCallback(() => {
     if (newPosition) {
-      onNewStop(StopType.NOTE, newPosition);
+      onNewStop(newPosition);
       setNewPosition(null);
     }
   }, [newPosition, setNewPosition]);

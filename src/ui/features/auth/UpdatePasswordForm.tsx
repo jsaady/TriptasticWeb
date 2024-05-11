@@ -1,9 +1,9 @@
-import { Button } from '../../components/Button.js';
-import { Input } from '../../components/Input.js';
-import { useForm } from '../../utils/forms.js';
-import { FetchError } from '../../utils/http.js';
-import { useAsyncHttp } from '../../utils/useAsync.js';
-import { useAuthorization } from '../../utils/useAuth.js';
+import { Button } from '@ui/components/Button.js';
+import { Input } from '@ui/components/Input.js';
+import { useForm } from '@ui/utils/forms.js';
+import { FetchError } from '@ui/utils/http.js';
+import { useAsyncHttp } from '@ui/utils/useAsync.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
 import { ErrorBanner } from './Banner.js';
 import { LoginForm } from './LoginElements.js';
 import { LoginResponse } from './types.js';

@@ -4,7 +4,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service.js';
 import { User } from '../users/users.entity.js';
 import { AttachmentDTO } from './dto/attachment.dto.js';
-import { StopDTO } from './dto/stop.dto.js';
+import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from './dto/stop.dto.js';
 import { Attachment } from './entities/attachment.entity.js';
 import { Stop } from './entities/stop.entity.js';
 import { Trip } from './entities/trip.entity.js';
@@ -16,7 +16,7 @@ export class StopsService {
     private auth: AuthService,
   ) {}
 
-  async create(stopDto: Pick<Stop, 'latitude'|'longitude'|'name'>): Promise<Stop> {
+  async create(stopDto: CreateStopDTO): Promise<Stop> {
     const stop = wrap(new Stop()).assign(stopDto);
     stop.creator = this.em.getReference(User, this.auth.getCurrentUserId());
     stop.trip = this.em.getReference(Trip, 1);
@@ -35,7 +35,7 @@ export class StopsService {
     return stop;
   }
 
-  async detachAttachment(stopId: number, attachmentId: number): Promise<Stop> {
+  async detachAttachment(stopId: number, attachmentId: number): Promise<StopDetailDTO> {
     const stop = await this.em.findOne(Stop, { id: stopId }, { populate: true });
     if (!stop) throw new NotFoundException(`Stop not found`);
     const attachment = stop.attachments.getItems().find(a => a.id === attachmentId);
@@ -72,8 +72,8 @@ export class StopsService {
     return stop;
   }
 
-  async getStopsByTrip(tripId: number): Promise<StopDTO[]> {
-    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['id', 'name', 'latitude', 'longitude', 'createdAt', 'type'] });
+  async getStopsByTrip(tripId: number): Promise<StopListDTO[]> {
+    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['id', 'name', 'latitude', 'longitude', 'createdAt', 'updatedAt', 'type', 'desiredArrivalDate', 'actualArrivalDate'] });
 
     return stops;
   }
@@ -98,7 +98,7 @@ export class StopsService {
     return stop;
   }
 
-  async update(id: number, stopDto: Pick<Stop, 'latitude'|'longitude'|'name'|'notes'>): Promise<Stop> {
+  async update(id: number, stopDto: UpdateStopDTO): Promise<Stop> {
     const stop = await this.em.findOne(Stop, { id });
 
     if (!stop) throw new NotFoundException(`Stop not found`);
