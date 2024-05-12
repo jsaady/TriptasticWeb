@@ -32,7 +32,6 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     QueueModule.registerAsync({
       useFactory: (config) => ({
         connectionString: config.getOrThrow('DATABASE_URL'),
-        password: config.getOrThrow('DATABASE_PASSWORD')
       }),
       inject: [ConfigService],
       imports: [NestConfigModule]
@@ -40,7 +39,6 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     PubSubModule.registerPostgresAsync({
       useFactory: (config) => ({
         connectionString: config.getOrThrow('DATABASE_URL'),
-        password: config.getOrThrow('DATABASE_PASSWORD')
       }),
       inject: [ConfigService],
       imports: [NestConfigModule]

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: static-config
+data:
+{{- with (first .Values.ingress.hosts) }}
+  ENVIRONMENT_URL: "https://{{ .host }}"
+{{- end }}
+  ENVIRONMENT_NAME: {{ .Values.params.environmentName }}
+  EMAIL_HOST: {{ .Values.params.emailHost }}
+  EMAIL_PORT: "{{ .Values.params.emailPort }}"
+  EMAIL_USER: {{ .Values.params.emailUser }}
+  EMAIL_PASSWORD: {{ .Values.params.emailPassword }}
+  EMAIL_REPLY_TO: {{ .Values.params.emailReplyTo }}
+{{- if .Values.postgres.enabled }}
+  DATABASE_URL: postgres://postgres:{{ .Values.postgres.defaultPassword }}@postgres-service:5432/app
+{{- else }}
+  DATABASE_URL: {{ .Values.postgres.connectionString }}
+{{- end }}
+  REQUIRE_MFA: "{{ .Values.params.requireMfa }}"
+  REQUIRE_EMAIL_VERIFICATION: "{{ .Values.params.requireEmailVerification }}"

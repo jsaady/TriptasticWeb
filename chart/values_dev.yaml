@@ -1,0 +1,16 @@
+image:
+  tag: latest
+
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+  hosts:
+    - host: triptastic-ci.holyham.dev
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+
+serviceAccount:
+  create: false
+
