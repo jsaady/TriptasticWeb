@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, SetMetadata, UnauthorizedException, UseGuards, applyDecorators } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger, SetMetadata, UnauthorizedException, UseGuards, applyDecorators } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthService } from './auth.service.js';
 import { AuthenticatedRequest } from './authenticated-request.type.js';
@@ -14,6 +14,8 @@ export interface IsAuthenticatedConfig {
 
 @Injectable()
 export class IsAuthenticatedGuard implements CanActivate {
+  logger = new Logger('IsAuthenticatedGuard');
+
   constructor (
     private config: ConfigService,
     private reflector: Reflector,
@@ -36,14 +38,18 @@ export class IsAuthenticatedGuard implements CanActivate {
       request.user = payload;
 
       if (!allowExpiredPassword && payload.needPasswordReset) {
+        this.logger.log(`User ${payload.sub} needs password reset`);
         return false;
       }
 
       if (!allowUnverifiedEmail && !payload.emailConfirmed) {
+        this.logger.log(`User ${payload.sub} has unverified email`);
         return false;
       }
 
       if (this.config.get('requireMFA') && !allowNoMFA && (!payload.mfaEnabled || !payload.mfaMethod)) {
+        this.logger.log(`User ${payload.sub} needs MFA`);
+
         return false;
       }
     } catch {

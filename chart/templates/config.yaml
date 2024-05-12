@@ -10,7 +10,6 @@ data:
   EMAIL_HOST: {{ .Values.params.emailHost }}
   EMAIL_PORT: "{{ .Values.params.emailPort }}"
   EMAIL_USER: {{ .Values.params.emailUser }}
-  EMAIL_PASSWORD: {{ .Values.params.emailPassword }}
   EMAIL_REPLY_TO: {{ .Values.params.emailReplyTo }}
 {{- if .Values.postgres.enabled }}
   DATABASE_URL: postgres://postgres:{{ .Values.postgres.defaultPassword }}@postgres-service:5432/app
@@ -19,3 +18,14 @@ data:
 {{- end }}
   REQUIRE_MFA: "{{ .Values.params.requireMfa }}"
   REQUIRE_EMAIL_VERIFICATION: "{{ .Values.params.requireEmailVerification }}"
+
+---
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: app-secrets
+data:
+  EMAIL_PASSWORD: {{ .Values.params.emailPassword | b64enc }}
+  STADIA_API_KEY: {{ .Values.params.stadiaApiKey | b64enc }}

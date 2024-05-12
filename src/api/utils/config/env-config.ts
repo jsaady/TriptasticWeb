@@ -8,4 +8,5 @@ export interface EnvironmentConfig {
   emailReplyTo: string;
   requireEmailVerification: boolean;
   requireMFA: boolean;
+  stadiaMapApiKey: string;
 }

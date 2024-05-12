@@ -117,3 +117,4 @@ params:
   emailPassword: update_me
   requireMfa: 'false'
   requireEmailVerification: 'false'
+  stadiaApiKey: update_me

@@ -15,6 +15,7 @@ import { ViewStopDetails } from './ViewStopDetails.js';
 import { withOpenStreetMapProvider } from '@ui/utils/osm.js';
 import { MapLibreTileLayer } from './MapLibreTileLayer.js';
 import { CreateStopDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
+import { useFetchApiKey } from './fetchApiKey.js';
 
 export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
   const [newModalOpen, setNewModalOpen] = useState(false);
@@ -25,6 +26,8 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
   const [newLocationLatLng, setNewLocationLatLng] = useState<LatLng | null>(null);
   const [searchResultBounds, setSearchResultBounds] = useState<BoundsTuple | null>(null);
   const [editStop, setEditStop] = useState<UpdateStopDTO | null>(null);
+
+  const { result, loading } = useFetchApiKey();
 
   const {
     stops,
@@ -87,6 +90,7 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
 
   const stadiaTheme = useMemo(() => darkMode ? 'alidade_smooth_dark' : 'alidade_smooth', [darkMode]);
 
+  if (loading) return <div>Loading...</div>
 
   return <div className='flex flex-col items-center justify-center'>
     <SearchBox onSelected={handleSearchSelected} onFocusChange={setIsSearch} />
@@ -97,7 +101,7 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
       style={{ width: '100%' }}>
       <MapLibreTileLayer
         attribution='&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
-        url={`https://tiles.stadiamaps.com/styles/${stadiaTheme}.json`}
+        url={`https://tiles.stadiamaps.com/styles/${stadiaTheme}.json?apiKey=${result}`}
       />
       <MapBridge onNewStop={handleNewStop} mapBounds={searchResultBounds} />
       {

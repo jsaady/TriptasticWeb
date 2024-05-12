@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UseGuards, applyDecorators } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger, UseGuards, applyDecorators } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthTokenContents } from '../features/auth/auth.dto.js';
 import { UserRole } from '../features/users/userRole.enum.js';
@@ -11,6 +11,8 @@ export const AttachRoleSets = Reflector.createDecorator<UserRole[][]>();
 
 @Injectable()
 export class CheckRoleGuard implements CanActivate {
+  logger = new Logger('CheckRoleGuard');
+
   constructor (
     private reflector: Reflector
   ) { }
@@ -23,9 +25,14 @@ export class CheckRoleGuard implements CanActivate {
     }
 
     const user: AuthTokenContents = request.user;
-
-
+    
     const desiredRoles = this.reflector.getAllAndMerge(AttachRoleSets, [context.getHandler(), context.getClass()]);
+
+    this.logger.warn(`Checking roles (${desiredRoles}) for user ${user.sub}`);
+
+    if (!desiredRoles) {
+      return true;
+    }
 
     // TODO: add support for users having multiple roles
     return desiredRoles.some(roleSet => roleSet.every(role => user.role === role));

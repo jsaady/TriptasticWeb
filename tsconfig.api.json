@@ -3,9 +3,8 @@
   "exclude": ["./src/api/**/*.spec.ts"],
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "./src/api",
-    "outDir": "./dist/api",
     "inlineSourceMap": true,
-    "allowJs": true
+    "allowJs": true,
+    "paths": {}
   }
 }

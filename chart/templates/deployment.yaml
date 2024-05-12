@@ -39,6 +39,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: static-config
+            - secretRef:
+                name: app-secrets
+
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

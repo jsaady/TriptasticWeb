@@ -14,7 +14,8 @@ export const CONFIG_VARS = {
   emailPassword: 'EMAIL_PASSWORD',
   emailReplyTo: 'EMAIL_REPLY_TO',
   requireEmailVerification: 'REQUIRE_EMAIL_VERIFICATION',
-  requireMFA: 'REQUIRE_MFA'
+  requireMFA: 'REQUIRE_MFA',
+  stadiaMapApiKey: 'STADIA_MAP_API_KEY'
 };
 
 export const RATE_LIMIT_TTL = 60;
