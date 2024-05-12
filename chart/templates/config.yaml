@@ -28,4 +28,4 @@ metadata:
   name: app-secrets
 data:
   EMAIL_PASSWORD: {{ .Values.params.emailPassword | b64enc }}
-  STADIA_API_KEY: {{ .Values.params.stadiaApiKey | b64enc }}
+  STADIA_MAP_API_KEY: {{ .Values.params.stadiaApiKey | b64enc }}
