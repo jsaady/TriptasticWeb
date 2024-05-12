@@ -147,7 +147,7 @@ jobs:
       run: echo $FULL_IMAGE_TAG
     - name: Replace old image with new image
       run: |
-        sed -i "s|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:.*|image: $FULL_IMAGE_TAG|Ig" ./deployment/ci.yaml
+        sed -i "s|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:.*|image: $FULL_IMAGE_TAG|Ig" ./chart/values_dev.yaml
     - name: Push to repo
       run: |
         git config --global user.email "john@holyham.cloud"

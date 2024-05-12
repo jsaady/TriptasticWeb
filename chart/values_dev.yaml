@@ -1,5 +1,4 @@
-image:
-  tag: sha-951891e
+image: ghcr.io/jsaady/triptasticweb:sha-951891e
 
 ingress:
   enabled: true
