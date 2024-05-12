@@ -1,4 +1,4 @@
-image: ghcr.io/jsaady/triptasticweb:sha-951891e
+image: ghcr.io/jsaady/triptasticweb:sha-b2bf518
 
 ingress:
   enabled: true
