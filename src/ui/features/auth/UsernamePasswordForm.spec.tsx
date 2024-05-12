@@ -48,7 +48,6 @@ test('login screen should render', async () => {
     fireEvent.change(emailEl, { target: { value: 'test@test.com' }});
     fireEvent.change(passwordEl, { target: { value: 'password' }});
     fireEvent.click(submitEl!);
-    // console.log(emailEl, passwordEl, submitEl);
   });
   await new Promise(process.nextTick);
   await findByTestId('login-success');

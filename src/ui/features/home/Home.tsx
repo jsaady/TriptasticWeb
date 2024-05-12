@@ -50,9 +50,9 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
     setNewLocationLatLng(stop);
   }, [isSearch]);
 
-  const handleAddStop = useCallback((stop: CreateStopDTO) => {
+  const handleAddStop = useCallback((stop: CreateStopDTO, attachments?: FileList) => {
     setNewLocationLatLng(null);
-    addStop(stop);
+    addStop(stop, attachments);
   }, []);
 
   const handleUpdateStop = useCallback((stop: UpdateStopDTO) => {

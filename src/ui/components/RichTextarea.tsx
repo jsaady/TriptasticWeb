@@ -1,6 +1,6 @@
 // import 'quill/dist/quill.snow.css';
 
-import { HTMLProps, forwardRef } from 'react';
+import { HTMLProps, forwardRef, useEffect, useState } from 'react';
 import { FormItemProps } from '../utils/forms.js';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -10,10 +10,18 @@ export type RichTextareaProps = OtherProps & FormItemProps;
 export const RichTextarea = forwardRef(({
   name,
   onChange,
-  value,
   className,
+  value: externalValue,
 }: RichTextareaProps, ref: any) => {
+  const [value, setValue] = useState(externalValue ?? '');
+
+  useEffect(() => {
+    setValue(externalValue ?? value);
+  }, [externalValue]);
+
   const handleChange = (value: string) => {
+    setValue(value);
+
     onChange({ target: { value, name } });
   };
 

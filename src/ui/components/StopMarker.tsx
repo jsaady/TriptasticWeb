@@ -1,8 +1,8 @@
-import { Popup } from 'react-leaflet';
+import { Popup, useMap } from 'react-leaflet';
 import { SmallButton } from './Button.js';
 import { FeatherMarker } from './FeatherMarker.js';
 import { Icon } from './Icon.js';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { stopOptions } from '../features/home/stopOptions.js';
 import { StopType } from '@api/features/stops/entities/stopType.enum.js';
 import { StopListDTO } from '@api/features/stops/dto/stop.dto.js';
@@ -18,6 +18,23 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
   const { icon, label } = useMemo(() => {
     return stopOptions.find(option => option.value === stop.type) ?? stopOptions[0];
   }, [stop.type]);
+
+  const map = useMap();
+
+  const handleDeleteClick = useCallback(() => {
+    onDeleteClicked();
+    map.closePopup();
+  }, [onDeleteClicked, map]);
+
+  const handleEditClick = useCallback(() => {
+    onEditClicked();
+    map.closePopup();
+  }, [onEditClicked, map]);
+
+  const handleDetailClick = useCallback(() => {
+    onDetailClicked();
+    map.closePopup();
+  }, [onDetailClicked, map]);
 
   const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
 
@@ -45,15 +62,15 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
       </h2>
       <hr className='my-2' />
       <div className='mt-2'>
-        <SmallButton className='ml-5' onClick={onDeleteClicked}>
+        <SmallButton className='ml-5' onClick={handleDeleteClick}>
           <Icon icon='trash' />
         </SmallButton>
 
-        <SmallButton className='ml-5' onClick={onEditClicked}>
+        <SmallButton className='ml-5' onClick={handleEditClick}>
           <Icon icon='edit' />
         </SmallButton>
 
-        <SmallButton className='ml-5' onClick={onDetailClicked}>
+        <SmallButton className='ml-5' onClick={handleDetailClick}>
           <Icon icon='info' />
         </SmallButton>
       </div>

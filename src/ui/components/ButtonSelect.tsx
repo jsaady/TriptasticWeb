@@ -15,8 +15,6 @@ export interface ButtonSelectProps extends FormItemProps {
 }
 
 export const ButtonSelect = forwardRef(({ onChange, name, required, value, options, className }: ButtonSelectProps) => {
-  console.log(value);
-
   return <div className={className}>
     {options.map(option => (
       <SmallButton

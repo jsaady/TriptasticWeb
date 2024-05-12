@@ -6,13 +6,13 @@ import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from '@api/f
 export interface StopsState {
   stops: StopListDTO[];
   filteredStops: StopListDTO[];
-  addStop: (stop: CreateStopDTO, attachments?: File[]) => void;
+  addStop: (stop: CreateStopDTO, attachments?: FileList) => void;
   removeStop: (id: number) => void;
   updateStop: (id: number, stop: UpdateStopDTO) => void;
   getStop: (id: number) => StopListDTO | undefined;
   searchByBounds: (bounds: LatLng[]) => void;
   searchByLatLngAndZoom: (latlng: LatLng, zoom: number) => void;
-  persistAttachments: (id: number, files: FileList | File[]) => void;
+  persistAttachments: (id: number, files: FileList) => void;
   fetchStops: () => () => void;
 }
 
@@ -21,7 +21,7 @@ const StopsContext = createContext<StopsState>(null as any);
 export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
   const [stops, setStops] = useState<StopListDTO[]>([]);
   const [filteredStops, setFilteredStops] = useState<StopListDTO[]>([]);
-  const [pendingAttachments, setPendingAttachments] = useState<File[] | FileList>([]);
+  const [pendingAttachments, setPendingAttachments] = useState<FileList>();
 
   const [fetchStops] = useAsyncHttp(async ({ get }) => {
     const response: StopListDTO[] = await get('/api/stops/trip/1');
@@ -51,7 +51,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     return put<StopDetailDTO>('/api/stops/' + id, body);
   }, []);
 
-  const [persistAttachments] = useAsyncHttp(async ({ post }, id: number, files: FileList|File[]) => {
+  const [persistAttachments] = useAsyncHttp(async ({ post }, id: number, files: FileList) => {
     const formData = new FormData();
     for (const file of files) {
       formData.append('file', file);
@@ -64,7 +64,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     return del('/api/stops/' + id);
   }, []);
 
-  const addStop = useCallback((stop: CreateStopDTO, attachments?: File[]) => {
+  const addStop = useCallback((stop: CreateStopDTO, attachments?: FileList) => {
     if (attachments?.length) {
       setPendingAttachments(attachments);
     }

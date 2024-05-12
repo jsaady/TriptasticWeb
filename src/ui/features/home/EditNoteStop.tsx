@@ -11,7 +11,7 @@ import { stopOptions } from './stopOptions.js';
 
 export interface EditNoteStopProps {
   close: () => void;
-  saveStop: (stop: UpdateStopDTO) => void;
+  saveStop: (stop: UpdateStopDTO, attachments?: FileList) => void;
   latitude: number;
   longitude: number;
   initialName?: string;
@@ -42,7 +42,7 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
       type: data.type,
       desiredArrivalDate: data.desiredArrivalDate,
       actualArrivalDate: data.actualArrivalDate ?? existingStop?.desiredArrivalDate ?? new Date(),
-    });
+    }, data.attachments);
 
     close();
   }, [saveStop, close]);

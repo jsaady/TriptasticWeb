@@ -54,8 +54,6 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
       const reg = await navigator.serviceWorker.ready;
 
       const subscription = await reg.pushManager.getSubscription();
-
-      console.log(subscription);
       
       await subscription?.unsubscribe();
       

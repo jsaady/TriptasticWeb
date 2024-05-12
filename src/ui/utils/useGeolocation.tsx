@@ -30,7 +30,6 @@ export const withGeolocation = <T extends JSX.IntrinsicAttributes,>(Component: C
       navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
         if (permissionStatus.state === 'granted') {
           navigator.geolocation.getCurrentPosition((position) => {
-            console.log('position', position.coords.latitude, position.coords.longitude, geolocationState);
             setGeolocationState(GeoLocationStatus.AVAILABLE);
             setLastLocation([position.coords.latitude, position.coords.longitude]);
             setCurrentLocation([position.coords.latitude, position.coords.longitude]);

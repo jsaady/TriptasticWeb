@@ -27,11 +27,9 @@ export const GlobalSocketProvider = ({ children, url = '/' }: GlobalSocketProvid
   useEffect(() => {
     if (!globalSocket) {
       const onConnect = () => {
-        // console.log(`Socket connected`, initialGlobalSocket);
         setGlobalSocket(initialGlobalSocket);
       };
       const onDisconnect = () => {
-        // console.log(`Socket disconnected`, initialGlobalSocket);
         setGlobalSocket(null);
       };
 
@@ -41,16 +39,12 @@ export const GlobalSocketProvider = ({ children, url = '/' }: GlobalSocketProvid
       initialGlobalSocket.connect();
 
       return () => {
-        console.log('clean up')
-
         initialGlobalSocket.disconnect();
       };
     }
   }, [url]);
 
   const reconnect = useCallback(() => {
-    console.log('clean up')
-
     globalSocket?.once('disconnect', () => {
       globalSocket?.connect();
     });
@@ -106,10 +100,8 @@ export const useSocket = (channel: string): [SocketState, (message: string, chan
   useEffect(() => {
     const onMessage = (data: string) => {
       const messageTs = Date.now();
-      console.log('new message', data, messageTs);
 
       if (messageTs === stateRef.current.messageTs) {
-        console.log('delayying!!!');
         setTimeout(() => {
           setState((prevState) => ({
             ...prevState,

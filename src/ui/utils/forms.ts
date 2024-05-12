@@ -9,7 +9,6 @@ export interface FormItemProps {
   onChange: (value: FormChangeEvent) => void;
   name: string;
   required?: boolean;
-  value: any;
 }
 
 type FormItemPropsState<T> = Partial<Record<string&keyof T, FormItemProps>>;
@@ -56,16 +55,6 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
       ...s,
       [name]: value
     }));
-
-    setFormItemProps(fip => ({
-      ...fip,
-      [name]: {
-        ...getExistingFormItemProps(fip, name),
-        value
-      }
-    }));
-
-    console.log('patched', name, value);
   }, [setState, setFormItemProps]);
 
   const register = <K extends keyof T&string>(name: K, constraints?: Constraints<T, K>) => {
@@ -74,7 +63,6 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
       const ref = createRef<HTMLInputElement>();
       props = {
         onChange: (event: FormChangeEvent) => {
-          console.log('uh oh');
           if (constraints && typeof constraints === 'function') {
             const error = constraints((event.target as any).value as any, stateRef.current);
 
@@ -101,10 +89,7 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
         },
         ref,
         name,
-        value: stateRef.current?.[name] as any,
       };
-
-      console.log('registering', name, props, stateRef.current?.[name]);
 
       if (constraints) applyConstraints(props, constraints);
 

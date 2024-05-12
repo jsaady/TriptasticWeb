@@ -35,7 +35,6 @@ export const WebAuthnLoginForm = () => {
 
   const [doLogin, { loading: loginLoading, error: loginError }] = useAsyncHttp(async ({ post }, { username, challengeOptions }) => {
     let attResp: AuthenticationResponseJSON;
-    console.log('login start');
     
     try {
       attResp = await startAuthentication(result.challengeOptions);
@@ -45,8 +44,6 @@ export const WebAuthnLoginForm = () => {
       // Some basic error handling
       throw error;
     }
-
-    console.log(attResp);
 
     const body = {
       username,
@@ -60,8 +57,6 @@ export const WebAuthnLoginForm = () => {
   }, [result, clientIdentifier]);
 
   const [doRegister, { loading: registrationLoading, error: registrationError }] = useAsyncHttp(async ({ post }, state: LoginFormState) => {
-    console.log('register start');
-
     let attResp: RegistrationResponseJSON;
     try {
       // Pass the options to the authenticator and wait for a response

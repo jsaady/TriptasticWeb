@@ -64,7 +64,6 @@ export const SearchBox = ({ onSelected, onFocusChange }: SearchBoxProps) => {
     if (boundA && boundB) {
       const lat = Math.abs(boundA[0] - boundB[0]);
       const lng = Math.abs(boundA[1] - boundB[1]);
-      console.log(Math.min(lat, lng) / 0.015)
       zoom = (1-Math.min(lat, lng)) / 0.015;
     }
 
