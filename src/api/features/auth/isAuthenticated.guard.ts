@@ -42,7 +42,7 @@ export class IsAuthenticatedGuard implements CanActivate {
         return false;
       }
 
-      if (!allowUnverifiedEmail && !payload.emailConfirmed) {
+      if (this.config.get('requireEmailVerification') && !allowUnverifiedEmail && !payload.emailConfirmed) {
         this.logger.log(`User ${payload.sub} has unverified email`);
         return false;
       }
