@@ -62,7 +62,6 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
         return {
           type: 'postgresql',
           clientUrl: url,
-          password: config.getOrThrow('DATABASE_PASSWORD'),
           entities: ['./**/*.entity.js'],
           entitiesTs: ['./**/*.entity.ts'],
           migrations: {
