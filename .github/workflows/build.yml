@@ -15,7 +15,7 @@ on:
   push:
     branches: ['main']
     paths-ignore:
-      - 'deployment/**'
+      - 'chart/**'
 
 env:
   REGISTRY: ghcr.io
@@ -152,7 +152,7 @@ jobs:
       run: |
         git config --global user.email "john@holyham.cloud"
         git config --global user.name "John Saady"
-        git add ./deployment/ci.yaml
+        git add ./chart/values_dev.yaml
         git commit -m "Update image tag to $FULL_IMAGE_TAG [skip ci]"
         git push
     # - name: Extract env vars
