@@ -16,6 +16,9 @@ data:
 {{- else }}
   DATABASE_URL: {{ .Values.postgres.connectionString }}
 {{- end }}
+{{- if .Values.postgres.caCertificate }}
+  DB_CA_CERTIFICATE: {{ .Values.postgres.caCertificate | quote }}
+{{- end }}
   REQUIRE_MFA: "{{ .Values.params.requireMfa }}"
   REQUIRE_EMAIL_VERIFICATION: "{{ .Values.params.requireEmailVerification }}"
 

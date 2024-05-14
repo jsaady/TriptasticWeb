@@ -36,10 +36,6 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image }}"
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          env:
-              {{- if .Values.postgres.caCertificate }}
-                DB_CA_CERTIFICATE: {{ .Values.postgres.caCertificate | quote }}
-              {{- end }}
           envFrom:
             - configMapRef:
                 name: static-config
