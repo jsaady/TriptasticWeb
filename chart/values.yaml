@@ -107,6 +107,7 @@ postgres:
   connectionString: ''
   enabled: true
   defaultPassword: 'password'
+  caCertificate: ''
 
 params:
   environmentName: Triptastic

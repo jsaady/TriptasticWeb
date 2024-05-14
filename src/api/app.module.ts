@@ -11,13 +11,14 @@ import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
+import { SecureContext, createSecureContext } from 'tls';
 import { MigrationModule } from './db/migration.provider.js';
 import { AuthModule } from './features/auth/auth.module.js';
+import { MapModule } from './features/map/map.module.js';
 import { NotificationModule } from './features/notifications/notification.module.js';
+import { StopsModule } from './features/stops/stops.module.js';
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
-import { StopsModule } from './features/stops/stops.module.js';
-import { MapModule } from './features/map/map.module.js';
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
@@ -30,16 +31,33 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
       rootPath: resolve(currentDir, '..', 'ui')
     }),
     QueueModule.registerAsync({
-      useFactory: (config) => ({
-        connectionString: config.getOrThrow('DATABASE_URL'),
-      }),
+      useFactory: (config) => {
+        const ca = getDBCA();
+
+        return {
+          connectionString: config.getOrThrow('DATABASE_URL'),
+          ssl: ca ? {
+            ca,
+            rejectUnauthorized: true
+          } : undefined,
+        };
+      },
       inject: [ConfigService],
       imports: [NestConfigModule]
     }),
     PubSubModule.registerPostgresAsync({
-      useFactory: (config) => ({
-        connectionString: config.getOrThrow('DATABASE_URL'),
-      }),
+      useFactory: (config) => {
+        const connectionString = config.getOrThrow('DATABASE_URL');
+        const ca = getDBCA();
+
+        return {
+          connectionString: connectionString,
+          ssl: ca ? {
+            rejectUnauthorized: true,
+            ca,
+          } : undefined,
+        }
+      },
       inject: [ConfigService],
       imports: [NestConfigModule]
     }),
@@ -58,10 +76,19 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
       useFactory: (config: NestConfigService) => {
 
         const url = config.getOrThrow('DATABASE_URL')!;
+        const ca = getDBCA();
 
         return {
           type: 'postgresql',
           clientUrl: url,
+          driverOptions: ca ? {
+            connection: {
+              ssl: {
+                ca,
+                rejectUnauthorized: true
+              }
+            }
+          } : undefined,
           entities: ['./**/*.entity.js'],
           entitiesTs: ['./**/*.entity.ts'],
           migrations: {
@@ -96,5 +123,12 @@ export class AppModule implements NestModule {
     this.queueMiddleware.register((_, next) => {
       RequestContext.create(this.mikroOrm.em.fork(), () => next());
     });
+  }
+}
+function getDBCA () {
+  let ca = process.env.DB_CA_CERTIFICATE;
+
+  if (ca) {
+    return Buffer.from(ca, 'base64').toString('utf-8');
   }
 }
