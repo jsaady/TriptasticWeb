@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
+import { UserAdminPage } from './features/userAdmin/userAdminPage.js';
 
 const Root = lazy(() => import('./Root.js').then(module => ({ default: module.Root })));
 const Home = lazy(() => import('./features/home/Home.js').then(module => ({ default: module.Home })));
@@ -39,6 +40,9 @@ export const router = createBrowserRouter([{
     path: '',
     element: <Authenticated />,
     children: [{
+      path: 'admin/users',
+      element: <UserAdminPage />
+    }, {
       path: 'account/devices',
       element: <WebAuthnDevices />
     }, {

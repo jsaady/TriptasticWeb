@@ -81,8 +81,16 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
           const target = event.target as HTMLInputElement;
           let value: any = target.value;
 
-          if (target.type === 'file') {
-            value = target.multiple ? target.files! : target.files![0];
+          switch (target.type) {
+            case 'checkbox':
+              value = target.checked;
+              break;
+            case 'number':
+              value = parseFloat(value);
+              break;
+            case 'file':
+              value = target.multiple ? target.files! : target.files![0];
+              break;
           }
 
           patchValue(name, value);
@@ -130,6 +138,7 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
     register,
     setValue,
     registerForm,
-    state
+    state,
+    stateRef,
   };
 }

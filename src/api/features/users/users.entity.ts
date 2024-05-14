@@ -4,9 +4,6 @@ import { UserRole } from './userRole.enum.js';
 
 @Entity()
 export class User extends BaseEntity {
-  @Property({ nullable: true })
-  gitlabId?: string|number;
-
   @Property()
   email!: string;
 

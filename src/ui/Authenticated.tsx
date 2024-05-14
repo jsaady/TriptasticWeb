@@ -5,8 +5,10 @@ import { Sidebar, useSidebar, withSidebar } from './components/SideBar.js';
 import { useNotifications, withNotifications } from './features/notifications/useNotifications.js';
 import { useAuthorization } from './utils/useAuth.js';
 import { withGeolocation } from './utils/useGeolocation.js';
+import { UserRole } from '@api/features/users/userRole.enum.js';
+import { icon } from 'leaflet';
 export const Authenticated = withGeolocation(withSidebar(withNotifications(() => {
-  const { logout, loggedIn, loading } = useAuthorization();
+  const { logout, loggedIn, loading, me } = useAuthorization();
   const { enabled, supported, subscribe, unsubscribe } = useNotifications();
 
   const subscribeButtonText = useMemo(() => {
@@ -31,7 +33,11 @@ export const Authenticated = withGeolocation(withSidebar(withNotifications(() =>
       label: subscribeButtonText,
       onClick: enabled ? unsubscribe : subscribe,
       disabled: !supported
-    }, {
+    }, ...(me?.role === UserRole.ADMIN ? [{
+      icon: 'users',
+      label: 'User Admin',
+      link: '/admin/users'
+    }] : []), {
       icon: 'log-out',
       label: 'Logout',
       onClick: logout

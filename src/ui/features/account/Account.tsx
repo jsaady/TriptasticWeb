@@ -5,7 +5,7 @@ import { UpdatePasswordForm } from '../auth/UpdatePasswordForm.js';
 export const Account = () => {
   const { me } = useAuthorization();
 
-  return <div>
+  return <div className="mx-6 mt-6">
     <h1>Account</h1>
 
     <Input disabled label="Email" value={me?.email} />

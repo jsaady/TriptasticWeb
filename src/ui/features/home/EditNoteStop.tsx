@@ -1,5 +1,4 @@
 import { StopDetailDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
-import { useCallback, useEffect } from 'react';
 import { StopType } from '@api/features/stops/entities/stopType.enum.js';
 import { ButtonSelect } from '@ui/components/ButtonSelect.js';
 import { Input } from '@ui/components/Input.js';
@@ -7,6 +6,7 @@ import { RichTextarea } from '@ui/components/RichTextarea.js';
 import { useForm } from '@ui/utils/forms.js';
 import { StyledModal } from '@ui/utils/modals.js';
 import { useAsyncHttp } from '@ui/utils/useAsync.js';
+import { useCallback, useEffect } from 'react';
 import { stopOptions } from './stopOptions.js';
 
 export interface EditNoteStopProps {
@@ -68,7 +68,7 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
   return (
     <StyledModal
       onClose={close}
-      primaryText='Save'
+      primaryButtonText='Save'
       onPrimaryClick={handleSubmitClick}
       title='New stop'
       cancelText='Cancel'>

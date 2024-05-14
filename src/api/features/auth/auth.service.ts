@@ -236,6 +236,14 @@ export class AuthService {
     }, contents];
   }
 
+  async setTempPasswordForUser(user: User, password: string) {
+    const hashedPassword = await this.hashValue(password);
+
+    const updatedUser = await this.userService.updateUser(user, { password: hashedPassword, needPasswordReset: true });
+
+    return updatedUser;
+  }
+
   async checkPasswordForUser(email: string, password: string) {
     const user = await this.userService.getUserByEmail(email);
 

@@ -1,15 +1,15 @@
-import { EntityRepository, wrap } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable } from '@nestjs/common';
+import { wrap } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
+import { AuthService } from '../auth/auth.service.js';
 import { CreateUserDTO } from './users.dto.js';
 import { User } from './users.entity.js';
-import { UserRole } from './userRole.enum.js';
 
 @Injectable()
 export class UserService {
   constructor (
-    @InjectRepository(User) private userRepo: EntityRepository<User>
+    private em: EntityManager
   ) { }
 
   async create(user: CreateUserDTO): Promise<User> {
@@ -20,19 +20,19 @@ export class UserService {
   }
 
   getUserById(id: number) {
-    return this.userRepo.findOneOrFail({
+    return this.em.findOneOrFail(User, {
       id
     });
   }
 
   async getUserByEmail(email: string) {
-    return await this.userRepo.findOne({
+    return await this.em.findOne(User, {
       email
     });
   }
 
   async getUserByUsername(username: string) {
-    return await this.userRepo.findOne({
+    return await this.em.findOne(User, {
       username
     });
   }
@@ -42,18 +42,5 @@ export class UserService {
     await this.em.flush();
 
     return newUser;
-  }
-
-  async updateRole(userId: number, role: UserRole) {
-    const user = await this.getUserById(userId);
-    user.role = role;
-  
-    await this.em.flush();
-
-    return user;
-  }
-
-  private get em () {
-    return this.userRepo.getEntityManager();
   }
 }

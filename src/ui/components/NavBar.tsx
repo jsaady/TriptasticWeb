@@ -43,7 +43,7 @@ export const NavBar = ({ navItems, rightIcon, rightItems, name }: NavBarProps) =
       </Link>
     </div>
     <div className='px-4 flex items-center flex-grow'>
-      {navItems.map(({ link, ...item }, i) => (
+      {(navItems.length > 1) && navItems.map(({ link, ...item }, i) => (
         <NavLink key={i} className={({ isActive }) => isActive ? 'font-bold' : ''} to={link}>
           <div className="flex flex-row items-center p-4 text-lg">
             {item.label}

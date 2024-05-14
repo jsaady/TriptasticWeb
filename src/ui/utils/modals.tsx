@@ -1,5 +1,5 @@
 import { PropsWithChildren, ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { Button, LinkButton, PrimaryButton, SecondaryButton } from '../components/Button.js';
+import { LinkButton, PrimaryButton, SecondaryButton } from '../components/Button.js';
 
 interface ModalState {
   content: ReactNode;
@@ -67,14 +67,14 @@ export const Modal = ({ children, onClose }: ModalProps) => {
 
 export interface StyledModalProps extends ModalProps {
   title?: string;
-  primaryText?: string;
+  primaryButtonText?: string;
   onPrimaryClick?: () => void;
-  secondaryText?: string;
+  secondaryButtonText?: string;
   onSecondaryClick?: () => void;
   cancelText?: string;
 }
 
-export const StyledModal = ({ title, children, cancelText, primaryText, secondaryText, onPrimaryClick, onSecondaryClick, onClose }: StyledModalProps) => {
+export const StyledModal = ({ title, children, cancelText, primaryButtonText: primaryText, secondaryButtonText: secondaryText, onPrimaryClick, onSecondaryClick, onClose }: StyledModalProps) => {
   return <Modal onClose={onClose}>
     {/* TODO: Finish styling and add animations */}
     <div className='bg-white dark:bg-neutral-900 dark:text-white p-5 rounded-lg shadow-lg z-[1002] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[50rem] max-h-[90vh] overflow-y-auto'>

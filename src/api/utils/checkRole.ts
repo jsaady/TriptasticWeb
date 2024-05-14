@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, Logger, UseGuards, applyDeco
 import { Reflector } from '@nestjs/core';
 import { AuthTokenContents } from '../features/auth/auth.dto.js';
 import { UserRole } from '../features/users/userRole.enum.js';
+import { IsAuthenticated } from '../features/auth/isAuthenticated.guard.js';
 
 
 // A role set is an exlusive list of roles that a user must have to access a route
@@ -19,16 +20,13 @@ export class CheckRoleGuard implements CanActivate {
 
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
+    const desiredRoles = this.reflector.getAllAndMerge(AttachRoleSets, [context.getHandler(), context.getClass()]);
+    const user: AuthTokenContents = request.user;
+    this.logger.log(`Checking roles (${desiredRoles}) for user ${user?.sub}`);
 
-    if (!request.user) {
+    if (!user) {
       return false;
     }
-
-    const user: AuthTokenContents = request.user;
-    
-    const desiredRoles = this.reflector.getAllAndMerge(AttachRoleSets, [context.getHandler(), context.getClass()]);
-
-    this.logger.warn(`Checking roles (${desiredRoles}) for user ${user.sub}`);
 
     if (!desiredRoles) {
       return true;
@@ -39,6 +37,6 @@ export class CheckRoleGuard implements CanActivate {
   }
 }
 
-export const HasAllRoles = (roles: UserRole[]) => applyDecorators(AttachRoleSets([roles]), UseGuards(CheckRoleGuard));
-export const HasOneRoles = (roles: UserRole[]) => applyDecorators(AttachRoleSets(roles.map(role => [role])), UseGuards(CheckRoleGuard));
-export const HasRole = (role: UserRole) => applyDecorators(AttachRoleSets([[role]]), UseGuards(CheckRoleGuard));
+export const HasAllRoles = (roles: UserRole[]) => applyDecorators(IsAuthenticated(), AttachRoleSets([roles]), UseGuards(CheckRoleGuard));
+export const HasOneRoles = (roles: UserRole[]) => applyDecorators(IsAuthenticated(), AttachRoleSets(roles.map(role => [role])), UseGuards(CheckRoleGuard));
+export const HasRole = (role: UserRole) => applyDecorators(IsAuthenticated(), AttachRoleSets([[role]]), UseGuards(CheckRoleGuard));
