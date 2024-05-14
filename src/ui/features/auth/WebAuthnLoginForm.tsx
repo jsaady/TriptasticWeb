@@ -134,5 +134,7 @@ export const WebAuthnLoginForm = () => {
     {!showRegisterLink && showPassword && !showEmail && <div className='my-4'>
     Forgot your password?&nbsp;<Link className='mt-2 cursor-pointer text-blue-400' to='/login/forgot-password'>Reset password</Link>
     </div>}
+
+    <a href="/assets/privacy.html" target="_blank">Privacy Policy</a>
   </LoginForm>
 }
