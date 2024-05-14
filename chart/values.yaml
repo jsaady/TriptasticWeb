@@ -119,3 +119,4 @@ params:
   requireMfa: 'false'
   requireEmailVerification: 'false'
   stadiaApiKey: update_me
+  allowRegistration: 'true'

@@ -21,6 +21,7 @@ data:
 {{- end }}
   REQUIRE_MFA: "{{ .Values.params.requireMfa }}"
   REQUIRE_EMAIL_VERIFICATION: "{{ .Values.params.requireEmailVerification }}"
+  ALLOW_REGISTRATION: "{{ .Values.params.allowRegistration }}"
 
 ---
 

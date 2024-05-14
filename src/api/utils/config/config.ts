@@ -8,6 +8,7 @@ export const CONFIG_VARS = {
   vapidPrivate: 'VAPID_PRIVATE',
   envUrl: 'ENVIRONMENT_URL',
   envName: 'ENVIRONMENT_NAME',
+  allowRegistration: 'ALLOW_REGISTRATION',
   emailHost: 'EMAIL_HOST',
   emailPort: 'EMAIL_PORT',
   emailUser: 'EMAIL_USER',

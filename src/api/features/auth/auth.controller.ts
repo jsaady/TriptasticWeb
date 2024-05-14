@@ -33,6 +33,8 @@ export class AuthController {
 
   @Post('/register')
   async register(@Body() dto: AuthRegisterDTO, @Res({ passthrough: true }) response: Response) {
+    if (!this.config.get('allowRegistration')) throw new BadRequestException('Registration is disabled');
+
     const result = await this.authService.continueRegistration(dto);
 
     return this.processUserLogin(result, response, dto.clientIdentifier, null);

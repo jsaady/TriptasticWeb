@@ -6,7 +6,9 @@ import { useCallback, useMemo } from 'react';
 import { stopOptions } from '../features/home/stopOptions.js';
 import { StopType } from '@api/features/stops/entities/stopType.enum.js';
 import { StopListDTO } from '@api/features/stops/dto/stop.dto.js';
-import { LatLng } from 'leaflet';
+import { LatLng, LeafletMouseEvent } from 'leaflet';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { UserRole } from '@api/features/users/userRole.enum.js';
 
 export interface StopMarkerProps {
   stop: StopListDTO;
@@ -15,6 +17,8 @@ export interface StopMarkerProps {
   onEditClicked: () => void;
 }
 export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClicked }: StopMarkerProps) {
+  const { me } = useAuthorization();
+
   const { icon, label } = useMemo(() => {
     return stopOptions.find(option => option.value === stop.type) ?? stopOptions[0];
   }, [stop.type]);
@@ -55,7 +59,13 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
   
   const location = useMemo(() => new LatLng(stop.latitude, stop.longitude), [stop.latitude, stop.longitude])
 
-  return <FeatherMarker name={icon} title={label} position={location} color={color} className='dark:text-white text-black'>
+  const onClick = useCallback((e: LeafletMouseEvent) => {
+    if (me?.role !== UserRole.ADMIN) {
+      handleDetailClick();
+    }
+  }, [me, handleEditClick, handleDetailClick]);
+
+  return <FeatherMarker eventHandlers={{ click: onClick }} name={icon} title={label} position={location} color={color} className='dark:text-white text-black'>
     <Popup>
       <h2 className='text-lg font-bold'>
         {stop.name}

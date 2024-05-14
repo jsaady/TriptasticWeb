@@ -5,12 +5,13 @@ import { LoginResponse } from '../features/auth/types.js';
 import { useAsyncHttp } from './useAsync.js';
 import { useLoggedIn, withLoggedIn } from './useLoggedIn.js';
 import { useGlobalSocket } from './useSocket.js';
+import { AuthTokenContents } from '@api/features/auth/auth.dto.js';
 
 export interface AuthState {
   loggedIn: boolean;
   clientIdentifier: string;
   loading: boolean;
-  me?: { sub: number; email: string; };
+  me?: AuthTokenContents;
   setLoggedIn: (loggedIn: boolean) => void;
   handleLoginResponse: (res: LoginResponse) => boolean;
   logout: () => void;
@@ -21,7 +22,7 @@ const authorizationContext = createContext<AuthState>(null as any);
 const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>) => (props: P) => {
   const { loggedIn, setLoggedIn } = useLoggedIn();
   let [searchParams, setSearchParams] = useSearchParams();
-  const [me, setMe] = useState<{ sub: number; email: string; }>();
+  const [me, setMe] = useState<AuthTokenContents>();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { reconnect: globalSocketReconnect } = useGlobalSocket() ?? { reconnect: () => {} };

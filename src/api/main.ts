@@ -1,3 +1,4 @@
+import { initSocketAdapters } from '@nestjs-enhanced/sockets';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { NextFunction } from 'express';
@@ -6,7 +7,6 @@ import { Socket } from 'socket.io';
 import { AppModule } from './app.module.js';
 import { AuthService } from './features/auth/auth.service.js';
 import { ConfigService } from './utils/config/config.service.js';
-import { initSocketAdapters } from '@nestjs-enhanced/sockets';
 
 
 

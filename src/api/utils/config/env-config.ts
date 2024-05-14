@@ -9,4 +9,5 @@ export interface EnvironmentConfig {
   requireEmailVerification: boolean;
   requireMFA: boolean;
   stadiaMapApiKey: string;
+  allowRegistration: boolean;
 }

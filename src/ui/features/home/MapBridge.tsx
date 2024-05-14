@@ -34,7 +34,6 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
 
   useEffect(() => {
     if (mapBounds) {
-      // map.fitBounds(mapBounds);
       map.flyToBounds(mapBounds);
     }
   }, [mapBounds]);

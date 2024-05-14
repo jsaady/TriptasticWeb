@@ -50,6 +50,7 @@ export class GeneratedConfigService {
       envName: this.config.getOrThrow(CONFIG_VARS.envName),
       requireEmailVerification: this.config.get(CONFIG_VARS.requireEmailVerification) !== 'false',
       requireMFA: this.config.get(CONFIG_VARS.requireMFA) !== 'false',
+      allowRegistration: this.config.get(CONFIG_VARS.allowRegistration) !== 'false',
       stadiaMapApiKey: this.config.getOrThrow(CONFIG_VARS.stadiaMapApiKey)
     });
 
