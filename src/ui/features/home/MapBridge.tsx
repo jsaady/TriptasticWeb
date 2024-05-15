@@ -6,6 +6,8 @@ import { FeatherMarker } from '@ui/components/FeatherMarker.js';
 import { Icon } from '@ui/components/Icon.js';
 import { useGeolocation } from '@ui/utils/useGeolocation.js';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { UserRole } from '@api/features/users/userRole.enum.js';
 
 export interface MapBridgeProps {
   onNewStop: (stop: LatLng) => void;
@@ -16,11 +18,12 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
   const [newPosition, setNewPosition] = useState<LatLng | null>(null);
   const [popupOpen, setPopupOpen] = useState(false);
   const { currentLocation } = useGeolocation();
+  const { me } = useAuthorization();
 
   const map = useMapEvents({
     click: (e) => {
       if (popupOpen) return;
-      onNewStop(e.latlng);
+      if (me?.role === UserRole.ADMIN) onNewStop(e.latlng);
     },
     popupopen: (e) => setPopupOpen(true),
     popupclose: (e) => setPopupOpen(false),
