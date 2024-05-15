@@ -18,7 +18,7 @@ export interface StopMarkerProps {
 }
 export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClicked }: StopMarkerProps) {
   const { me } = useAuthorization();
-  const [currentZoom, setCurrentZoom] = useState(0);
+  const [currentZoom, setCurrentZoom] = useState(20);
 
   useMapEvents({
     zoom: (e) => setCurrentZoom(e.target.getZoom())
