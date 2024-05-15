@@ -93,7 +93,10 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       ...s,
       status: StopStatus.ACTIVE,
       updatedAt: new Date(),
-    } : s));
+    } : {
+      ...s,
+      status: s.status === StopStatus.ACTIVE ? StopStatus.COMPLETED : s.status
+    }));
   }, []);
 
   useEffect(() => {

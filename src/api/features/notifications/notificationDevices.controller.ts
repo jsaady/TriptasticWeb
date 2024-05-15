@@ -12,6 +12,11 @@ export class NotificationDevicesController {
     private notificationService: NotificationDevicesService
   ) { }
 
+  @Get()
+  async getDevices(@User() { sub }: AuthTokenContents) {
+    return this.notificationService.getDevices(sub);
+  }
+
   @Post('subscribe')
   async subscribe (@Body() subscription: AddSubscriptionDTO, @User() { sub }: AuthTokenContents) {
     return this.notificationService.addSubscription(sub, subscription);

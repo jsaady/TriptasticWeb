@@ -3,7 +3,7 @@ import { HTTPClient, useHttp } from './http.js';
 
 export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, deps: any[]) => {
   const [state, setState] = useState({
-    result: null as T,
+    result: null as null | T,
     error: null as any
   });
 

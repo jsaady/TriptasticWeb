@@ -18,6 +18,7 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
   const supported = useMemo(() => 'PushManager' in window && 'serviceWorker' in navigator, []);
 
   const [fetchCurrentPreferences, { result: currentPreferences }] = useAsyncHttp(({ get }) => get('/api/notifications/preferences'), []);
+  const [fetchCurrentDevices, { result: currentDevices }] = useAsyncHttp(({ get }) => get<any[]>('/api/notifications/devices'), []);
 
   const [subscribeToAll] = useAsyncHttp(async ({ post }) => {
     if (supported) {
@@ -26,45 +27,65 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
     }
   }, []);
 
-  const [checkBrowserStatus, { result: enabled }] = useAsync(async () => {
+  const [checkBrowserStatus, { result }] = useAsync(async () => {
     const reg = await navigator.serviceWorker.ready;
-    const [permission, subscription] = await Promise.all([reg.pushManager.permissionState({ userVisibleOnly: true }), reg.pushManager.getSubscription()]);
-    const enabled = !!subscription && permission === 'granted';
+    let [permission, subscription] = await Promise.all([reg.pushManager.permissionState({ userVisibleOnly: true }), reg.pushManager.getSubscription()]);
+    let enabled = !!subscription && permission === 'granted';
 
-    return enabled;
-  }, []);
+    if (subscription && currentDevices) {
+      const dupe = currentDevices?.find((d: any) => d.endpoint === subscription?.endpoint);
+
+      console.log(dupe, subscription, currentDevices)
+
+      if (!dupe && subscription) {
+        // assume it was deleted from the db or that it failed, let the user re-subscribe
+        subscription?.unsubscribe();
+        enabled = false;
+        subscription = null;
+      }
+    }
+
+    return [enabled, subscription, permission] as const;
+  }, [currentDevices]);
+
+  const [enabled, subscription] = result || [false, null, 'denied'] as const;
 
   const [saveDevice] = useAsyncHttp(async ({ post, get }) => {
-    if (!enabled) {
-      const [{ publicKey }, permission, reg] = await Promise.all([
-        get<{ publicKey: string }>('/api/notifications/devices/vapid'),
-        Notification.requestPermission(),
-        navigator.serviceWorker.ready
-      ]);
+    const [{ publicKey }, reg] = await Promise.all([
+      get<{ publicKey: string }>('/api/notifications/devices/vapid'),
+      navigator.serviceWorker.ready
+    ]);
 
-      if (permission === "denied") {
-        alert("Notifications blocked. Please enable them in your browser.");
-      }
-
-      if (permission !== 'granted') return;
-
-      const subscription = await reg.pushManager.subscribe({
+    if (!subscription) {
+      const newSubscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: publicKey,
       });
 
-      await post('/api/notifications/devices/subscribe', subscription);
-
-      checkBrowserStatus();
+      await post('/api/notifications/devices/subscribe', newSubscription);
     }
-  }, [enabled]);
+
+    fetchCurrentDevices();
+  }, [enabled, subscription, fetchCurrentDevices]);
+
+  const subscribe = useCallback(() => Notification.requestPermission().then(async (permission) => {
+    if (permission === "denied") {
+      alert("Notifications blocked. Please enable them in your browser.");
+    }
+
+    if (permission !== 'granted') return;
+
+    saveDevice();
+    subscribeToAll();
+  }), [saveDevice]);
+
 
   const [removeAllDevices] = useAsyncHttp(async ({ post }) => {
     if (enabled) {
       const reg = await navigator.serviceWorker.ready;
 
       const subscription = await reg.pushManager.getSubscription();
-      
+
       await subscription?.unsubscribe();
       
       await post('api/notifications/devices/unsubscribe', {});
@@ -73,13 +94,9 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
     }
   }, [enabled]);
 
-  useEffect(checkBrowserStatus, []);
-  useEffect(fetchCurrentPreferences, []);
-
-  const subscribe = useCallback(() => {
-    saveDevice();
-    subscribeToAll();
-  }, []);
+  useEffect(() => {fetchCurrentPreferences()}, []);
+  useEffect(() => {fetchCurrentDevices()}, []);
+  useEffect(() => {checkBrowserStatus()}, [currentDevices]);
 
   const unsubscribe = useCallback(() => {
     removeAllDevices();

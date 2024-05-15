@@ -27,6 +27,12 @@ export class NotificationDevicesService {
     this.vapidSubject = this.configService.getOrThrow('envUrl').replace('http:', 'https:');
   }
 
+  async getDevices(userId: number) {
+    return this.subscriptionRepo.find({
+      user: { id: userId }
+    });
+  }
+
   async addSubscription(userId: number, subscriptionDto: AddSubscriptionDTO) {
     const newSubscription = this.subscriptionRepo.create({
       user: this.subscriptionRepo.getEntityManager().getReference(User, userId),
@@ -67,9 +73,8 @@ export class NotificationDevicesService {
           }
         });    
       } catch (e) {
-        console.error(e);
-        
-        throw new InternalServerErrorException('Error sending notification');
+        this.logger.error(`Error sending notification to user (${userId}#${sub.id})`);
+        this.logger.error(e);
       }
     }
 
