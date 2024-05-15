@@ -2,11 +2,14 @@ import { wrap } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service.js';
+import { NotificationDevicesService } from '../notifications/notificationDevices.service.js';
+import { NotificationPreferencesService } from '../notifications/notificationPreferences.service.js';
 import { User } from '../users/users.entity.js';
 import { AttachmentDTO } from './dto/attachment.dto.js';
 import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from './dto/stop.dto.js';
 import { Attachment } from './entities/attachment.entity.js';
 import { Stop } from './entities/stop.entity.js';
+import { StopStatus } from './entities/stopStatus.enum.js';
 import { Trip } from './entities/trip.entity.js';
 
 @Injectable()
@@ -16,6 +19,8 @@ export class StopsService {
   constructor(
     private em: EntityManager,
     private auth: AuthService,
+    private userNotificationService: NotificationPreferencesService,
+    private notificationService: NotificationDevicesService,
   ) {}
 
   async create(stopDto: CreateStopDTO): Promise<Stop> {
@@ -74,8 +79,11 @@ export class StopsService {
     return stop;
   }
 
-  async getStopsByTrip(tripId: number): Promise<StopListDTO[]> {
-    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['id', 'name', 'latitude', 'longitude', 'createdAt', 'updatedAt', 'type', 'desiredArrivalDate', 'actualArrivalDate', 'importId'] });
+  async getStopsByTrip(tripId: number): Promise<StopListDTO[]>
+  async getStopsByTrip(tripId: number, includeNotes: false): Promise<StopListDTO[]>
+  async getStopsByTrip(tripId: number, includeNotes: true): Promise<StopDetailDTO[]>
+  async getStopsByTrip(tripId: number, includeNotes?: boolean): Promise<StopListDTO[]|StopDetailDTO[]> {
+    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['status', 'id', 'name', 'latitude', 'longitude', 'createdAt', 'updatedAt', 'type', 'desiredArrivalDate', 'actualArrivalDate', 'importId', ...(includeNotes ? ['notes' as const] : [])] });
 
     return stops;
   }
@@ -154,5 +162,32 @@ export class StopsService {
     await this.em.flush();
 
     return stopEntities;
+  }
+
+  async checkIntoStop(id: number): Promise<Stop> {
+    const stop = await this.em.findOne(Stop, { id });
+
+    if (!stop) throw new NotFoundException(`Stop not found`);
+
+    const existingCheckedInStop = await this.em.findOne(Stop, { trip: stop.trip, status: StopStatus.ACTIVE });
+
+    if (existingCheckedInStop) {
+      existingCheckedInStop.status = StopStatus.COMPLETED;
+    }
+
+    stop.actualArrivalDate = new Date();
+    stop.status = StopStatus.ACTIVE;
+
+    const userIds = await this.userNotificationService.getUserIdsToNotify(stop.id);
+
+    this.notificationService.batchNotify({
+      title: 'Stop Checked In',
+      text: `Stop ${stop.name} has been checked in`,
+      userIds,
+    });
+
+    await this.em.flush();
+
+    return stop;
   }
 }

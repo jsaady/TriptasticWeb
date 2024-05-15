@@ -1,9 +1,10 @@
-import { ComponentType, createContext, useContext, useEffect, useMemo } from 'react';
+import { ComponentType, createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import { useAsync, useAsyncHttp } from '@ui/utils/useAsync.js';
 
 interface NotificationState {
   supported: boolean;
   enabled: boolean;
+  currentPreferences: any;
 }
 
 interface NotificationContextState extends NotificationState {
@@ -16,7 +17,16 @@ const NotificationContext = createContext<NotificationContextState>(null as any)
 export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp: ComponentType) => (props: T) => {
   const supported = useMemo(() => 'PushManager' in window && 'serviceWorker' in navigator, []);
 
-  const [checkStatus, { result: enabled }] = useAsync(async () => {
+  const [fetchCurrentPreferences, { result: currentPreferences }] = useAsyncHttp(({ get }) => get('/api/notifications/preferences'), []);
+
+  const [subscribeToAll] = useAsyncHttp(async ({ post }) => {
+    if (supported) {
+      await post('/api/notifications/preferences/all', {});
+      fetchCurrentPreferences();
+    }
+  }, []);
+
+  const [checkBrowserStatus, { result: enabled }] = useAsync(async () => {
     const reg = await navigator.serviceWorker.ready;
     const [permission, subscription] = await Promise.all([reg.pushManager.permissionState({ userVisibleOnly: true }), reg.pushManager.getSubscription()]);
     const enabled = !!subscription && permission === 'granted';
@@ -24,10 +34,10 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
     return enabled;
   }, []);
 
-  const [subscribe] = useAsyncHttp(async ({ post, get }) => {
+  const [saveDevice] = useAsyncHttp(async ({ post, get }) => {
     if (!enabled) {
       const [{ publicKey }, permission, reg] = await Promise.all([
-        get<{ publicKey: string }>('/api/notifications/vapid'),
+        get<{ publicKey: string }>('/api/notifications/devices/vapid'),
         Notification.requestPermission(),
         navigator.serviceWorker.ready
       ]);
@@ -43,13 +53,13 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
         applicationServerKey: publicKey,
       });
 
-      await post('/api/notifications/subscribe', subscription);
+      await post('/api/notifications/devices/subscribe', subscription);
 
-      checkStatus();
+      checkBrowserStatus();
     }
   }, [enabled]);
 
-  const [unsubscribe] = useAsyncHttp(async ({ post }) => {
+  const [removeAllDevices] = useAsyncHttp(async ({ post }) => {
     if (enabled) {
       const reg = await navigator.serviceWorker.ready;
 
@@ -57,18 +67,29 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
       
       await subscription?.unsubscribe();
       
-      await post('api/notifications/unsubscribe', {});
+      await post('api/notifications/devices/unsubscribe', {});
       
-      checkStatus();
+      checkBrowserStatus();
     }
   }, [enabled]);
 
-  useEffect(checkStatus, []);
+  useEffect(checkBrowserStatus, []);
+  useEffect(fetchCurrentPreferences, []);
+
+  const subscribe = useCallback(() => {
+    saveDevice();
+    subscribeToAll();
+  }, []);
+
+  const unsubscribe = useCallback(() => {
+    removeAllDevices();
+  }, [removeAllDevices]);
 
   return <NotificationContext.Provider value={{
     supported,
     enabled,
-    checkStatus,
+    currentPreferences,
+    checkStatus: checkBrowserStatus,
     subscribe,
     unsubscribe,
   }}>

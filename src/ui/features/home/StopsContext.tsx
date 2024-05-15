@@ -2,11 +2,13 @@ import { LatLng } from 'leaflet';
 import { ComponentType, createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useAsyncHttp } from '@ui/utils/useAsync.js';
 import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
+import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 
 export interface StopsState {
   stops: StopListDTO[];
   filteredStops: StopListDTO[];
   addStop: (stop: CreateStopDTO, attachments?: FileList) => void;
+  checkIn: (id: number) => void;
   removeStop: (id: number) => void;
   updateStop: (id: number, stop: UpdateStopDTO) => void;
   getStop: (id: number) => StopListDTO | undefined;
@@ -36,6 +38,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       type: stopEnt.type,
       desiredArrivalDate: stopEnt.desiredArrivalDate,
       actualArrivalDate: stopEnt.actualArrivalDate,
+      status: stopEnt.status,
       latitude: stopEnt.latitude,
       longitude: stopEnt.longitude,
     })));
@@ -64,6 +67,10 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     return del('/api/stops/' + id);
   }, []);
 
+  const [doCheckIn] = useAsyncHttp(async ({ put }, id: number) => {
+    return put(`/api/stops/${id}/checkIn`, {});
+  }, []);
+
   const addStop = useCallback((stop: CreateStopDTO, attachments?: FileList) => {
     if (attachments?.length) {
       setPendingAttachments(attachments);
@@ -75,8 +82,18 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       notes: stop.notes,
       type: stop.type,
       actualArrivalDate: stop.actualArrivalDate,
-      desiredArrivalDate: stop.desiredArrivalDate
+      desiredArrivalDate: stop.desiredArrivalDate,
+      status: StopStatus.UPCOMING,
     });
+  }, []);
+
+  const checkIn = useCallback((id: number) => {
+    doCheckIn(id);
+    setStops(stops => stops.map((s) => s.id === id ? {
+      ...s,
+      status: StopStatus.ACTIVE,
+      updatedAt: new Date(),
+    } : s));
   }, []);
 
   useEffect(() => {
@@ -96,6 +113,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
         longitude: result.longitude,
         attachments: [] as File[],
         notes: result.notes,
+        status: StopStatus.UPCOMING,
         type: result.type
       }]);
     }
@@ -121,6 +139,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       notes: stop.notes,
       type: stop.type,
       actualArrivalDate: stop.actualArrivalDate,
+      status: stop.status,
       desiredArrivalDate: stop.desiredArrivalDate
     });
   }, []);
@@ -145,6 +164,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     stops,
     filteredStops,
     addStop,
+    checkIn,
     removeStop,
     updateStop,
     getStop,

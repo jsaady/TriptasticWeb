@@ -37,7 +37,7 @@ export const Authenticated = withGeolocation(withSidebar(withNotifications(() =>
       icon: 'users',
       label: 'User Admin',
       link: '/admin/users'
-    }] : []), {
+    } as const] : []), {
       icon: 'log-out',
       label: 'Logout',
       onClick: logout

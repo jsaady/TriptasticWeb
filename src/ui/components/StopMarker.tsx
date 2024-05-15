@@ -1,27 +1,30 @@
+import { StopListDTO } from '@api/features/stops/dto/stop.dto.js';
+import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
+import { StopType } from '@api/features/stops/entities/stopType.enum.js';
+import { UserRole } from '@api/features/users/userRole.enum.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { LatLng, LeafletMouseEvent } from 'leaflet';
+import { useCallback, useMemo, useState } from 'react';
 import { Popup, useMap, useMapEvents } from 'react-leaflet';
+import { stopOptions } from '../features/home/stopOptions.js';
 import { SmallButton } from './Button.js';
 import { FeatherMarker } from './FeatherMarker.js';
 import { Icon } from './Icon.js';
-import { useCallback, useMemo, useState } from 'react';
-import { stopOptions } from '../features/home/stopOptions.js';
-import { StopType } from '@api/features/stops/entities/stopType.enum.js';
-import { StopListDTO } from '@api/features/stops/dto/stop.dto.js';
-import { LatLng, LeafletMouseEvent } from 'leaflet';
-import { useAuthorization } from '@ui/utils/useAuth.js';
-import { UserRole } from '@api/features/users/userRole.enum.js';
 
 export interface StopMarkerProps {
   stop: StopListDTO;
   onDeleteClicked: () => void;
   onDetailClicked: () => void;
   onEditClicked: () => void;
+  onCheckInClick: () => void;
 }
-export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClicked }: StopMarkerProps) {
+export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClicked, onCheckInClick }: StopMarkerProps) {
   const { me } = useAuthorization();
   const [currentZoom, setCurrentZoom] = useState(20);
 
   useMapEvents({
-    zoom: (e) => setCurrentZoom(e.target.getZoom())
+    zoom: (e) => setCurrentZoom(e.target.getZoom()),
+    moveend: (e) => setCurrentZoom(e.target.getZoom())
   });
 
   const iconSize = useMemo(() => {
@@ -37,20 +40,15 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
 
   const map = useMap();
 
-  const handleDeleteClick = useCallback(() => {
-    onDeleteClicked();
+  const buildCallback = (cb: () => void) => useCallback(() => {
+    cb();
     map.closePopup();
-  }, [onDeleteClicked, map]);
-
-  const handleEditClick = useCallback(() => {
-    onEditClicked();
-    map.closePopup();
-  }, [onEditClicked, map]);
-
-  const handleDetailClick = useCallback(() => {
-    onDetailClicked();
-    map.closePopup();
-  }, [onDetailClicked, map]);
+  }, [cb, map]);
+  
+  const handleDeleteClick = buildCallback(onDeleteClicked);
+  const handleEditClick = buildCallback(onEditClicked);
+  const handleDetailClick = buildCallback(onDetailClicked);
+  const handleCheckInClick = buildCallback(onCheckInClick);
 
   const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
 
@@ -102,6 +100,10 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
         <SmallButton className='ml-5' onClick={handleDetailClick}>
           <Icon icon='info' />
         </SmallButton>
+
+        {stop.status === StopStatus.UPCOMING && <SmallButton className='ml-5' onClick={handleCheckInClick}>
+          <Icon icon='check' />
+        </SmallButton>}
       </div>
     </Popup>
   </FeatherMarker>;

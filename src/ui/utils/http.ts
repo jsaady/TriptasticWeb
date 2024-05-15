@@ -26,6 +26,7 @@ export interface HTTPClient {
   get: <T = unknown>(path: string, signal: AbortSignal) => Promise<T>;
   del: <T = unknown>(path: string, signal: AbortSignal) => Promise<T>;
   post: <T = unknown>(path: string, body: unknown, signal: AbortSignal) => Promise<T>;
+  patch: <T = unknown>(path: string, body: unknown, signal: AbortSignal) => Promise<T>;
   put: <T = unknown>(path: string, body: unknown, signal: AbortSignal) => Promise<T>;
 }
 
@@ -77,11 +78,16 @@ export const useHttp = (): HTTPClient => {
     return makeRequest(path, 'put', signal, payload);
   }, [makeRequest]);
 
+  const patch = useCallback(async (path: string, payload: unknown, signal: AbortSignal) => {
+    return makeRequest(path, 'patch', signal, payload);
+  }, [makeRequest]);
+
   return {
     get,
     del,
     post,
-    put
+    put,
+    patch,
   }
 }
 

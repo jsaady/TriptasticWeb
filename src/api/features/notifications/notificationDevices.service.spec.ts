@@ -1,16 +1,15 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DefaultSeeder } from '../../db/seeds/DefaultSeeder.js';
 import { MockConfigModule } from '../../testFixtures/config.mock.js';
 import { CreateMikroORM } from '../../testFixtures/mikroOrm.mock.js';
 import { GeneratedConfig } from '../../utils/config/generated-config.entity.js';
 import { User } from '../users/users.entity.js';
 import { AddSubscriptionDTO, SendNotificationDTO } from './notification.dto.js';
-import { NotificationService } from './notification.service.js';
-import { Subscription } from './subscription.entity.js';
+import { NotificationDevicesService } from './notificationDevices.service.js';
+import { Subscription } from './entities/subscription.entity.js';
 
 describe('NotificationService', () => {
-  let service: NotificationService;
+  let service: NotificationDevicesService;
   let module: TestingModule;
   let mikroOrm: MikroORM;
   const mockWebPush = {
@@ -24,12 +23,12 @@ describe('NotificationService', () => {
         MockConfigModule,
       ],
       providers: [
-        NotificationService,
+        NotificationDevicesService,
         { provide: 'WEB_PUSH', useValue: mockWebPush },
       ],
     }).compile();
 
-    service = module.get<NotificationService>(NotificationService);
+    service = module.get<NotificationDevicesService>(NotificationDevicesService);
     mikroOrm = module.get<MikroORM>(MikroORM);
   });
 

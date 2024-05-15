@@ -1,9 +1,8 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { HasRole } from '../../utils/checkRole.js';
 import { IsAuthenticated } from '../auth/isAuthenticated.guard.js';
 import { UserRole } from '../users/userRole.enum.js';
-import { Stop } from './entities/stop.entity.js';
 import { StopsService } from './stops.service.js';
 import { CreateStopDTO, StopDetailDTO, UpdateStopDTO } from './dto/stop.dto.js';
 
@@ -32,6 +31,14 @@ export class StopsController {
     @Body() body: UpdateStopDTO
   ) {
     return this.stopService.update(id, body);
+  }
+
+  @Put(':id/checkIn')
+  @HasRole(UserRole.ADMIN)
+  checkIn(
+    @Param('id') id: number
+  ) {
+    return this.stopService.checkIntoStop(id);
   }
 
   @Delete(':id')

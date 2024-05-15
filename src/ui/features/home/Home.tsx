@@ -34,6 +34,7 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
     addStop,
     updateStop,
     fetchStops,
+    checkIn,
     removeStop
   } = useStops();
 
@@ -77,6 +78,10 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
     setDeleteModalOpen(true);
   }, []);
 
+  const handleCheckInClick = useCallback((id: number) => {
+    checkIn(id);
+  }, []);
+
   const handleSearchSelected = useCallback((result: LocalSearchResult) => {
     setSearchResultBounds(result.bounds);
   }, []);
@@ -112,6 +117,7 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
             onDeleteClicked={() => handleDeleteClick(stop.id)}
             onDetailClicked={() => setDetailModalId(stop.id)}
             onEditClicked={() => setEditStop(stop)}
+            onCheckInClick={() => handleCheckInClick(stop.id)}
           />
         ))
       }

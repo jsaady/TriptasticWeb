@@ -10,6 +10,7 @@ import { ScheduledQueue } from '@nestjs-enhanced/pg-boss';
 import { Job } from 'pg-boss';
 import { UserService } from '../users/users.service.js';
 import { rootAdminEmail } from '../../db/seeds/AdminSeeder.js';
+import { StopStatus } from './entities/stopStatus.enum.js';
 
 @Injectable()
 export class GoogleStopImportService {
@@ -51,7 +52,7 @@ export class GoogleStopImportService {
     await spreadsheet.loadInfo();
     const sheet = spreadsheet.sheetsByTitle['Route'];
 
-    const existingStops = await this.stopService.getStopsByTrip(1);
+    const existingStops = await this.stopService.getStopsByTrip(1, true);
 
     const stopMapByImportId = new Map(existingStops.map(stop => [stop.importId, stop]));
 
@@ -70,13 +71,21 @@ export class GoogleStopImportService {
           ...rest
         } = existing;
 
+        const partialUpdate: Partial<UpdateStopDTO> = {
+          name: row.get('Stop'),
+          notes: row.get('Reason'),
+          desiredArrivalDate: new Date(row.get('Date')),
+        };
+
+        if (partialUpdate.name === rest.name && partialUpdate.notes === rest.notes && partialUpdate.desiredArrivalDate === rest.desiredArrivalDate) {
+          this.logger.log(`No changes for stop ${importId}`);
+          continue;
+        }
+
         updatedRows.push({
           id: id,
           importId,
           ...rest,
-          name: row.get('Stop'),
-          notes: row.get('Reason'),
-          desiredArrivalDate: row.get('Date'),
         });
       } else {
         this.logger.log(`Creating stop ${importId}`);
@@ -177,6 +186,7 @@ export class GoogleStopImportService {
           longitude: data[0].longitude,
           actualArrivalDate: new Date(),
           type,
+          status: StopStatus.UPCOMING,
         });
       }
     }

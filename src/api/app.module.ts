@@ -11,11 +11,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
-import { SecureContext, createSecureContext } from 'tls';
 import { MigrationModule } from './db/migration.provider.js';
 import { AuthModule } from './features/auth/auth.module.js';
 import { MapModule } from './features/map/map.module.js';
-import { NotificationModule } from './features/notifications/notification.module.js';
+import { NotificationsModule } from './features/notifications/notifications.module.js';
 import { StopsModule } from './features/stops/stops.module.js';
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
@@ -64,7 +63,7 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     SocketsModule,
     ContextModule,
     AuthModule,
-    NotificationModule,
+    NotificationsModule,
     StopsModule,
     UsersModule,
     MapModule,

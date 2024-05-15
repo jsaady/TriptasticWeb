@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { User } from '../users/users.entity.js';
+import { User } from '../../users/users.entity.js';
 
 @Entity()
 export class Subscription {

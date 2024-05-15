@@ -11,5 +11,4 @@ export class Migration20230908213725 extends Migration {
   async down(): Promise<void> {
     this.addSql('drop table if exists "user_client" cascade;');
   }
-
 }

@@ -118,7 +118,7 @@ export const WebAuthnLoginForm = () => {
     }
   }, [loginError, registrationError]);
 
-  return <LoginForm disabled={loginLoading || registrationLoading} {...registerForm(onSubmit)}>
+  return <LoginForm className='flex flex-col' disabled={loginLoading || registrationLoading} {...registerForm(onSubmit)}>
     {parsedError && <ErrorBanner data-testid="login-error">{parsedError.message}</ErrorBanner>}
     <Input {...register('username')} required label='Username' type='text' />
     <div className={`flex flex-col w-full transition-all overflow-hidden ${showEmail ? '' : 'h-0'}`}>
@@ -134,7 +134,8 @@ export const WebAuthnLoginForm = () => {
     {!showRegisterLink && showPassword && !showEmail && <div className='my-4'>
     Forgot your password?&nbsp;<Link className='mt-2 cursor-pointer text-blue-400' to='/login/forgot-password'>Reset password</Link>
     </div>}
-
-    <a href="/assets/privacy.html" target="_blank">Privacy Policy</a>
+    <div>
+      <a className='text-blue-400' href="/assets/privacy.html" target="_blank">Privacy Policy</a>
+    </div>
   </LoginForm>
 }

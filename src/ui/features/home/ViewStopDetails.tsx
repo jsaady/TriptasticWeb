@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { StyledModal } from '@ui/utils/modals.js';
 import { useAsyncHttp } from '@ui/utils/useAsync.js';
 import { Serialized } from '../../../common/serialized.js';
+import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 
 export interface ViewStopAttachmentsProps {
   stopId: number;
@@ -32,11 +33,11 @@ export const ViewStopDetails = ({ stopId, onClose }: ViewStopAttachmentsProps) =
         <div className='text-sm font-semibold'>Desired Arrival Date: {formattedDesiredArrivalDate}</div>
       </div>
   
-      <div className="ql-snow mt-6">
+      {stop?.status === StopStatus.ACTIVE ? 'Stay tuned for updates!!' : <div className="ql-snow mt-6">
         <div className="ql-editor">
           <div dangerouslySetInnerHTML={{ __html: stop?.notes ?? '' }}></div>
         </div>
-      </div>
+      </div>}
       <hr className='mb-6 mt-6' />
       <ul>
         {result?.map((attachment) => (

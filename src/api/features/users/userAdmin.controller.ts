@@ -1,12 +1,10 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put } from '@nestjs/common';
-import { IsAuthenticated } from '../auth/isAuthenticated.guard.js';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Put } from '@nestjs/common';
 import { User } from '../auth/user.decorator.js';
 import { AuthTokenContents } from '../auth/auth.dto.js';
 import { UserRole } from './userRole.enum.js';
 import { UserService } from './users.service.js';
 import { HasRole } from '../../utils/checkRole.js';
 import { CreateUserDTO } from './users.dto.js';
-import { Path } from 'leaflet';
 import { UserAdminService } from './userAdmin.service.js';
 
 @Controller('admin/user')

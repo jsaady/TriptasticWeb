@@ -3,6 +3,7 @@ import { User } from '../../users/users.entity.js';
 import { Attachment } from './attachment.entity.js';
 import { Trip } from './trip.entity.js';
 import { StopType } from './stopType.enum.js';
+import { StopStatus } from './stopStatus.enum.js';
 
 @Entity()
 export class Stop {
@@ -46,6 +47,9 @@ export class Stop {
 
   @Enum(() => StopType)
   type!: StopType;
+
+  @Enum(() => StopStatus)
+  status!: StopStatus;
 
   @OneToMany(() => Attachment, attachment => attachment.stop, { cascade: [Cascade.REMOVE] })
   attachments = new Collection<Attachment>(this);

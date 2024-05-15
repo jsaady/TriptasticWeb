@@ -466,6 +466,20 @@
           ],
           "mappedType": "enum"
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "UPCOMING",
+            "ACTIVE",
+            "COMPLETED"
+          ],
+          "mappedType": "enum"
+        },
         "import_id": {
           "name": "import_id",
           "type": "varchar(255)",
@@ -764,6 +778,145 @@
           ],
           "referencedTableName": "public.user",
           "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "subscribe_to_all_stops": {
+          "name": "subscribe_to_all_stops",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        }
+      },
+      "name": "user_notification_preference",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": [
+            "user_id"
+          ],
+          "composite": false,
+          "keyName": "user_notification_preference_user_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "user_notification_preference_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "user_notification_preference_user_id_foreign": {
+          "constraintName": "user_notification_preference_user_id_foreign",
+          "columnNames": [
+            "user_id"
+          ],
+          "localTableName": "public.user_notification_preference",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.user",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "stop_id": {
+          "name": "stop_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
+        "user_notification_preference_id": {
+          "name": "user_notification_preference_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        }
+      },
+      "name": "user_stop_notification_preference",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "user_stop_notification_preference_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "user_stop_notification_preference_stop_id_foreign": {
+          "constraintName": "user_stop_notification_preference_stop_id_foreign",
+          "columnNames": [
+            "stop_id"
+          ],
+          "localTableName": "public.user_stop_notification_preference",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.stop",
+          "deleteRule": "cascade"
+        },
+        "user_stop_notification_preference_user_notificati_15994_foreign": {
+          "constraintName": "user_stop_notification_preference_user_notificati_15994_foreign",
+          "columnNames": [
+            "user_notification_preference_id"
+          ],
+          "localTableName": "public.user_stop_notification_preference",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.user_notification_preference",
+          "deleteRule": "cascade"
         }
       }
     }

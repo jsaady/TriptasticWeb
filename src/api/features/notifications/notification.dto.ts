@@ -12,3 +12,9 @@ export class SendNotificationDTO {
   title!: string;
   text!: string;
 }
+
+export class BatchNotificationDTO {
+  userIds!: number[];
+  title!: string;
+  text!: string;
+}
