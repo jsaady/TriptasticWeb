@@ -29,6 +29,7 @@ export class GoogleStopImportService {
   }
 
   async importStops(isJob?: boolean) {
+    this.logger.log('Starting import');
     let creatorId: number | undefined;
 
     if (isJob) {
@@ -58,11 +59,11 @@ export class GoogleStopImportService {
     const updatedRows: UpdateStopDTO[] = [];
   
     for await (const row of await sheet.getRows()) {
-      this.logger.log('Importing stops');
-
+      
       const importId = `${row.get('Stop')}-${row.get('Reason')}`;
       const existing = stopMapByImportId.get(importId);
       if (existing) {
+        this.logger.log(`Updating existing stop ${importId}`);
         const {
           id,
           importId: _,
@@ -78,10 +79,12 @@ export class GoogleStopImportService {
           desiredArrivalDate: row.get('Date'),
         });
       } else {
+        this.logger.log(`Creating stop ${importId}`);
+
         let [City, State] = row.get('Stop').split(', ');
 
         if (!City || !State) {
-          this.logger.warn(`Invalid stop: ${row.get('Stop')}`);
+          this.logger.error(`Invalid stop: ${row.get('Stop')}`);
           continue;
         };
 
@@ -128,10 +131,10 @@ export class GoogleStopImportService {
               State = 'Yukon';
               break;
           }
-          Country = 'Canada'
+          Country = 'CA'
         };
 
-        const { data } = await axios.get<{ latitude: number; longitude: number }[]>(`https://api.api-ninjas.com/v1/geocoding?city=${City}&state=${State}&country=US`, {
+        const { data } = await axios.get<{ latitude: number; longitude: number }[]>(`https://api.api-ninjas.com/v1/geocoding?city=${City}&state=${State}&country=${Country}`, {
           headers: {
             'X-Api-Key': this.config.getOrThrow('ninjaApiKey'),
           },
@@ -140,9 +143,12 @@ export class GoogleStopImportService {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         if (data.length === 0) {
-          this.logger.warn(`Failed to get coordinates for ${City}, ${State} ${Country}`);
+          this.logger.error(`Failed to get coordinates for ${City}, ${State} ${Country}`);
 
           continue;
+        } else if (data.length > 1) {
+          this.logger.warn(`Multiple results for ${City}, ${State} ${Country}`);
+          this.logger.warn(data);
         }
 
         let type: StopType;
