@@ -1,8 +1,8 @@
-import { Popup, useMap } from 'react-leaflet';
+import { Popup, useMap, useMapEvents } from 'react-leaflet';
 import { SmallButton } from './Button.js';
 import { FeatherMarker } from './FeatherMarker.js';
 import { Icon } from './Icon.js';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { stopOptions } from '../features/home/stopOptions.js';
 import { StopType } from '@api/features/stops/entities/stopType.enum.js';
 import { StopListDTO } from '@api/features/stops/dto/stop.dto.js';
@@ -18,6 +18,18 @@ export interface StopMarkerProps {
 }
 export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClicked }: StopMarkerProps) {
   const { me } = useAuthorization();
+  const [currentZoom, setCurrentZoom] = useState(0);
+
+  useMapEvents({
+    zoom: (e) => setCurrentZoom(e.target.getZoom())
+  });
+
+  const iconSize = useMemo(() => {
+    if (currentZoom < 5) return 10;
+    if (currentZoom < 10) return 20;
+    if (currentZoom < 20) return 30;
+    return 40;
+  }, [currentZoom]);
 
   const { icon, label } = useMemo(() => {
     return stopOptions.find(option => option.value === stop.type) ?? stopOptions[0];
@@ -65,7 +77,14 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
     }
   }, [me, handleEditClick, handleDetailClick]);
 
-  return <FeatherMarker eventHandlers={{ click: onClick }} name={icon} title={label} position={location} color={color} className='dark:text-white text-black'>
+  return <FeatherMarker
+    eventHandlers={{ click: onClick }}
+    name={icon}
+    title={label}
+    position={location}
+    color={color}
+    className='dark:text-white text-black'
+    size={iconSize}>
     <Popup>
       <h2 className='text-lg font-bold'>
         {stop.name}

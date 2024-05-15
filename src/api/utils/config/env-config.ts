@@ -10,4 +10,6 @@ export interface EnvironmentConfig {
   requireMFA: boolean;
   stadiaMapApiKey: string;
   allowRegistration: boolean;
+  googleCreds: string;
+  ninjaApiKey: string;
 }

@@ -99,15 +99,6 @@
           "length": 6,
           "mappedType": "datetime"
         },
-        "gitlab_id": {
-          "name": "gitlab_id",
-          "type": "varchar(255)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "string"
-        },
         "email": {
           "name": "email",
           "type": "varchar(255)",
@@ -474,6 +465,15 @@
             "FAMILY_AND_FRIENDS"
           ],
           "mappedType": "enum"
+        },
+        "import_id": {
+          "name": "import_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "string"
         }
       },
       "name": "stop",

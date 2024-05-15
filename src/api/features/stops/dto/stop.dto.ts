@@ -12,7 +12,8 @@ export class StopDetailDTO extends PickType(Stop, [
   'actualArrivalDate',
   'latitude',
   'longitude',
-  'type'
+  'type',
+  'importId'
 ]){ }
 
 export class StopListDTO extends OmitType(StopDetailDTO, ['notes']){ }

@@ -120,3 +120,5 @@ params:
   requireEmailVerification: 'false'
   stadiaApiKey: update_me
   allowRegistration: 'true'
+  ninjaApiKey: ''
+  googleCreds: ''

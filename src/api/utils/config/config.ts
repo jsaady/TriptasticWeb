@@ -16,7 +16,9 @@ export const CONFIG_VARS = {
   emailReplyTo: 'EMAIL_REPLY_TO',
   requireEmailVerification: 'REQUIRE_EMAIL_VERIFICATION',
   requireMFA: 'REQUIRE_MFA',
-  stadiaMapApiKey: 'STADIA_MAP_API_KEY'
+  stadiaMapApiKey: 'STADIA_MAP_API_KEY',
+  googleCreds: 'GOOGLE_CREDS',
+  ninjaApiKey: 'NINJA_API_KEY',
 };
 
 export const RATE_LIMIT_TTL = 60;

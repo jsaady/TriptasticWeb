@@ -1,6 +1,6 @@
 import { wrap } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service.js';
 import { User } from '../users/users.entity.js';
 import { AttachmentDTO } from './dto/attachment.dto.js';
@@ -11,6 +11,8 @@ import { Trip } from './entities/trip.entity.js';
 
 @Injectable()
 export class StopsService {
+  private readonly logger = new Logger(StopsService.name);
+
   constructor(
     private em: EntityManager,
     private auth: AuthService,
@@ -73,7 +75,7 @@ export class StopsService {
   }
 
   async getStopsByTrip(tripId: number): Promise<StopListDTO[]> {
-    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['id', 'name', 'latitude', 'longitude', 'createdAt', 'updatedAt', 'type', 'desiredArrivalDate', 'actualArrivalDate'] });
+    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['id', 'name', 'latitude', 'longitude', 'createdAt', 'updatedAt', 'type', 'desiredArrivalDate', 'actualArrivalDate', 'importId'] });
 
     return stops;
   }
@@ -108,5 +110,49 @@ export class StopsService {
     await this.em.flush();
 
     return stop;
+  }
+
+  async bulkAddStops(stops: CreateStopDTO[], creatorId = this.auth.getCurrentUserId()): Promise<Stop[]> {
+    const trip = this.em.getReference(Trip, 1);
+    const creator = this.em.getReference(User, creatorId);
+
+    const stopEntities = stops.map(stop => {
+      const stopEntity = wrap(new Stop()).assign(stop);
+
+      stopEntity.trip = trip;
+      stopEntity.creator = creator;
+
+      return stopEntity;
+    });
+
+    await this.em.persistAndFlush(stopEntities);
+
+    return stopEntities;
+  }
+
+  async bulkUpdateStops(stops: UpdateStopDTO[], creatorId = this.auth.getCurrentUserId()): Promise<Stop[]> {
+    const stopEntities = await this.em.find(Stop, { id: { $in: stops.map(s => s.id) } });
+
+    const stopMap = new Map(stops.map(s => [s.id, s]));
+
+    const trip = this.em.getReference(Trip, 1);
+    const creator = this.em.getReference(User, creatorId);
+
+    stopEntities.forEach((stop, index) => {
+      const stopUpdate = stopMap.get(stop.id);
+
+      if (!stopUpdate) {
+        this.logger.warn(`Stop with id ${stop.id} not found in update list`);
+        return;
+      }
+
+      Object.assign(stop, stopUpdate);
+      stop.creator = creator;
+      stop.trip = trip;
+    });
+
+    await this.em.flush();
+
+    return stopEntities;
   }
 }

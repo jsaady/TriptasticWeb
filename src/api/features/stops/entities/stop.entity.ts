@@ -49,4 +49,7 @@ export class Stop {
 
   @OneToMany(() => Attachment, attachment => attachment.stop, { cascade: [Cascade.REMOVE] })
   attachments = new Collection<Attachment>(this);
+
+  @Property({ nullable: true })
+  importId?: string;
 }
