@@ -1,9 +1,9 @@
 import { AttachmentDTO } from '@api/features/stops/dto/attachment.dto.js';
 import { StopDetailDTO } from '@api/features/stops/dto/stop.dto.js';
-import type { Serialized } from '@common/serialized.js';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { StyledModal } from '@ui/utils/modals.js';
 import { useAsyncHttp } from '@ui/utils/useAsync.js';
+import { Serialized } from '../../../common/serialized.js';
 
 export interface ViewStopAttachmentsProps {
   stopId: number;
@@ -24,14 +24,19 @@ export const ViewStopDetails = ({ stopId, onClose }: ViewStopAttachmentsProps) =
     fetchStop();
   }, [stopId]);
 
+  const formattedDesiredArrivalDate = useMemo(() => stop?.desiredArrivalDate ? new Date(stop.desiredArrivalDate).toLocaleDateString() : '', [stop?.desiredArrivalDate]);
+
   return (
     <StyledModal onClose={onClose} title={stop?.name ?? 'Loading...'} cancelText='Close'>
+      <div className='mt-6'>
+        <div className='text-sm font-semibold'>Desired Arrival Date: {formattedDesiredArrivalDate}</div>
+      </div>
+  
       <div className="ql-snow mt-6">
         <div className="ql-editor">
           <div dangerouslySetInnerHTML={{ __html: stop?.notes ?? '' }}></div>
         </div>
       </div>
-      {/* <div className='mt-6 ql-snow ql-editor' dangerouslySetInnerHTML={{ __html: stop?.notes ?? '' }}></div> */}
       <hr className='mb-6 mt-6' />
       <ul>
         {result?.map((attachment) => (
