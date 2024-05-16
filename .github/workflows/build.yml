@@ -39,7 +39,7 @@ jobs:
       tags: ${{ steps.meta.outputs.tags }}
 
     container:
-      image: docker/github-actions:latest
+      image: ghcr.io/jsaady/runner:latest
 
     steps:
       - name: Checkout repository
