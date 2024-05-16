@@ -64,23 +64,26 @@ export class GoogleStopImportService {
       const importId = `${row.get('Stop')}-${row.get('Reason')}`;
       const existing = stopMapByImportId.get(importId);
       if (existing) {
-        this.logger.log(`Updating existing stop ${importId}`);
         const {
           id,
           importId: _,
           ...rest
         } = existing;
 
-        const partialUpdate: Partial<UpdateStopDTO> = {
+        const partialUpdate = {
           name: row.get('Stop'),
           notes: row.get('Reason'),
           desiredArrivalDate: new Date(row.get('Date')),
         };
 
-        if (partialUpdate.name === rest.name && partialUpdate.notes === rest.notes && partialUpdate.desiredArrivalDate === rest.desiredArrivalDate) {
-          this.logger.log(`No changes for stop ${importId}`);
+        // remove local timezone
+        partialUpdate.desiredArrivalDate.setMinutes(partialUpdate.desiredArrivalDate.getMinutes() - partialUpdate.desiredArrivalDate.getTimezoneOffset());
+
+        if (partialUpdate.name === rest.name && partialUpdate.notes === rest.notes && partialUpdate.desiredArrivalDate.getTime() === rest.desiredArrivalDate.getTime()) {
           continue;
         }
+
+        this.logger.log(`Updating existing stop ${importId}`);
 
         updatedRows.push({
           id: id,
@@ -191,14 +194,18 @@ export class GoogleStopImportService {
       }
     }
 
-    await this.stopService.bulkAddStops(newRows, creatorId);
-    await this.stopService.bulkUpdateStops(updatedRows, creatorId);
+    if (newRows.length === 0 && updatedRows.length === 0) {
+      this.logger.log('No changes detected');
+    } else {
+      await this.stopService.bulkAddStops(newRows, creatorId);
+      await this.stopService.bulkUpdateStops(updatedRows, creatorId);
+    }
 
     this.logger.log('Import complete');
     return;
   }
 
-  @ScheduledQueue('*/5 * * * *')
+  @ScheduledQueue('* * * * *')
   async scheduleImport(_: Job) {
     await this.importStops(true);
     return;

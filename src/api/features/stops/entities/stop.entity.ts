@@ -27,10 +27,10 @@ export class Stop {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date;
 
-  @Property()
+  @Property({ columnType: 'date' })
   desiredArrivalDate!: Date;
 
-  @Property()
+  @Property({ columnType: 'date' })
   actualArrivalDate!: Date;
 
   @Property({ type: 'double precision' })
