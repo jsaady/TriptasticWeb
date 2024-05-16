@@ -27,8 +27,6 @@ env:
 jobs:
   build:
     runs-on: triptastic-runner-set
-    container:
-      image: ubuntu:latest
     # runs-on: self-hosted
     permissions:
       contents: read
@@ -139,14 +137,14 @@ jobs:
     if: github.ref == 'refs/heads/main'
     permissions: write-all
     runs-on: triptastic-runner-set
-    container:
-      image: ubuntu:latest
     env:
       FULL_IMAGE_TAG: ${{ needs.build.outputs.tags }}
     needs:
       - build
       # - test
     steps:
+    - name: Sleep debug
+      run: sleep 45
     - uses: actions/checkout@v3
     - name: debug
       run: echo $FULL_IMAGE_TAG
