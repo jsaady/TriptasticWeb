@@ -39,7 +39,7 @@ jobs:
       tags: ${{ steps.meta.outputs.tags }}
 
     container:
-      image: ubuntu:latest
+      image: docker/github-actions:latest
 
     steps:
       - name: Checkout repository
