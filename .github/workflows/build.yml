@@ -41,7 +41,7 @@ jobs:
     steps:
 
       - name: Sleep debug
-        run: sudo apt-get install curl
+        run: sudo apt-get update && sudo apt-get install -y curl
       - name: Checkout repository
         uses: actions/checkout@v3
 
