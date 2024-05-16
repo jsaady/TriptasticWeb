@@ -42,6 +42,7 @@ jobs:
       image: ghcr.io/jsaady/runner:latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -149,8 +150,11 @@ jobs:
       # - test
     steps:
     - uses: actions/checkout@v3
-    - name: debug
-      run: echo $FULL_IMAGE_TAG
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2.7.0
+      with:
+        # SSH private key
+        key: ${{ secrets.DEPLOY_SSH }}
     - name: Replace old image with new image
       run: |
         sed -i "s|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:.*|image: $FULL_IMAGE_TAG|Ig" ./chart/values_dev.yaml
