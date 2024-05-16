@@ -101,7 +101,7 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
           <Icon icon='info' />
         </SmallButton>
 
-        {stop.status === StopStatus.UPCOMING && <SmallButton className='ml-5' onClick={handleCheckInClick}>
+        {stop.status !== StopStatus.ACTIVE && <SmallButton className='ml-5' onClick={handleCheckInClick}>
           <Icon icon='check' />
         </SmallButton>}
       </div>

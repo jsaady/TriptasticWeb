@@ -20,6 +20,7 @@ import { useFetchApiKey } from './fetchApiKey.js';
 export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
   const [newModalOpen, setNewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [checkInModalId, setCheckInModalId] = useState<number>();
   const [detailModalId, setDetailModalId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isSearch, setIsSearch] = useState(false);
@@ -78,8 +79,10 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
     setDeleteModalOpen(true);
   }, []);
 
-  const handleCheckInClick = useCallback((id: number) => {
-    checkIn(id);
+  const handleCheckInClick = useCallback(() => {
+    if (!checkInModalId) return;
+
+    checkIn(checkInModalId);
   }, []);
 
   const handleSearchSelected = useCallback((result: LocalSearchResult) => {
@@ -117,7 +120,7 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
             onDeleteClicked={() => handleDeleteClick(stop.id)}
             onDetailClicked={() => setDetailModalId(stop.id)}
             onEditClicked={() => setEditStop(stop)}
-            onCheckInClick={() => handleCheckInClick(stop.id)}
+            onCheckInClick={() => setCheckInModalId(stop.id)}
           />
         ))
       }
@@ -133,6 +136,10 @@ export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
 
     {deleteModalOpen && deleteId && (
       <ConfirmModal title='Delete stop' message='Are you sure you want to delete this stop?' onCancel={() => setDeleteModalOpen(false)} onConfirm={handleDeleteStop} />
+    )}
+
+    {checkInModalId && (
+      <ConfirmModal title='Delete stop' message='Are you sure you want to delete this stop?' onCancel={() => setCheckInModalId(undefined)} onConfirm={handleCheckInClick} />
     )}
 
     {detailModalId && (

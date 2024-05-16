@@ -22,6 +22,7 @@ export interface AuthTokenContents {
   needPasswordReset: boolean;
   mfaEnabled: boolean;
   mfaMethod: string|null;
+  username: string;
   type: 'auth';
 }
 

@@ -75,7 +75,7 @@ export class AuthController {
 
   @Post('/verify-email')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
-  async verifyEmail(@User() { sub , clientIdentifier}: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { token }: VerifyEmailDTO) {
+  async verifyEmail(@User() { sub, clientIdentifier }: AuthTokenContents, @Res({ passthrough: true }) response: Response, @Body() { token }: VerifyEmailDTO) {
     const updatedUser = await this.authService.validateEmailToken(sub, token);
     return this.processUserLogin(updatedUser, response, clientIdentifier, 'email');
   }

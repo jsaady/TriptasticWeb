@@ -222,6 +222,7 @@ export class AuthService {
       sub: user.id,
       role: user.role,
       email: user.email,
+      username: user.username,
       emailConfirmed: user.emailConfirmed,
       needPasswordReset: user.needPasswordReset,
       mfaEnabled: await this.checkUserHasMFA(user),

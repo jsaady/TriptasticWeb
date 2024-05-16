@@ -6,13 +6,16 @@ import { useAsyncHttp } from './useAsync.js';
 import { useLoggedIn, withLoggedIn } from './useLoggedIn.js';
 import { useGlobalSocket } from './useSocket.js';
 import { AuthTokenContents } from '@api/features/auth/auth.dto.js';
+import { useLocalStorage } from './useLocalStorage.js';
 
 export interface AuthState {
   loggedIn: boolean;
   clientIdentifier: string;
   loading: boolean;
   me?: AuthTokenContents;
+  previousUsername: string;
   setLoggedIn: (loggedIn: boolean) => void;
+  clearPreviousUsername: () => void;
   handleLoginResponse: (res: LoginResponse) => boolean;
   logout: () => void;
 }
@@ -20,6 +23,9 @@ export interface AuthState {
 const authorizationContext = createContext<AuthState>(null as any);
 
 const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>) => (props: P) => {
+
+  const [previousUsername, setPreviousUsername] = useLocalStorage('previousUsername', '');
+
   const { loggedIn, setLoggedIn } = useLoggedIn();
   let [searchParams, setSearchParams] = useSearchParams();
   const [me, setMe] = useState<AuthTokenContents>();
@@ -47,10 +53,13 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
         navigate('/login/verify-email');
         break;
     }
+
     setMe(data);
     setLoggedIn(success);
 
     if (success && pathname.startsWith('/login')) {
+      setPreviousUsername(data.username)
+
       globalSocketReconnect();
       navigate('/');
     }
@@ -76,6 +85,10 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
     navigate('/login');
   }, [setLoggedIn, globalSocketReconnect]);
 
+  const clearPreviousUsername = useCallback(() => {
+    setPreviousUsername('');
+  }, []);
+
   useEffect(() => {
     check();
   }, []);
@@ -85,6 +98,8 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
       clientIdentifier,
       loading,
       loggedIn,
+      previousUsername,
+      clearPreviousUsername,
       setLoggedIn,
       logout,
       handleLoginResponse

@@ -23,11 +23,11 @@ export const WebAuthnLoginForm = () => {
   const [showEmail, setShowEmail] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showRegisterLink, setShowRegisterLink] = useState(false);
-  const { handleLoginResponse, clientIdentifier } = useAuthorization();
+  const { handleLoginResponse, clientIdentifier, previousUsername, clearPreviousUsername } = useAuthorization();
 
   const { register, registerForm, state } = useForm<LoginFormState>();
 
-  const [startLogin, { loading, result }] = useAsyncHttp(async ({ post }, state: LoginFormState) => {
+  const [startLogin, { result: startLoginResult }] = useAsyncHttp(async ({ post }, state: LoginFormState) => {
     const response = await post<{ status: string; challengeOptions: any }>('/api/auth/start', state);
 
     return response;
@@ -35,14 +35,16 @@ export const WebAuthnLoginForm = () => {
 
   const [doLogin, { loading: loginLoading, error: loginError }] = useAsyncHttp(async ({ post }, { username, challengeOptions }) => {
     let attResp: AuthenticationResponseJSON;
+
+    if (!startLoginResult) throw new Error('No challenge options provided');
     
     try {
-      attResp = await startAuthentication(result.challengeOptions);
+      attResp = await startAuthentication(startLoginResult.challengeOptions);
     } catch (error) {
       setShowRegisterLink(true);
       console.error('Error on startAuthentication', error);
       // Some basic error handling
-      throw error;
+      return;
     }
 
     const body = {
@@ -54,13 +56,16 @@ export const WebAuthnLoginForm = () => {
     const response = await post<LoginResponse>('/api/auth/login', body);
 
     return handleLoginResponse(response);
-  }, [result, clientIdentifier]);
+  }, [startLoginResult, clientIdentifier]);
 
   const [doRegister, { loading: registrationLoading, error: registrationError }] = useAsyncHttp(async ({ post }, state: LoginFormState) => {
     let attResp: RegistrationResponseJSON;
+
+    if (!startLoginResult) throw new Error('No challenge options provided');
+
     try {
       // Pass the options to the authenticator and wait for a response
-      attResp = await startRegistration(result.challengeOptions);
+      attResp = await startRegistration(startLoginResult.challengeOptions);
     } catch (error) {
       // Some basic error handling
       console.error('Error registering device', error);
@@ -74,12 +79,12 @@ export const WebAuthnLoginForm = () => {
     });
 
     return handleLoginResponse(authResponse);
-  }, [clientIdentifier, result]);
+  }, [clientIdentifier, startLoginResult]);
 
   useEffect(() => {
-    if (!result?.status) return;
+    if (!startLoginResult?.status) return;
 
-    switch (result.status) {
+    switch (startLoginResult.status) {
       case 'registerUser':
         setShowEmail(true);
         setShowPassword(true);
@@ -89,10 +94,10 @@ export const WebAuthnLoginForm = () => {
         setShowPassword(true);
         break;
       case 'login':
-        doLogin({ username: state.username });
+        doLogin({ username: previousUsername || state.username });
         break;
     }
-  }, [result, state?.username]);
+  }, [startLoginResult, state?.username]);
 
   const onSubmit = useCallback((state: LoginFormState) => {
     return (showEmail || showPassword) ? doRegister(state) : startLogin(state);
@@ -103,6 +108,9 @@ export const WebAuthnLoginForm = () => {
     return startLogin({ username: state.username, email: '', password: '', registerDevice: true });
   }, [startLogin, state?.username]);
 
+  const loginRememberMe = useCallback(() => {
+    return startLogin({ username: previousUsername, email: '', password: '', registerDevice: false });
+  }, [previousUsername]);
 
   const parsedError = useMemo(() => {
     const error = registrationError || loginError;
@@ -118,22 +126,37 @@ export const WebAuthnLoginForm = () => {
     }
   }, [loginError, registrationError]);
 
+  if (previousUsername) {
+    return <div className='flex flex-col w-full'>
+      <div className="flex row w-full">
+        <Button className="w-full my-6 mx-6" onClick={loginRememberMe}>Login</Button>
+        <Button className="w-full my-6 mx-6" onClick={clearPreviousUsername}>Cancel</Button>
+      </div>
+    </div>
+  }
+
   return <LoginForm className='flex flex-col' disabled={loginLoading || registrationLoading} {...registerForm(onSubmit)}>
     {parsedError && <ErrorBanner data-testid="login-error">{parsedError.message}</ErrorBanner>}
     <Input {...register('username')} required label='Username' type='text' />
     <div className={`flex flex-col w-full transition-all overflow-hidden ${showEmail ? '' : 'h-0'}`}>
-        <Input {...register('email')} label='Email' type='email' />
+      <Input {...register('email')} label='Email' type='email' />
     </div>
     <div className={`flex flex-col w-full transition-all overflow-hidden ${showPassword ? '' : 'h-0'}`}>
-        <Input {...register('password')} label='Password' type={showPassword ? 'password' : 'hidden'} autoComplete={!showPassword ? 'false' : undefined} />
+      <Input {...register('password')} label='Password' type={showPassword ? 'password' : 'hidden'} autoComplete={!showPassword ? 'false' : undefined} />
     </div>
     <Button className="w-full my-6" type="submit">{showEmail || showPassword ? 'REGISTER' : 'LOGIN'}</Button>
-    {showRegisterLink && <div className='my-4'>
-      Having trouble?&nbsp;<Clickable className='mt-2 cursor-pointer text-blue-400' onClick={startDeviceRegistration}>Register this device</Clickable>
-    </div>}
-    {!showRegisterLink && showPassword && !showEmail && <div className='my-4'>
-    Forgot your password?&nbsp;<Link className='mt-2 cursor-pointer text-blue-400' to='/login/forgot-password'>Reset password</Link>
-    </div>}
+    {showRegisterLink && (
+      <div className='my-4'>
+        Having trouble?&nbsp;<Clickable className='mt-2 cursor-pointer text-blue-400' onClick={startDeviceRegistration}>
+          Register this device
+        </Clickable>
+      </div>
+    )}
+    {!showRegisterLink && showPassword && !showEmail && (
+      <div className='my-4'>
+        Forgot your password?&nbsp;<Link className='mt-2 cursor-pointer text-blue-400' to='/login/forgot-password'>Reset password</Link>
+      </div>
+    )}
     <div>
       <a className='text-blue-400' href="/assets/privacy.html" target="_blank">Privacy Policy</a>
     </div>

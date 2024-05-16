@@ -10,7 +10,7 @@ export interface LoginFormState {
 }
 
 export const Login = () => {
-  const { loggedIn, logout } = useAuthorization();
+  const { loggedIn, logout, previousUsername } = useAuthorization();
   const { pathname } = useLocation();
 
   const heading = useMemo(() => {
@@ -21,13 +21,13 @@ export const Login = () => {
         return 'You must update your password to continue';
       case '/login':
       case '/login/':
-        return 'You must log in to continue';
+        return previousUsername ? `Welcome back, ${previousUsername}!` : 'You must log in to continue';
       case '/login/forgot-password':
         return 'Forgot your password?';
       default:
         return '';
     }
-  }, [pathname]);
+  }, [pathname, previousUsername]);
 
 
   return <div className="max-w-lg mx-auto p-4 items-center bg-white top-10 relative dark:bg-inherit flex flex-col">
