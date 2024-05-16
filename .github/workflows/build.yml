@@ -39,7 +39,7 @@ jobs:
       tags: ${{ steps.meta.outputs.tags }}
 
     container:
-      image: dind:latest
+      image: docker:latest
 
     steps:
       - name: Checkout repository
