@@ -39,6 +39,9 @@ jobs:
       tags: ${{ steps.meta.outputs.tags }}
 
     steps:
+
+      - name: Sleep debug
+        run: apt-get install curl
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -143,8 +146,6 @@ jobs:
       - build
       # - test
     steps:
-    - name: Sleep debug
-      run: sleep 45
     - uses: actions/checkout@v3
     - name: debug
       run: echo $FULL_IMAGE_TAG
