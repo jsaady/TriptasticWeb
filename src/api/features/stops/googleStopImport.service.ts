@@ -60,7 +60,9 @@ export class GoogleStopImportService {
     const updatedRows: UpdateStopDTO[] = [];
   
     for await (const row of await sheet.getRows()) {
-      
+      const date = new Date(row.get('Date'));
+      // remove local timezone
+      date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
       const importId = `${row.get('Stop')}-${row.get('Reason')}`;
       const existing = stopMapByImportId.get(importId);
       if (existing) {
@@ -73,11 +75,8 @@ export class GoogleStopImportService {
         const partialUpdate = {
           name: row.get('Stop'),
           notes: row.get('Reason'),
-          desiredArrivalDate: new Date(row.get('Date')),
+          desiredArrivalDate: date,
         };
-
-        // remove local timezone
-        partialUpdate.desiredArrivalDate.setMinutes(partialUpdate.desiredArrivalDate.getMinutes() - partialUpdate.desiredArrivalDate.getTimezoneOffset());
 
         if (partialUpdate.name === rest.name && partialUpdate.notes === rest.notes && partialUpdate.desiredArrivalDate.getTime() === rest.desiredArrivalDate.getTime()) {
           continue;
@@ -184,7 +183,7 @@ export class GoogleStopImportService {
           importId,
           name: row.get('Stop'),
           notes: row.get('Reason'),
-          desiredArrivalDate: row.get('Date'),
+          desiredArrivalDate: date,
           latitude: data[0].latitude,
           longitude: data[0].longitude,
           actualArrivalDate: new Date(),
