@@ -38,10 +38,10 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
 
-    steps:
+    container:
+      image: dind:latest
 
-      - name: Sleep debug
-        run: sudo apt-get update && sudo apt-get install -y curl
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
