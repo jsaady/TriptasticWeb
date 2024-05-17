@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
+import { ConfigService } from '../../utils/config/config.service.js';
 import { User as UserEntity } from '../users/users.entity.js';
 import { UserService } from '../users/users.service.js';
 import { AUTH_TOKEN_EXPIRATION } from './auth.constants.js';
@@ -8,7 +9,6 @@ import { AuthService } from './auth.service.js';
 import { IsAuthenticated } from './isAuthenticated.guard.js';
 import { User } from './user.decorator.js';
 import { WebAuthnService } from './webAuthn.service.js';
-import { ConfigService } from '../../utils/config/config.service.js';
 
 @Controller('/auth')
 export class AuthController {
@@ -28,7 +28,7 @@ export class AuthController {
   async registerDevice(@Body() dto: AuthRegisterDeviceDTO, @Res({ passthrough: true }) response: Response) {
     const result = await this.authService.continueDeviceRegistration(dto);
 
-    return this.processUserLogin(result, response, dto.clientIdentifier, null);
+    return this.processUserLogin(result, response, dto.clientIdentifier, 'webauthn');
   }
 
   @Post('/register')
@@ -37,7 +37,7 @@ export class AuthController {
 
     const result = await this.authService.continueRegistration(dto);
 
-    return this.processUserLogin(result, response, dto.clientIdentifier, null);
+    return this.processUserLogin(result, response, dto.clientIdentifier, 'webauthn');
   }
 
   @Post('/login')
@@ -50,14 +50,14 @@ export class AuthController {
   @Post('/update-password')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
   async updatePassword(
-    @User() { email, clientIdentifier, needPasswordReset }: AuthTokenContents,
+    @User() { email, clientIdentifier, needPasswordReset, mfaMethod }: AuthTokenContents,
     @Res({ passthrough: true }) response: Response,
     @Body() body: UpdatePasswordDTO
   ) {
     try {
       const updatedUser = await this.authService.updatePasswordForUser(email, body.currentPassword, body.password);
 
-      return this.processUserLogin(updatedUser, response, clientIdentifier, null);
+      return this.processUserLogin(updatedUser, response, clientIdentifier, mfaMethod);
     } catch (e) {
       if (needPasswordReset) throw e;
       throw new BadRequestException('Invalid current password');

@@ -3,6 +3,7 @@ import { ComponentType, createContext, useCallback, useContext, useEffect, useSt
 import { useAsyncHttp } from '@ui/utils/useAsync.js';
 import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
+import { Serialized } from '../../../common/serialized.js';
 
 export interface StopsState {
   stops: StopListDTO[];
@@ -26,18 +27,18 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
   const [pendingAttachments, setPendingAttachments] = useState<FileList>();
 
   const [fetchStops] = useAsyncHttp(async ({ get }) => {
-    const response: StopListDTO[] = await get('/api/stops/trip/1');
+    const response: Serialized<StopListDTO>[] = await get('/api/stops/trip/1');
 
     setStops(response.map(stopEnt => ({
       id: stopEnt.id,
       name: stopEnt.name,
       location: new LatLng(stopEnt.latitude, stopEnt.longitude),
       attachments: [],
-      createdAt: stopEnt.createdAt,
-      updatedAt: stopEnt.updatedAt,
+      createdAt: new Date(stopEnt.createdAt),
+      updatedAt: new Date(stopEnt.updatedAt),
       type: stopEnt.type,
-      desiredArrivalDate: stopEnt.desiredArrivalDate,
-      actualArrivalDate: stopEnt.actualArrivalDate,
+      desiredArrivalDate: new Date(stopEnt.desiredArrivalDate),
+      actualArrivalDate: new Date(stopEnt.actualArrivalDate),
       status: stopEnt.status,
       latitude: stopEnt.latitude,
       longitude: stopEnt.longitude,

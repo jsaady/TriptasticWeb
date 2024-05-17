@@ -1,6 +1,8 @@
 import { lazy } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { UserAdminPage } from './features/userAdmin/userAdminPage.js';
+import { MapView } from './features/mapView/MapView.js';
+import { ListView } from './features/listView/ListView.js';
 
 const Root = lazy(() => import('./Root.js').then(module => ({ default: module.Root })));
 const Home = lazy(() => import('./features/home/Home.js').then(module => ({ default: module.Home })));
@@ -50,7 +52,17 @@ export const router = createBrowserRouter([{
       element: <Account />
     }, {
       path: '',
-      element: <Home />
+      element: <Home />,
+      children: [{
+        path: 'map',
+        element: <MapView />
+      }, {
+        path: 'list',
+        element: <ListView />
+      }, {
+        path: '',
+        element: <Navigate to="/map" replace />
+      }]
     }]
   }],
 }]);

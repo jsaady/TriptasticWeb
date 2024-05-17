@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Navigate, Outlet } from 'react-router';
+import { Navigate, Outlet, useLocation } from 'react-router';
 import { LinkNavBarItem, NavBar, OnClickNavBarItem } from './components/NavBar.js';
 import { Sidebar, useSidebar, withSidebar } from './components/SideBar.js';
 import { useNotifications, withNotifications } from './features/notifications/useNotifications.js';
@@ -11,17 +11,23 @@ export const Authenticated = withGeolocation(withSidebar(withNotifications(() =>
   const { logout, loggedIn, loading, me } = useAuthorization();
   const { enabled, supported, subscribe, unsubscribe } = useNotifications();
 
+  const { pathname } = useLocation();
+
   const subscribeButtonText = useMemo(() => {
     return !enabled ? 'Subscribe' : 'Unsubscribe';
   }, [enabled]);
 
   const navItems = useMemo<LinkNavBarItem[]>(() => {
-    return [{
+    return pathname === '/map' ? [{
+      icon: 'list',
+      label: 'View as list',
+      link: '/list'
+    }] : [{
       icon: 'edit-2',
-      label: 'Home',
-      link: '/'
+      label: 'View as map',
+      link: '/map'
     }];
-  }, []);
+  }, [pathname]);
 
   const rightItems = useMemo<(OnClickNavBarItem|LinkNavBarItem)[]>(() => {
     return [{

@@ -26,7 +26,7 @@ export const ModalOutlet = () => {
 
   // TODO: Add click handler to close modal
   return content ? <>
-    <div className='absolute top-0 left-0 w-[100%] h-[100%] opacity-60 bg-black z-[1002]' onClick={handleBackgroundClick} />
+    <div className='fixed top-0 left-0 w-[100%] h-[100%] opacity-60 bg-black z-[1002]' onClick={handleBackgroundClick} />
     {content}
   </> : null;
 };
@@ -77,7 +77,7 @@ export interface StyledModalProps extends ModalProps {
 export const StyledModal = ({ title, children, cancelText, primaryButtonText: primaryText, secondaryButtonText: secondaryText, onPrimaryClick, onSecondaryClick, onClose }: StyledModalProps) => {
   return <Modal onClose={onClose}>
     {/* TODO: Finish styling and add animations */}
-    <div className='bg-white dark:bg-neutral-900 dark:text-white p-5 rounded-lg shadow-lg z-[1002] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[50rem] max-h-[90vh] overflow-y-auto'>
+  <div className='bg-white dark:bg-neutral-900 dark:text-white p-5 rounded-lg shadow-lg z-[1002] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[50rem] max-h-[90vh] overflow-y-auto'>
       {title && (
       <h2
         className='text-2xl font-bold mb-3 pb-3 border-b border-gray-300 dark:border-neutral-700'>
