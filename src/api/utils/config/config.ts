@@ -24,6 +24,6 @@ export const CONFIG_VARS = {
 export const RATE_LIMIT_TTL = 60;
 export const RATE_LIMIT_LIMIT = 10_000;
 export const EMAIL_VERIFICATION_EXPIRATION = 300;
-export const APP_NAME = 'Runner';
+export const APP_NAME = 'Triptastic';
 
 export type FullConfig = EnvironmentConfig & GeneratedConfig;

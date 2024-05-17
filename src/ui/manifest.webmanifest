@@ -4,8 +4,8 @@
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
-  "name": "Runner",
-  "short_name": "Runner",
+  "name": "Triptastic",
+  "short_name": "Triptastic",
   "icons": [
     {
       "src": "./assets/icon-72x72.png",
