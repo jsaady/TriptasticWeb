@@ -22,8 +22,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     permissions: write-all
     runs-on: triptastic-runner-set
-    container:
-      image: ghcr.io/jsaady/runner:latest
     steps:
     - uses: actions/checkout@v3
     - name: Push to repo
