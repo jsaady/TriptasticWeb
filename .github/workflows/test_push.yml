@@ -1,0 +1,41 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Deploy production
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DOMAIN_NAME: ${{ github.repository_owner }}-${{ github.ref_name }}.apps.holyham.cloud
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    permissions: write-all
+    runs-on: triptastic-runner-set
+    container:
+      image: ghcr.io/jsaady/runner:latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Push to repo
+      env:
+        DEPLOY_SSH: ${{ secrets.DEPLOY_SSH }}
+      run: |
+        whoami
+        echo $DEPLOY_SSH > ~/.ssh/id_rsa
+        date > ./test
+        git remote -v
+        git config --global user.email "app@holyham.cloud"
+        git config --global user.name "Triptastic App"
+        git add ./test
+        git commit -m "Test [skip ci]"
+        git push
