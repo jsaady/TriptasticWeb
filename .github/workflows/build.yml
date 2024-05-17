@@ -104,6 +104,36 @@ jobs:
       #   # This step uses the identity token to provision an ephemeral certificate
       #   # against the sigstore community Fulcio instance.
       #   run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+  build_helm:
+    runs-on: triptastic-runner-set
+    needs:
+      - build
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Helm
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
+      - name: Add helm repo
+        run: helm repo add triptastic oci://ghcr.io/jsaady
+
+      - name: Login to Helm repo
+        run: helm registry login ghcr.io/jsaady -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build Helm chart
+        run: helm package chart
+
+      - name: Push Helm chart
+        run: helm push *.tgz oci://ghcr.io/jsaady
+
 
   # test:
   #   runs-on: ubuntu-latest
