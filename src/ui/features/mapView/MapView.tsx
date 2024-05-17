@@ -134,7 +134,7 @@ export const MapView = () => {
       )}
 
       {checkInModalId && (
-        <ConfirmModal title='Delete stop' message='Are you sure you want to delete this stop?' onCancel={() => setCheckInModalId(undefined)} onConfirm={handleCheckInClick} />
+        <ConfirmModal title='Check in' message='Are you sure you want to check in to this stop?' onCancel={() => setCheckInModalId(undefined)} onConfirm={handleCheckInClick} />
       )}
 
       {detailModalId && (
