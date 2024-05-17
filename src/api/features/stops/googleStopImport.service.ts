@@ -208,7 +208,7 @@ export class GoogleStopImportService {
     return;
   }
 
-  @ScheduledQueue('* * * * *')
+  @ScheduledQueue('*/10 * * * *')
   async scheduleImport(_: Job) {
     await this.importStops(true);
     return;
