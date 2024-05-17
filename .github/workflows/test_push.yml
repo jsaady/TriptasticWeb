@@ -32,7 +32,6 @@ jobs:
         mkdir -p ~/.ssh
         echo $DEPLOY_SSH > ~/.ssh/id_rsa
         date > ./test
-        git remote set-url origin ${{ github.repositoryUrl }}
         git config --global user.email "app@holyham.cloud"
         git config --global user.name "Triptastic App"
         git add ./test
