@@ -24,12 +24,18 @@ jobs:
     runs-on: triptastic-runner-set
     steps:
     - uses: actions/checkout@v3
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2.7.0
+      with:
+        # SSH private key
+        key: ${{ secrets.DEPLOY_SSH }}
+        # replace / ignore / fail
+        if_key_exists: replace
+
     - name: Push to repo
       env:
         DEPLOY_SSH: ${{ secrets.DEPLOY_SSH }}
       run: |
-        whoami
-        echo $DEPLOY_SSH > ~/.ssh/id_rsa
         date > ./test
         git remote set-url origin ${{ github.repositoryUrl }}
         git config --global user.email "app@holyham.cloud"
