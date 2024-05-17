@@ -18,7 +18,7 @@ export class UserAdminService {
     const newUser = this.em.create(User, plainToClass(User, user));
     const password = newUser.password;
     newUser.password = '';
-    
+
     await this.em.persistAndFlush(newUser);
 
     await this.auth.setTempPasswordForUser(newUser, password);

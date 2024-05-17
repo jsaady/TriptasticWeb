@@ -24,7 +24,7 @@ export class UserAdminController {
   async createUser(
     @Body() user: CreateUserDTO
   ) {
-    return this.userService.create(user);
+    return this.userAdminService.createUser(user);
   }
 
   @Put(':id')
