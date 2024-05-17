@@ -133,6 +133,14 @@ export class AuthController {
       };
     }
 
+    if (user.needPasswordReset) {
+      return {
+        success: false,
+        code: 'password_reset',
+        data: contents
+      };
+    }
+
     return {
       success: true,
       code: '',
