@@ -5,6 +5,7 @@ import { CreateUserDTO, UserDTO } from '@api/features/users/users.dto.js';
 import { LinkButton, SmallButton } from '@ui/components/Button.js';
 import { Icon } from '@ui/components/Icon.js';
 import { ManageUserDialog } from './managerUserDialog.js';
+import { Serialized } from '../../../common/serialized.js';
 
 export const UserAdminPage = () => {
   const [currentEditUser, setCurrentEditUser] = useState<UserDTO | null>(null);
@@ -18,8 +19,12 @@ export const UserAdminPage = () => {
     return put<UserDTO>('/api/admin/user/' + currentEditUser?.id, user);
   }, []);
 
-  const [fetchUser, { result: users, loading, error }] = useAsyncHttp(({ get }) => {
-    return get<UserDTO[]>('/api/admin/user');
+  const [fetchUser, { result: users, loading, error }] = useAsyncHttp(async ({ get }) => {
+    const data = await get<Serialized<UserDTO>[]>('/api/admin/user');
+    return data.map(r => ({
+      ...r,
+      lastLoginDate: r.lastLoginDate ? new Date(r.lastLoginDate) : null
+    }))
   }, []);
 
   useEffect(() => {
@@ -57,8 +62,9 @@ export const UserAdminPage = () => {
       <table className="w-full bg-white dark:bg-neutral-800">
         <thead className="bg-neutral-200 dark:bg-neutral-800">
           <tr className="text-left">
-            <th className="py-2 px-4" style={{ width: '40%' }}>Username</th>
-            <th className="py-2 px-4" style={{ width: '40%' }}>Role</th>
+            <th className="py-2 px-4" style={{ width: '30%' }}>Username</th>
+            <th className="py-2 px-4" style={{ width: '20%' }}>Last Logged In</th>
+            <th className="py-2 px-4" style={{ width: '30%' }}>Role</th>
             <th className="py-2 px-4 align-middle text-center" style={{ width: '20%' }}>
               <SmallButton className='border' onClick={handleNewClick}>
                 <Icon icon="plus" />
@@ -69,8 +75,9 @@ export const UserAdminPage = () => {
         <tbody>
           {users?.map((user) => (
             <tr key={user.username} className="border-t border-neutral-200 dark:border-neutral-700">
-              <td className="py-2 px-4" style={{ width: '40%' }}>{user.username}</td>
-              <td className="py-2 px-4" style={{ width: '40%' }}>{user.role}</td>
+              <td className="py-2 px-4" style={{ width: '30%' }}>{user.username}</td>
+              <td className="py-2 px-4" style={{ width: '20%' }}>{user.lastLoginDate?.toLocaleDateString()}</td>
+              <td className="py-2 px-4" style={{ width: '30%' }}>{user.role}</td>
               <td className="py-2 px-4 text-center" style={{ width: '20%' }}>
                 <LinkButton onClick={() => handleEditClick(user)}>
                   <Icon icon="edit" />

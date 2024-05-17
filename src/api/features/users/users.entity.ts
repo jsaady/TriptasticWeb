@@ -31,4 +31,7 @@ export class User extends BaseEntity {
 
   @Property({ nullable: true, type: 'string' })
   currentWebAuthnChallenge?: string | null;
+
+  @Property({ nullable: true, type: 'datetime' })
+  lastLoginDate?: Date | null;
 }

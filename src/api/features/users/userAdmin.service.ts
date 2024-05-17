@@ -31,7 +31,7 @@ export class UserAdminService {
 
     const users = await this.em.find(User, { id: { $ne: currentUserId } });
 
-    return users.map(user => plainToClass(UserDTO, user));
+    return users.map(user => plainToClass(UserDTO, {...user, password: ''}));
   }
 
   async update(id: string, user: CreateUserDTO): Promise<UserDTO> {

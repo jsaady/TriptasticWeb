@@ -85,7 +85,8 @@ export class AuthService {
         role: UserRole.USER,
         needPasswordReset: true,
         emailConfirmed: false,
-        password: ''
+        password: '',
+        lastLoginDate: null,
       });
 
       return {
@@ -235,6 +236,10 @@ export class AuthService {
       refreshToken: 'NOT IMPLEMENTED',
       refreshTokenExpiresIn: 0
     }, contents];
+  }
+
+  async setLastLoginForUser(user: User) {
+    await this.userService.updateUser(user, { lastLoginDate: new Date() });
   }
 
   async setTempPasswordForUser(user: User, password: string) {

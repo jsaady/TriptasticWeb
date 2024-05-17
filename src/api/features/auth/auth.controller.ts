@@ -141,6 +141,9 @@ export class AuthController {
       };
     }
 
+
+    await this.authService.setLastLoginForUser(user);
+
     return {
       success: true,
       code: '',

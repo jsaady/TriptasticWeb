@@ -8,6 +8,7 @@ export class UserDTO {
   role!: UserRole;
   needPasswordReset!: boolean;
   emailConfirmed!: boolean;
+  lastLoginDate!: Date | null;
 }
 
 export class CreateUserDTO extends OmitType(UserDTO, ['id']) {
