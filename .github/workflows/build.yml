@@ -122,9 +122,6 @@ jobs:
           curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
           chmod 700 get_helm.sh
           ./get_helm.sh
-      - name: Add helm repo
-        run: helm repo add triptastic oci://ghcr.io/jsaady
-
       - name: Login to Helm repo
         run: helm registry login ghcr.io/jsaady -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
       
@@ -175,11 +172,6 @@ jobs:
       # - test
     steps:
     - uses: actions/checkout@v3
-    - name: Install SSH Key
-      uses: shimataro/ssh-key-action@v2.7.0
-      with:
-        # SSH private key
-        key: ${{ secrets.DEPLOY_SSH }}
     - name: Replace old image with new image
       run: |
         sed -i "s|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:.*|image: $FULL_IMAGE_TAG|Ig" ./chart/values_dev.yaml
