@@ -7,7 +7,7 @@
 # To get a newer version, you will need to update the SHA.
 # You can also reference a tag or branch, but the action may change without warning.
 
-name: Deploy production
+name: Test push
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ env:
   DOMAIN_NAME: ${{ github.repository_owner }}-${{ github.ref_name }}.apps.holyham.cloud
 
 jobs:
-  deploy:
+  test_push:
     if: github.ref == 'refs/heads/main'
     permissions: write-all
     runs-on: triptastic-runner-set
