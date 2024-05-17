@@ -98,7 +98,7 @@ export class AuthService {
 
     if (devices === 0) {
       return {
-        status: AuthStatus.registerUser,
+        status: AuthStatus.registerDevice,
         challengeOptions: await this.webAuthnService.startWebAuthnRegistration(user.id)
       }
     }
