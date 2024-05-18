@@ -15,7 +15,11 @@ export class UserAdminService {
   ) { }
 
   async createUser(user: CreateUserDTO): Promise<UserDTO> {
-    const newUser = this.em.create(User, plainToClass(User, user));
+    const newUser = this.em.create(User, plainToClass(User, {
+      ...user,
+      username: user.username.toLowerCase(),
+      email: user.email.toLowerCase()
+    }));
     const password = newUser.password;
     newUser.password = '';
 
@@ -44,7 +48,11 @@ export class UserAdminService {
       throw new NotFoundException('User not found');
     }
 
-    wrap(existingUser).assign(user);
+    wrap(existingUser).assign({
+      ...user,
+      username: user.username.toLowerCase(),
+      email: user.email.toLowerCase(),
+    });
 
     await this.em.flush();
 

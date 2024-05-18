@@ -51,8 +51,6 @@ export const GlobalSocketProvider = ({ children, url = '/' }: GlobalSocketProvid
     globalSocket?.disconnect();
   }, [globalSocket]);
 
-  if (!globalSocket) return <></>;
-
   return <GlobalSocketContext.Provider value={{
     socket: globalSocket,
     reconnect

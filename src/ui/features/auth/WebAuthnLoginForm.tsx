@@ -137,7 +137,13 @@ export const WebAuthnLoginForm = () => {
 
   return <LoginForm className='flex flex-col' disabled={loginLoading || registrationLoading} {...registerForm(onSubmit)}>
     {parsedError && <ErrorBanner data-testid="login-error">{parsedError.message}</ErrorBanner>}
-    <Input {...register('username')} required label='Username' type='text' />
+    <Input {...register('username')}
+      required
+      label='Username'
+      type='text'
+      autoCapitalize="off"
+      autoComplete="off"
+      autoCorrect="off" />
     <div className={`flex flex-col w-full transition-all overflow-hidden ${showEmail ? '' : 'h-0'}`}>
       <Input {...register('email')} label='Email' type='email' />
     </div>

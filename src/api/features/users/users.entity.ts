@@ -1,13 +1,15 @@
-import { Entity, Enum, Property } from '@mikro-orm/core';
+import { Entity, Enum, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '../../db/base.js';
 import { UserRole } from './userRole.enum.js';
 
 @Entity()
 export class User extends BaseEntity {
   @Property()
+  @Unique()
   email!: string;
 
   @Property()
+  @Unique()
   username!: string;
   
   @Property()

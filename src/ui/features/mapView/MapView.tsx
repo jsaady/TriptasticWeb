@@ -1,11 +1,11 @@
 import { LocalSearchResult, SearchBox } from '@ui/components/SearchBox.js';
-import { MapContainer } from 'react-leaflet';
+import { MapContainer, Polyline } from 'react-leaflet';
 import { MapLibreTileLayer } from './MapLibreTileLayer.js';
 import { MapBridge } from './MapBridge.js';
 import { StopMarker } from '@ui/components/StopMarker.js';
 import { useStops } from '../home/StopsContext.js';
 import { useGeolocation } from '@ui/utils/useGeolocation.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { MouseEvent, MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 import { UpdateStopDTO, CreateStopDTO } from '@api/features/stops/dto/stop.dto.js';
 import { ConfirmModal } from '@ui/components/ConfirmModal.js';
 import { LatLng } from 'leaflet';
@@ -13,9 +13,48 @@ import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 import { EditNoteStop } from '../home/EditNoteStop.js';
 import { ViewStopDetails } from '../home/ViewStopDetails.js';
 import { useFetchApiKey } from '../home/fetchApiKey.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { UserRole } from '@api/features/users/userRole.enum.js';
+import { Button, SmallButton } from '@ui/components/Button.js';
+import { Icon } from '@ui/components/Icon.js';
+import { useLocalStorage } from '@ui/utils/useLocalStorage.js';
+const POSITION_CLASSES = {
+  bottomleft: 'leaflet-bottom leaflet-left',
+  bottomright: 'leaflet-bottom leaflet-right',
+  topleft: 'leaflet-top leaflet-left',
+  topright: 'leaflet-top leaflet-right',
+}
+
+interface ToggleRouteButtonProps {
+  position?: keyof typeof POSITION_CLASSES;
+  toggled: boolean;
+  onClick: () => void;
+}
+
+const ToggleRouteButton = ({ position = 'topright', toggled, onClick }: ToggleRouteButtonProps) => {
+  const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    onClick();
+  }, [onClick]);
+
+  return <div className={POSITION_CLASSES[position]}>
+    <div className="leaflet-control leaflet-bar">
+      <SmallButton className='px-1' onClick={handleClick}>
+        <Icon icon='git-commit' />
+        {toggled && <Icon className='mt-[-1.5rem]' icon='slash' fill='transparent' />}
+      </SmallButton>
+    </div>
+  </div>
+}
 
 export const MapView = () => {
   const { result: stadiaApiKey, loading } = useFetchApiKey();
+  const { me } = useAuthorization();
+
+  const [routeToggled, setRouteToggled] = useLocalStorage('route-toggled', false);
+
   const [newModalOpen, setNewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [checkInModalId, setCheckInModalId] = useState<number>();
@@ -25,6 +64,7 @@ export const MapView = () => {
   const [newLocationLatLng, setNewLocationLatLng] = useState<LatLng | null>(null);
   const [searchResultBounds, setSearchResultBounds] = useState<BoundsTuple | null>(null);
   const [editStop, setEditStop] = useState<UpdateStopDTO | null>(null);
+
 
   const {
     currentLocation,
@@ -39,6 +79,21 @@ export const MapView = () => {
     checkIn,
     removeStop
   } = useStops();
+
+  const stopVectors = useMemo(() => {
+    if (stops) {
+      const sortedStops = [...stops].sort((a, b) => a.desiredArrivalDate.getTime() - b.desiredArrivalDate.getTime());
+      let vectors: [[number, number], [number, number]][] = [];
+      for (let i = 0; i < sortedStops.length - 1; i++) {
+        let start = sortedStops[i];
+        let end = sortedStops[i + 1];
+
+        vectors.push([[start.latitude, start.longitude], [end.latitude, end.longitude]]);
+      }
+
+      return vectors;
+    }
+  }, [stops]);
 
   const handleNewStop = useCallback((stop: LatLng) => {
     if (isSearch) return;
@@ -85,10 +140,14 @@ export const MapView = () => {
   }, []);
 
   useEffect(() => {
-    if (!currentLocation) {
+    if (!currentLocation && me?.role === UserRole.ADMIN) {
       getLocation();
     }
   }, []);
+
+  const handleRouteToggleClicked = useCallback(() => {
+    setRouteToggled(!routeToggled);
+  }, [routeToggled]);
 
   const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
 
@@ -106,6 +165,7 @@ export const MapView = () => {
           attribution='&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
           url={`https://tiles.stadiamaps.com/styles/${stadiaTheme}.json?apiKey=${stadiaApiKey}`}
         />
+        <ToggleRouteButton toggled={routeToggled} onClick={handleRouteToggleClicked} />
         <MapBridge onNewStop={handleNewStop} mapBounds={searchResultBounds} />
         {
           stops.map((stop) => (
@@ -117,6 +177,11 @@ export const MapView = () => {
               onEditClicked={() => setEditStop(stop)}
               onCheckInClick={() => setCheckInModalId(stop.id)}
             />
+          ))
+        }
+        {
+          routeToggled && stopVectors?.map((vector, i) => (
+            <Polyline key={i} positions={vector} fill fillColor='white' />
           ))
         }
       </MapContainer>

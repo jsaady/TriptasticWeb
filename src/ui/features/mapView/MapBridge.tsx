@@ -1,4 +1,4 @@
-import { LatLng } from 'leaflet';
+import { LatLng, Map } from 'leaflet';
 import { useCallback, useEffect, useState } from 'react';
 import { Popup, useMapEvents } from 'react-leaflet';
 import { SmallButton } from '@ui/components/Button.js';
@@ -23,7 +23,13 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
   const map = useMapEvents({
     click: (e) => {
       if (popupOpen) return;
-      if (me?.role === UserRole.ADMIN) onNewStop(e.latlng);
+      if (me?.role === UserRole.ADMIN) {
+        console.log(e, Map);
+
+        if (e.originalEvent?.target?.constructor === map.constructor) {
+          onNewStop(e.latlng);
+        }
+      }
     },
     popupopen: (e) => setPopupOpen(true),
     popupclose: (e) => setPopupOpen(false),

@@ -4,11 +4,15 @@ import { Input } from './Input.js';
 import { useDebounce } from '../utils/debounce.js';
 import { BoundsTuple, SearchResult } from 'leaflet-geosearch/dist/providers/provider.js';
 import { RawResult } from 'leaflet-geosearch/dist/providers/openStreetMapProvider.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { useStops } from '@ui/features/home/StopsContext.js';
+import { UserRole } from '@api/features/users/userRole.enum.js';
 
 export interface LocalSearchResult {
   label: string;
   bounds: BoundsTuple;
 }
+
 
 export interface SearchBoxProps {
   onSelected: (result: LocalSearchResult) => void;
@@ -16,11 +20,14 @@ export interface SearchBoxProps {
 }
 
 export const SearchBox = ({ onSelected, onFocusChange }: SearchBoxProps) => {
+  const { me } = useAuthorization();
+  const { stops } = useStops();
+
   const osm = useOpenStreetMap();
   const mouseOverResults = useRef(false);
 
   const [query, setQuery] = useState('' as string);
-  const [results, setResults] = useState<SearchResult<RawResult>[]>([]);
+  const [results, setResults] = useState<SearchResult<LocalSearchResult>[]>([]);
   const [resultsVisible, setResultsVisible] = useState(false);
 
   const onBlurred = useCallback(() => {
@@ -43,9 +50,21 @@ export const SearchBox = ({ onSelected, onFocusChange }: SearchBoxProps) => {
 
   const doSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
-    osm.search({ query }).then((results) => {
-      setResults(results);
-    });
+
+
+    if (me?.role === UserRole.ADMIN) {
+      osm.search({ query }).then((results) => {
+        setResults(results);
+      });
+    } else {
+      setResults(stops.map(stop => ({
+        label: stop.name,
+        bounds: [stop.latitude, stop.longitude] as const,
+        x: 0,
+        y: 0,
+        raw: {} as RawResult,
+      })));
+    }
   }, [osm]);
 
   const debouncedSearch = useDebounce(doSearch, 500);

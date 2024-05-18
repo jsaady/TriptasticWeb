@@ -80,7 +80,7 @@ export class AuthService {
 
     if (!user) {
       const newUser = await this.userService.create({
-        username,
+        username: username.toLowerCase(),
         email: '',
         role: UserRole.USER,
         needPasswordReset: true,
