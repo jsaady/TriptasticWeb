@@ -7,44 +7,53 @@ import { Serialized } from '../../../common/serialized.js';
 
 export interface StopsState {
   stops: StopListDTO[];
-  filteredStops: StopListDTO[];
+  focusedStopId: number | null;
+  filteredStops: StopListDTO[] | null;
+  setFocusedStopId: (stopId: number | null) => void;
   addStop: (stop: CreateStopDTO, attachments?: FileList) => void;
   checkIn: (id: number) => void;
   removeStop: (id: number) => void;
   updateStop: (id: number, stop: UpdateStopDTO) => void;
   getStop: (id: number) => StopListDTO | undefined;
-  searchByBounds: (bounds: LatLng[]) => void;
-  searchByLatLngAndZoom: (latlng: LatLng, zoom: number) => void;
   persistAttachments: (id: number, files: FileList) => void;
   fetchStops: () => () => void;
+  searchStops: (q: string, limit: number) => () => void;
 }
 
 const StopsContext = createContext<StopsState>(null as any);
+const mapAPIResponse = (response: Serialized<StopListDTO>[]): StopListDTO[] => response.map((stopEnt) => ({
+  id: stopEnt.id,
+  name: stopEnt.name,
+  location: new LatLng(stopEnt.latitude, stopEnt.longitude),
+  attachments: [],
+  createdAt: new Date(stopEnt.createdAt),
+  updatedAt: new Date(stopEnt.updatedAt),
+  type: stopEnt.type,
+  desiredArrivalDate: new Date(stopEnt.desiredArrivalDate),
+  actualArrivalDate: new Date(stopEnt.actualArrivalDate),
+  status: stopEnt.status,
+  latitude: stopEnt.latitude,
+  longitude: stopEnt.longitude,
+}));
 
 export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
   const [stops, setStops] = useState<StopListDTO[]>([]);
-  const [filteredStops, setFilteredStops] = useState<StopListDTO[]>([]);
   const [pendingAttachments, setPendingAttachments] = useState<FileList>();
+
+  const [focusedStopId, setFocusedStopId] = useState<number | null>(null);
 
   const [fetchStops] = useAsyncHttp(async ({ get }) => {
     const response: Serialized<StopListDTO>[] = await get('/api/stops/trip/1');
 
-    setStops(response.map(stopEnt => ({
-      id: stopEnt.id,
-      name: stopEnt.name,
-      location: new LatLng(stopEnt.latitude, stopEnt.longitude),
-      attachments: [],
-      createdAt: new Date(stopEnt.createdAt),
-      updatedAt: new Date(stopEnt.updatedAt),
-      type: stopEnt.type,
-      desiredArrivalDate: new Date(stopEnt.desiredArrivalDate),
-      actualArrivalDate: new Date(stopEnt.actualArrivalDate),
-      status: stopEnt.status,
-      latitude: stopEnt.latitude,
-      longitude: stopEnt.longitude,
-    })));
+    setStops(mapAPIResponse(response));
 
     return response;
+  }, [setStops]);
+
+  const [searchStops, { result: filteredStops }] = useAsyncHttp(async ({ get }, q: string, limit: number) => {
+    const response: Serialized<StopListDTO>[] = await get('/api/stops/trip/1?q=' + q + '&limit=' + limit);
+
+    return mapAPIResponse(response);
   }, [setStops]);
 
   const [persistStop, { result }] = useAsyncHttp(async ({ post }, body: CreateStopDTO) => {
@@ -152,29 +161,18 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     return stops.find((s) => s.id === id);
   }, []);
 
-  const searchByBounds = useCallback((bounds: LatLng[]) => {
-    setFilteredStops(stops.filter((s) => bounds[0].lat < s.latitude && s.latitude < bounds[1].lat && bounds[0].lng < s.longitude && s.longitude < bounds[1].lng));
-  }, []);
-
-  const searchByLatLngAndZoom = useCallback((latlng: LatLng, zoom: number) => {
-    setFilteredStops(stops.filter((s) => {
-      const latDiff = Math.abs(latlng.lat - s.latitude);
-      const lngDiff = Math.abs(latlng.lng - s.longitude);
-      return latDiff < 0.01 * zoom && lngDiff < 0.01 * zoom;
-    }));
-  }, []);
-
   return <StopsContext.Provider value={{
     stops,
+    focusedStopId,
     filteredStops,
+    setFocusedStopId,
     addStop,
     checkIn,
     removeStop,
     updateStop,
     getStop,
-    searchByBounds,
-    searchByLatLngAndZoom,
     fetchStops,
+    searchStops,
     persistAttachments,
   }}>
     <Component {...props} />

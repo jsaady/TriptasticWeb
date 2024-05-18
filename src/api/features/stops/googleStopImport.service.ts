@@ -52,7 +52,7 @@ export class GoogleStopImportService {
     await spreadsheet.loadInfo();
     const sheet = spreadsheet.sheetsByTitle['Route'];
 
-    const existingStops = await this.stopService.getStopsByTrip(1, true);
+    const existingStops = await this.stopService.getStopsByTrip(1, '', 0, true);
 
     const stopMapByImportId = new Map(existingStops.map(stop => [stop.importId, stop]));
 

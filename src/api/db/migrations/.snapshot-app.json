@@ -183,17 +183,36 @@
         },
         "last_login_date": {
           "name": "last_login_date",
-          "type": "varchar(255)",
+          "type": "timestamptz(0)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "mappedType": "string"
+          "length": 6,
+          "mappedType": "datetime"
         }
       },
       "name": "user",
       "schema": "public",
       "indexes": [
+        {
+          "columnNames": [
+            "email"
+          ],
+          "composite": false,
+          "keyName": "user_email_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "username"
+          ],
+          "composite": false,
+          "keyName": "user_username_unique",
+          "primary": false,
+          "unique": true
+        },
         {
           "keyName": "user_pkey",
           "columnNames": [
@@ -500,6 +519,26 @@
       "name": "stop",
       "schema": "public",
       "indexes": [
+        {
+          "keyName": "stop_name_index",
+          "columnNames": [
+            "name"
+          ],
+          "composite": false,
+          "primary": false,
+          "unique": false,
+          "type": "fulltext"
+        },
+        {
+          "keyName": "stop_notes_index",
+          "columnNames": [
+            "notes"
+          ],
+          "composite": false,
+          "primary": false,
+          "unique": false,
+          "type": "fulltext"
+        },
         {
           "keyName": "stop_pkey",
           "columnNames": [

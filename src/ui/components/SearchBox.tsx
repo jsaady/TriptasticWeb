@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useOpenStreetMap } from '../utils/osm.js';
 import { Input } from './Input.js';
 import { useDebounce } from '../utils/debounce.js';
-import { BoundsTuple, SearchResult } from 'leaflet-geosearch/dist/providers/provider.js';
+import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 import { RawResult } from 'leaflet-geosearch/dist/providers/openStreetMapProvider.js';
 import { useAuthorization } from '@ui/utils/useAuth.js';
 import { useStops } from '@ui/features/home/StopsContext.js';
@@ -13,6 +13,10 @@ export interface LocalSearchResult {
   bounds: BoundsTuple;
 }
 
+export interface SearchResult {
+  label: string;
+  bounds: BoundsTuple;
+}
 
 export interface SearchBoxProps {
   onSelected: (result: LocalSearchResult) => void;
@@ -21,13 +25,13 @@ export interface SearchBoxProps {
 
 export const SearchBox = ({ onSelected, onFocusChange }: SearchBoxProps) => {
   const { me } = useAuthorization();
-  const { stops } = useStops();
+  const { filteredStops, searchStops } = useStops();
 
   const osm = useOpenStreetMap();
   const mouseOverResults = useRef(false);
 
   const [query, setQuery] = useState('' as string);
-  const [results, setResults] = useState<SearchResult<LocalSearchResult>[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [resultsVisible, setResultsVisible] = useState(false);
 
   const onBlurred = useCallback(() => {
@@ -51,21 +55,29 @@ export const SearchBox = ({ onSelected, onFocusChange }: SearchBoxProps) => {
   const doSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
 
-
-    if (me?.role === UserRole.ADMIN) {
+    if (me?.role === UserRole.GUEST) {
       osm.search({ query }).then((results) => {
-        setResults(results);
+        setResults(results as any);
       });
     } else {
-      setResults(stops.map(stop => ({
-        label: stop.name,
-        bounds: [stop.latitude, stop.longitude] as const,
-        x: 0,
-        y: 0,
-        raw: {} as RawResult,
-      })));
+      searchStops(query, 10);
     }
   }, [osm]);
+
+  useEffect(() => {
+    if (filteredStops) {
+      setResults(filteredStops.map(stop => ({
+        label: stop.name,
+        bounds: [[
+          stop.latitude - 0.1,
+          stop.longitude - 0.1
+        ], [
+          stop.latitude + 0.1,
+          stop.longitude + 0.1
+        ]] as BoundsTuple,
+      })));
+    }
+  }, [filteredStops]);
 
   const debouncedSearch = useDebounce(doSearch, 500);
 
@@ -74,7 +86,7 @@ export const SearchBox = ({ onSelected, onFocusChange }: SearchBoxProps) => {
     debouncedSearch(e);
   }, [debouncedSearch]);
 
-  const handleClick = useCallback((result: SearchResult<RawResult>) => {
+  const handleClick = useCallback((result: SearchResult) => {
     // calculate zoom level from bounding box tuple
     const boundA = result.bounds?.[0];
     const boundB = result.bounds?.[1];
@@ -102,7 +114,7 @@ export const SearchBox = ({ onSelected, onFocusChange }: SearchBoxProps) => {
     mouseOverResults.current = false;
   }, []);
 
-  return <div className='absolute top-24 z-[1000] md:w-96 w-72'>
+  return <div className='absolute top-24 z-[1000] md:w-80 w-64'>
     <Input onBlur={onBlurred} onFocus={onFocused} onChange={handleQueryChange} value={query} placeholder='Search for a location' type="text" />
     {resultsVisible && (
       <div onMouseOver={handleMouseOver} onMouseLeave={handleMouseLeave} className='bg-white border border-gray-300 rounded-b shadow-md dark:bg-neutral-800 dark:border-neutral-700 dark:text-white'>

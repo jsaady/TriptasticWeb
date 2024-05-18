@@ -1,4 +1,4 @@
-import { Cascade, Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Enum, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { User } from '../../users/users.entity.js';
 import { Attachment } from './attachment.entity.js';
 import { Trip } from './trip.entity.js';
@@ -16,9 +16,11 @@ export class Stop {
   id!: number;
 
   @Property()
+  @Index({ type: 'fulltext' })
   name!: string;
 
   @Property({ nullable: true, type: 'text' })
+  @Index({ type: 'fulltext' })
   notes?: string;
 
   @Property()

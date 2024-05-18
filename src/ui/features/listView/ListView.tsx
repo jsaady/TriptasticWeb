@@ -16,7 +16,6 @@ export const ListView = () => {
   };
 
   const handleOpen = (stop: StopListDTO) => {
-    console.log('opening!!');
     setSelectedStop(stop);
   };
 
@@ -35,7 +34,7 @@ export const ListView = () => {
     </Table>
 
     {selectedStop && (
-      <ViewStopDetails stopId={selectedStop.id} onClose={handleClose} />
+      <ViewStopDetails stopId={selectedStop.id} onClose={handleClose} showViewMapButton />
     )}
   </>
 };

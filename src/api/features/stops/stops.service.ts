@@ -79,11 +79,34 @@ export class StopsService {
     return stop;
   }
 
-  async getStopsByTrip(tripId: number): Promise<StopListDTO[]>
-  async getStopsByTrip(tripId: number, includeNotes: false): Promise<StopListDTO[]>
-  async getStopsByTrip(tripId: number, includeNotes: true): Promise<StopDetailDTO[]>
-  async getStopsByTrip(tripId: number, includeNotes?: boolean): Promise<StopListDTO[]|StopDetailDTO[]> {
-    const stops = await this.em.find(Stop, { trip: this.em.getReference(Trip, tripId) }, { fields: ['status', 'id', 'name', 'latitude', 'longitude', 'createdAt', 'updatedAt', 'type', 'desiredArrivalDate', 'actualArrivalDate', 'importId', ...(includeNotes ? ['notes' as const] : [])] });
+  async getStopsByTrip(tripId: number, q?: string, limit?: number): Promise<StopListDTO[]>
+  async getStopsByTrip(tripId: number, q: string, limit: number, includeNotes: false): Promise<StopListDTO[]>
+  async getStopsByTrip(tripId: number, q: string, limit: number, includeNotes: true): Promise<StopDetailDTO[]>
+  async getStopsByTrip(tripId: number, q: string, limit: number, includeNotes?: boolean): Promise<StopListDTO[]|StopDetailDTO[]> {
+    const stops = await this.em.find(Stop, {
+      trip: this.em.getReference(Trip, tripId),
+      ...q ? {
+        $or: [
+          { name: { $ilike: `%${q}%` } },
+          { notes: { $ilike: `%${q}%` } },
+        ],
+      } : {},
+    }, {
+      limit: limit || undefined,
+      fields: [
+        'status',
+        'id',
+        'name',
+        'latitude',
+        'longitude',
+        'createdAt',
+        'updatedAt',
+        'type',
+        'desiredArrivalDate',
+        'actualArrivalDate',
+        'importId',
+        ...(includeNotes ? ['notes' as const] : [])]
+      });
 
     return stops;
   }

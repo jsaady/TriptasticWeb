@@ -1,10 +1,10 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { HasRole } from '../../utils/checkRole.js';
 import { IsAuthenticated } from '../auth/isAuthenticated.guard.js';
 import { UserRole } from '../users/userRole.enum.js';
-import { StopsService } from './stops.service.js';
 import { CreateStopDTO, StopDetailDTO, UpdateStopDTO } from './dto/stop.dto.js';
+import { StopsService } from './stops.service.js';
 
 @Controller('stops')
 @IsAuthenticated()
@@ -50,12 +50,16 @@ export class StopsController {
   }
 
   @Get('trip/:tripId')
-  getByTripId(@Param('tripId') tripId: string) {
+  getByTripId(@Param('tripId') tripId: string, @Query('q') q: string, @Query('limit') limit: string) {
     if (isNaN(+tripId)) {
       throw new BadRequestException(`Bad trip ID ${tripId}`);
     }
 
-    return this.stopService.getStopsByTrip(+tripId);
+    if (limit && isNaN(+limit)) {
+      throw new BadRequestException(`Bad limit ${limit}`);
+    }
+
+    return this.stopService.getStopsByTrip(+tripId, q, limit ? +limit : 0);
   }
 
   @Post(':id/attach')

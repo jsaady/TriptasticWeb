@@ -1,56 +1,34 @@
-import { LocalSearchResult, SearchBox } from '@ui/components/SearchBox.js';
-import { MapContainer, Polyline } from 'react-leaflet';
-import { MapLibreTileLayer } from './MapLibreTileLayer.js';
-import { MapBridge } from './MapBridge.js';
-import { StopMarker } from '@ui/components/StopMarker.js';
-import { useStops } from '../home/StopsContext.js';
-import { useGeolocation } from '@ui/utils/useGeolocation.js';
-import React, { MouseEvent, MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
-import { UpdateStopDTO, CreateStopDTO } from '@api/features/stops/dto/stop.dto.js';
+import { CreateStopDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
+import { UserRole } from '@api/features/users/userRole.enum.js';
 import { ConfirmModal } from '@ui/components/ConfirmModal.js';
-import { LatLng } from 'leaflet';
+import { LocalSearchResult, SearchBox } from '@ui/components/SearchBox.js';
+import { StopMarker } from '@ui/components/StopMarker.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { useGeolocation } from '@ui/utils/useGeolocation.js';
+import { useLocalStorage } from '@ui/utils/useLocalStorage.js';
+import L, { LatLng } from 'leaflet';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MapContainer, Polyline } from 'react-leaflet';
 import { EditNoteStop } from '../home/EditNoteStop.js';
+import { useStops } from '../home/StopsContext.js';
 import { ViewStopDetails } from '../home/ViewStopDetails.js';
 import { useFetchApiKey } from '../home/fetchApiKey.js';
-import { useAuthorization } from '@ui/utils/useAuth.js';
-import { UserRole } from '@api/features/users/userRole.enum.js';
-import { Button, SmallButton } from '@ui/components/Button.js';
-import { Icon } from '@ui/components/Icon.js';
-import { useLocalStorage } from '@ui/utils/useLocalStorage.js';
-const POSITION_CLASSES = {
-  bottomleft: 'leaflet-bottom leaflet-left',
-  bottomright: 'leaflet-bottom leaflet-right',
-  topleft: 'leaflet-top leaflet-left',
-  topright: 'leaflet-top leaflet-right',
-}
+import { MapBridge } from './MapBridge.js';
+import { MapLibreTileLayer } from './MapLibreTileLayer.js';
+import { ToggleRouteButton } from './ToggleRouteButton.js';
 
-interface ToggleRouteButtonProps {
-  position?: keyof typeof POSITION_CLASSES;
-  toggled: boolean;
-  onClick: () => void;
-}
 
-const ToggleRouteButton = ({ position = 'topright', toggled, onClick }: ToggleRouteButtonProps) => {
-  const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
+delete (L.Icon.Default.prototype as any)._getIconUrl;
 
-    onClick();
-  }, [onClick]);
-
-  return <div className={POSITION_CLASSES[position]}>
-    <div className="leaflet-control leaflet-bar">
-      <SmallButton className='px-1' onClick={handleClick}>
-        <Icon icon='git-commit' />
-        {toggled && <Icon className='mt-[-1.5rem]' icon='slash' fill='transparent' />}
-      </SmallButton>
-    </div>
-  </div>
-}
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png')
+});
 
 export const MapView = () => {
-  const { result: stadiaApiKey, loading } = useFetchApiKey();
+  const { result: stadiaApiKey } = useFetchApiKey();
   const { me } = useAuthorization();
 
   const [routeToggled, setRouteToggled] = useLocalStorage('route-toggled', false);
@@ -156,16 +134,17 @@ export const MapView = () => {
   return (
     <div className='flex flex-col items-center justify-center'>
       <SearchBox onSelected={handleSearchSelected} onFocusChange={setIsSearch} />
+      <ToggleRouteButton toggled={routeToggled} onClick={handleRouteToggleClicked} />
       <MapContainer
         className='h-[calc(100vh-72px)] text-black dark:text-black'
         center={currentLocation ?? lastLocation}
         zoom={11}
+        zoomControl={false}
         style={{ width: '100%' }}>
         <MapLibreTileLayer
           attribution='&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
           url={`https://tiles.stadiamaps.com/styles/${stadiaTheme}.json?apiKey=${stadiaApiKey}`}
         />
-        <ToggleRouteButton toggled={routeToggled} onClick={handleRouteToggleClicked} />
         <MapBridge onNewStop={handleNewStop} mapBounds={searchResultBounds} />
         {
           stops.map((stop) => (

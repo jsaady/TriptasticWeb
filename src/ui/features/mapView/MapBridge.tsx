@@ -8,6 +8,7 @@ import { useGeolocation } from '@ui/utils/useGeolocation.js';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 import { useAuthorization } from '@ui/utils/useAuth.js';
 import { UserRole } from '@api/features/users/userRole.enum.js';
+import { useStops } from '../home/StopsContext.js';
 
 export interface MapBridgeProps {
   onNewStop: (stop: LatLng) => void;
@@ -19,16 +20,13 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
   const [popupOpen, setPopupOpen] = useState(false);
   const { currentLocation } = useGeolocation();
   const { me } = useAuthorization();
+  const { focusedStopId, setFocusedStopId, stops } = useStops();
 
   const map = useMapEvents({
     click: (e) => {
       if (popupOpen) return;
       if (me?.role === UserRole.ADMIN) {
-        console.log(e, Map);
-
-        if (e.originalEvent?.target?.constructor === map.constructor) {
-          onNewStop(e.latlng);
-        }
+        onNewStop(e.latlng);
       }
     },
     popupopen: (e) => setPopupOpen(true),
@@ -36,10 +34,15 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
   });
 
   useEffect(() => {
-    if (currentLocation) {
-      map.setView(currentLocation, map.getZoom());
+    if (focusedStopId) {
+      const focusedStop = stops.find(stop => stop.id === focusedStopId);
+
+      if (focusedStop) {
+        map.flyTo([focusedStop.latitude, focusedStop.longitude], 12);
+        setFocusedStopId(null);
+      }
     }
-  }, [currentLocation]);
+  }, [focusedStopId, stops]);
 
   useEffect(() => {
     if (mapBounds) {
@@ -67,9 +70,6 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
           <h2 className='text-center mb-2'>
             Add stop
           </h2>
-          {/* <SmallButton disabled className='ml-2.5' onClick={handleCamClick}>
-                  <Icon icon='camera' />
-                </SmallButton> */}
           <SmallButton className='ml-5' onClick={handleNoteClick}>
             <Icon icon='list' />
           </SmallButton>
