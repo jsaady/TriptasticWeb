@@ -108,6 +108,7 @@ postgres:
   enabled: true
   defaultPassword: 'password'
   caCertificate: ''
+  pvcLabels: {}
 
 params:
   environmentName: Triptastic
