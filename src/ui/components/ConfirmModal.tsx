@@ -10,16 +10,14 @@ export interface ConfirmModalProps {
 
 export const ConfirmModal = ({ onCancel, onConfirm, title = 'Confirm', message }: ConfirmModalProps) => {
   return (
-    <StyledModal onClose={onCancel}>
+    <StyledModal
+      onClose={onCancel}
+      onPrimaryClick={onConfirm}
+      onSecondaryClick={onCancel}
+      primaryButtonText='Confirm'
+      secondaryButtonText='Cancel'>
       <h2>{title}</h2>
       <p>{message}</p>
-      <Button onClick={onConfirm}>
-        Confirm
-      </Button>
-
-      <Button type='button' onClick={onCancel}>
-        Cancel
-      </Button>
     </StyledModal>
   );
 }
