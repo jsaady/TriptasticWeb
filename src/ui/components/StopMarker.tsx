@@ -10,6 +10,7 @@ import { stopOptions } from '../features/home/stopOptions.js';
 import { SmallButton } from './Button.js';
 import { FeatherMarker } from './FeatherMarker.js';
 import { Icon } from './Icon.js';
+import { DefaultZoom } from '@ui/features/mapView/MapView.js';
 
 export interface StopMarkerProps {
   stop: StopListDTO;
@@ -20,7 +21,7 @@ export interface StopMarkerProps {
 }
 export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClicked, onCheckInClick }: StopMarkerProps) {
   const { me } = useAuthorization();
-  const [currentZoom, setCurrentZoom] = useState(20);
+  const [currentZoom, setCurrentZoom] = useState(DefaultZoom);
 
   useMapEvents({
     zoom: (e) => setCurrentZoom(e.target.getZoom()),
@@ -35,7 +36,7 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
   }, [currentZoom]);
 
   const { icon, label } = useMemo(() => {
-    return stopOptions.find(option => option.value === stop.type) ?? stopOptions[0];
+    return stop.status === StopStatus.ACTIVE ? { label: 'Current Location', icon: 'crosshair' } : stopOptions.find(option => option.value === stop.type) ?? stopOptions[0];
   }, [stop.type]);
 
   const map = useMap();
@@ -53,6 +54,9 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
   const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
 
   const color = useMemo(() => {
+    if (stop.status === StopStatus.UPCOMING) return 'gray';
+    if (stop.status === StopStatus.ACTIVE) return 'lightblue';
+
     switch (stop.type) {
       case StopType.NATIONAL_PARK:
         return darkMode ? 'lightgreen' : 'darkgreen';
