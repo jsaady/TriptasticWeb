@@ -73,20 +73,16 @@ export class GoogleStopImportService {
         } = existing;
 
         const partialUpdate = {
-          name: row.get('Stop'),
-          notes: row.get('Reason'),
           desiredArrivalDate: date,
         };
 
-        const nameChanged = partialUpdate.name !== rest.name;
-        const notesChanged = partialUpdate.notes !== rest.notes;
         const dateChanged = partialUpdate.desiredArrivalDate.getTime() !== rest.desiredArrivalDate.getTime();
 
-        if (!nameChanged && !notesChanged && !dateChanged) {
+        if (!dateChanged) {
           continue;
         }
 
-        this.logger.log(`Updating existing stop ${importId} with changes: ${nameChanged ? 'name' : ''} ${notesChanged ? 'notes' : ''} ${dateChanged ? 'date' : ''}`);
+        this.logger.log(`Updating existing stop ${importId} with changes: ${dateChanged ? 'date' : ''}`);
 
         updatedRows.push({
           id: id,
