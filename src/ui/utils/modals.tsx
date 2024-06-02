@@ -86,10 +86,14 @@ export const StyledModal = ({ title, children, cancelText, primaryButtonText: pr
       )}
       {children}
       <div className='mt-3 pt-3 border-t border-gray-300 dark:border-neutral-700 flex justify-between'>
-        {cancelText && <LinkButton onClick={onClose}>{cancelText}</LinkButton>}
+        <LinkButton
+          className={!cancelText ? 'h-0' : ''}
+          onClick={onClose}>
+          {cancelText}
+        </LinkButton>
         <div>
+          {secondaryText && onSecondaryClick && <SecondaryButton onClick={onSecondaryClick} className='mr-2'>{secondaryText}</SecondaryButton>}
           {primaryText && onPrimaryClick && <PrimaryButton onClick={onPrimaryClick}>{primaryText}</PrimaryButton>}
-          {secondaryText && onSecondaryClick && <SecondaryButton onClick={onSecondaryClick}>{secondaryText}</SecondaryButton>}
         </div>
       </div>
     </div>
