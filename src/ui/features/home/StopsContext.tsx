@@ -9,6 +9,7 @@ export interface StopsState {
   stops: StopListDTO[];
   focusedStopId: number | null;
   filteredStops: StopListDTO[] | null;
+  editStopDetail: StopDetailDTO | null;
   setFocusedStopId: (stopId: number | null) => void;
   addStop: (stop: CreateStopDTO, attachments?: FileList) => void;
   checkIn: (id: number) => void;
@@ -18,6 +19,7 @@ export interface StopsState {
   persistAttachments: (id: number, files: FileList) => void;
   fetchStops: () => () => void;
   searchStops: (q: string, limit: number) => () => void;
+  setEditStop: (stop: StopListDTO | null) => void;
 }
 
 const StopsContext = createContext<StopsState>(null as any);
@@ -39,6 +41,7 @@ const mapAPIResponse = (response: Serialized<StopListDTO>[]): StopListDTO[] => r
 export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
   const [stops, setStops] = useState<StopListDTO[]>([]);
   const [pendingAttachments, setPendingAttachments] = useState<FileList>();
+  const [editStopDetail, setEditStopDetail] = useState<StopDetailDTO | null>(null);
 
   const [focusedStopId, setFocusedStopId] = useState<number | null>(null);
 
@@ -109,6 +112,17 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     }));
   }, []);
 
+  const [setEditStop] = useAsyncHttp(async ({ get }, stop: StopListDTO | null) => {
+    if (!stop) {
+      setEditStopDetail(null);
+      return;
+    }
+
+    const detail = await get<StopDetailDTO>(`/api/stops/${stop.id}`);
+
+    setEditStopDetail(detail);
+  }, []);
+
   useEffect(() => {
     if (result) {
       if (pendingAttachments?.length) {
@@ -165,6 +179,8 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     stops,
     focusedStopId,
     filteredStops,
+    editStopDetail,
+    setEditStop,
     setFocusedStopId,
     addStop,
     checkIn,
@@ -174,6 +190,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     fetchStops,
     searchStops,
     persistAttachments,
+    
   }}>
     <Component {...props} />
   </StopsContext.Provider>;

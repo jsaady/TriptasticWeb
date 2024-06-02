@@ -9,6 +9,7 @@ export interface FormItemProps {
   onChange: (value: FormChangeEvent) => void;
   name: string;
   required?: boolean;
+  defaultValue?: any;
 }
 
 type FormItemPropsState<T> = Partial<Record<string&keyof T, FormItemProps>>;
@@ -43,12 +44,10 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
   const [state, setState] = useState<T>(initialState as unknown as T);
   const [formItemProps, setFormItemProps] = useState<FormItemPropsState<T>>({});
   const stateRef = useRef(state);
-  const setStateRef = useRef(setState);
 
   useEffect(() => {
     stateRef.current = state;
-    setStateRef.current = setState;
-  }, [state, setState]);
+  }, [state]);
 
   const patchValue = useCallback((name: keyof T&string, value: any) => {
     setState((s) => ({
@@ -72,7 +71,6 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
               if (validateOnSubmit) return;
 
               ref.current!.reportValidity();
-              // return;
             } else {
               ref.current!.setCustomValidity('');
             }
@@ -97,6 +95,7 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
         },
         ref,
         name,
+        defaultValue: stateRef.current[name],
       };
 
       if (constraints) applyConstraints(props, constraints);

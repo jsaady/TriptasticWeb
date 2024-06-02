@@ -4,7 +4,6 @@ import { ConfirmModal } from '@ui/components/ConfirmModal.js';
 import { LocalSearchResult, SearchBox } from '@ui/components/SearchBox.js';
 import { StopMarker } from '@ui/components/StopMarker.js';
 import { useAuthorization } from '@ui/utils/useAuth.js';
-import { useGeolocation } from '@ui/utils/useGeolocation.js';
 import { useLocalStorage } from '@ui/utils/useLocalStorage.js';
 import L, { LatLng } from 'leaflet';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
@@ -17,6 +16,8 @@ import { useFetchApiKey } from '../home/fetchApiKey.js';
 import { MapBridge } from './MapBridge.js';
 import { MapLibreTileLayer } from './MapLibreTileLayer.js';
 import { ToggleRouteButton } from './ToggleRouteButton.js';
+import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
+import { denver } from '@ui/utils/useGeolocation.js';
 
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -26,6 +27,8 @@ L.Icon.Default.mergeOptions({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png')
 });
+
+export const DefaultZoom = 10;
 
 export const MapView = () => {
   const { result: stadiaApiKey } = useFetchApiKey();
@@ -41,22 +44,25 @@ export const MapView = () => {
   const [isSearch, setIsSearch] = useState(false);
   const [newLocationLatLng, setNewLocationLatLng] = useState<LatLng | null>(null);
   const [searchResultBounds, setSearchResultBounds] = useState<BoundsTuple | null>(null);
-  const [editStop, setEditStop] = useState<UpdateStopDTO | null>(null);
 
-
-  const {
-    currentLocation,
-    lastLocation,
-    getLocation
-  } = useGeolocation();
 
   const {
     stops,
+    editStopDetail,
     addStop,
     updateStop,
     checkIn,
-    removeStop
+    removeStop,
+    setEditStop,
   } = useStops();
+
+  const currentStop = useMemo(() => stops.find(stop => stop.status === StopStatus.ACTIVE), [stops]);
+
+  const currentLocation = useMemo(() => {
+    return currentStop ?
+      [currentStop.latitude, currentStop.longitude] as [number, number] :
+      denver;
+  }, [currentStop])
 
   const stopVectors = useMemo(() => {
     if (stops) {
@@ -110,17 +116,12 @@ export const MapView = () => {
   const handleCheckInClick = useCallback(() => {
     if (!checkInModalId) return;
 
+    setCheckInModalId(void 0);
     checkIn(checkInModalId);
-  }, []);
+  }, [checkInModalId]);
 
   const handleSearchSelected = useCallback((result: LocalSearchResult) => {
     setSearchResultBounds(result.bounds);
-  }, []);
-
-  useEffect(() => {
-    if (!currentLocation && me?.role === UserRole.ADMIN) {
-      getLocation();
-    }
   }, []);
 
   const handleRouteToggleClicked = useCallback(() => {
@@ -137,8 +138,8 @@ export const MapView = () => {
       <ToggleRouteButton toggled={routeToggled} onClick={handleRouteToggleClicked} />
       <MapContainer
         className='h-[calc(100vh-72px)] text-black dark:text-black'
-        center={currentLocation ?? lastLocation}
-        zoom={11}
+        center={currentLocation}
+        zoom={DefaultZoom}
         zoomControl={false}
         style={{ width: '100%' }}>
         <MapLibreTileLayer
@@ -169,8 +170,8 @@ export const MapView = () => {
         <EditNoteStop latitude={newLocationLatLng.lat} longitude={newLocationLatLng.lng} close={closeModal} saveStop={handleAddStop} />
       )}
 
-      {editStop && (
-        <EditNoteStop latitude={editStop.latitude} longitude={editStop.longitude} existingStop={editStop} close={closeModal} saveStop={handleUpdateStop} />
+      {editStopDetail && (
+        <EditNoteStop latitude={editStopDetail.latitude} longitude={editStopDetail.longitude} existingStop={editStopDetail} close={closeModal} saveStop={handleUpdateStop} />
       )}
 
       {deleteModalOpen && deleteId && (
@@ -178,7 +179,11 @@ export const MapView = () => {
       )}
 
       {checkInModalId && (
-        <ConfirmModal title='Check in' message='Are you sure you want to check in to this stop?' onCancel={() => setCheckInModalId(undefined)} onConfirm={handleCheckInClick} />
+        <ConfirmModal 
+          title='Check in'
+          message='Are you sure you want to check in to this stop?'
+          onCancel={() => setCheckInModalId(undefined)}
+          onConfirm={handleCheckInClick} />
       )}
 
       {detailModalId && (

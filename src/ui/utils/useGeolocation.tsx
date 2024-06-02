@@ -16,8 +16,9 @@ export interface GeolocationState {
 
 const GeoLocationContext = createContext<GeolocationState>(null as any);
 
+export const denver = [39.742043, -104.991531] as [number, number];
 export const withGeolocation = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
-  const [lastLocation, setLastLocation] = useLocalStorage<[number, number]>('last-location', [39.742043, -104.991531]);
+  const [lastLocation, setLastLocation] = useLocalStorage<[number, number]>('last-location', denver);
   const [currentLocation, setCurrentLocation] = useState(lastLocation);
   const [geolocationState, setGeolocationState] = useState<GeoLocationStatus | null>(null);
   const isFetching = useRef(false);

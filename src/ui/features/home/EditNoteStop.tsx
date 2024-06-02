@@ -8,6 +8,7 @@ import { StyledModal } from '@ui/utils/modals.js';
 import { useAsyncHttp } from '@ui/utils/useAsync.js';
 import { useCallback, useEffect } from 'react';
 import { stopOptions } from './stopOptions.js';
+import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 
 export interface EditNoteStopProps {
   close: () => void;
@@ -19,11 +20,7 @@ export interface EditNoteStopProps {
 }
 
 export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName = '', existingStop }: EditNoteStopProps) => {
-  const [fetchNote, { result, loading }] = useAsyncHttp(async ({ get }) => {
-    return await get<StopDetailDTO>(`/api/stops/${existingStop?.id}`);
-  }, [existingStop?.id]);
-
-  const { register, registerForm, state, setValue } = useForm({
+  const { register, registerForm, state } = useForm({
     name: existingStop?.name ?? initialName,
     notes: existingStop?.notes ?? '',
     attachments: null as any as FileList,
@@ -40,8 +37,9 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
       latitude,
       longitude,
       type: data.type,
+      status: existingStop?.status ?? StopStatus.UPCOMING,
       desiredArrivalDate: data.desiredArrivalDate,
-      actualArrivalDate: data.actualArrivalDate ?? existingStop?.desiredArrivalDate ?? new Date(),
+      actualArrivalDate: (data.actualArrivalDate || existingStop?.desiredArrivalDate) ?? new Date(),
     }, data.attachments);
 
     close();
@@ -52,18 +50,6 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
     submit(submitState);
   }, [submit, state]);
 
-  useEffect(() => {
-    if (existingStop) {
-      fetchNote();
-    }
-  }, [existingStop]);
-
-  useEffect(() => {
-    if (result) {
-      setValue('name', result.name);
-      setValue('notes', result.notes ?? '');
-    }
-  }, [result]);
 
   return (
     <StyledModal
@@ -73,7 +59,7 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
       title='New stop'
       cancelText='Cancel'>
       <form {...registerForm(submit)}>
-        <fieldset disabled={loading}>
+        <fieldset>
           <div className='pb-4'>
             <label className='font-bold mb-1 block' htmlFor='type'>Type</label>
             <ButtonSelect {...register('type')} options={stopOptions} className='flex justify-between w-[75%]' />
@@ -96,6 +82,7 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
             <label className='font-bold mb-1 block' htmlFor='notes'>Notes</label>
             <RichTextarea {...register('notes')} />
           </div>
+
           {!existingStop && <div>
             <label className='font-bold mb-1 block' htmlFor='photos'>Photos & Videos</label>
             <Input {...register('attachments')} type='file' multiple accept='image/*,video/*' />
