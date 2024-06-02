@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useCallback, useState } from 'react';
 import { FormItemProps } from '../utils/forms.js';
 import { FeatherIcon, Icon } from './Icon.js';
 import { SmallButton } from './Button.js';
@@ -14,7 +14,19 @@ export interface ButtonSelectProps extends FormItemProps {
   className?: string;
 }
 
-export const ButtonSelect = forwardRef(({ onChange, name, required, value, options, className }: ButtonSelectProps) => {
+export const ButtonSelect = forwardRef(({ onChange, name, defaultValue, options, className }: ButtonSelectProps, ref) => {
+  const [value, setValue] = useState(defaultValue);
+
+  const handleClick = useCallback((option: ButtonSelectOption) => {
+    setValue(option.value);
+    onChange({
+      target: {
+        name,
+        value: option.value
+      }
+    })
+  }, []);
+
   return <div className={className}>
     {options.map(option => (
       <SmallButton
@@ -23,9 +35,7 @@ export const ButtonSelect = forwardRef(({ onChange, name, required, value, optio
         type="button"
         title={option.label}
         className={`${option.value === value ? 'bg-indigo-600' : 'bg-indigo-300 hover:bg-indigo-300'}`}
-        onClick={() => onChange({
-          target: { name, value: option.value }
-        })}
+        onClick={() => handleClick(option)}
       >
         <Icon icon={option.icon} />
         {/* <span>{option.label}</span> */}
