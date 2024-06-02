@@ -12,8 +12,9 @@ export const RichTextarea = forwardRef(({
   onChange,
   className,
   value: externalValue,
+  defaultValue,
 }: RichTextareaProps, ref: any) => {
-  const [value, setValue] = useState(externalValue ?? '');
+  const [value, setValue] = useState(externalValue ?? defaultValue ?? '');
 
   useEffect(() => {
     setValue(externalValue ?? value);
