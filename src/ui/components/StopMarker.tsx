@@ -36,7 +36,7 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
   }, [currentZoom]);
 
   const { icon, label } = useMemo(() => {
-    return stop.status === StopStatus.ACTIVE ? { label: 'Current Location', icon: 'crosshair' } : stopOptions.find(option => option.value === stop.type) ?? stopOptions[0];
+    return stop.status === StopStatus.ACTIVE ? { label: 'Current Location', icon: 'crosshair' as 'crosshair' } : stopOptions.find(option => option.value === stop.type) ?? stopOptions[0];
   }, [stop.type]);
 
   const map = useMap();

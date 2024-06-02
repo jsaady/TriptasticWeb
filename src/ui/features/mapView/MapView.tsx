@@ -67,12 +67,12 @@ export const MapView = () => {
   const stopVectors = useMemo(() => {
     if (stops) {
       const sortedStops = [...stops].sort((a, b) => a.desiredArrivalDate.getTime() - b.desiredArrivalDate.getTime());
-      let vectors: [[number, number], [number, number]][] = [];
+      let vectors: [boolean, [number, number], [number, number]][] = [];
       for (let i = 0; i < sortedStops.length - 1; i++) {
         let start = sortedStops[i];
         let end = sortedStops[i + 1];
 
-        vectors.push([[start.latitude, start.longitude], [end.latitude, end.longitude]]);
+        vectors.push([sortedStops[i].status === StopStatus.COMPLETED, [start.latitude, start.longitude], [end.latitude, end.longitude]]);
       }
 
       return vectors;
@@ -160,8 +160,8 @@ export const MapView = () => {
           ))
         }
         {
-          routeToggled && stopVectors?.map((vector, i) => (
-            <Polyline key={i} positions={vector} fill fillColor='white' />
+          routeToggled && stopVectors?.map(([isComplete, ...vector], i) => (
+            <Polyline key={i} positions={vector} fill color={isComplete ? 'green' : 'gray'} />
           ))
         }
       </MapContainer>

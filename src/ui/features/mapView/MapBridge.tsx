@@ -59,11 +59,6 @@ export const MapBridge = ({ onNewStop, mapBounds }: MapBridgeProps) => {
   }, [newPosition, setNewPosition]);
 
   return <>
-    {currentLocation && <FeatherMarker name="crosshair" position={currentLocation} color='blue' className='animate-pulse-strong'>
-      <Popup>
-        Your location
-      </Popup>
-    </FeatherMarker>}
     {newPosition && (
       <FeatherMarker draggable name="plus-square" fill='white' position={newPosition} color='DarkSlateBlue'>
         <Popup closeButton={false}>
