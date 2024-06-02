@@ -14,7 +14,7 @@ export interface StopsState {
   addStop: (stop: CreateStopDTO, attachments?: FileList) => void;
   checkIn: (id: number) => void;
   removeStop: (id: number) => void;
-  updateStop: (id: number, stop: UpdateStopDTO) => void;
+  updateStop: (id: number, stop: Partial<UpdateStopDTO>) => void;
   getStop: (id: number) => StopListDTO | undefined;
   persistAttachments: (id: number, files: FileList) => void;
   fetchStops: () => () => void;
@@ -63,7 +63,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     return post<StopDetailDTO>('/api/stops', body);
   }, []);
 
-  const [persistStopChanges] = useAsyncHttp(async ({ put }, id: number, body: UpdateStopDTO) => {
+  const [persistStopChanges, { result: persistResult }] = useAsyncHttp(async ({ put }, id: number, body: UpdateStopDTO) => {
     return put<StopDetailDTO>('/api/stops/' + id, body);
   }, []);
 
@@ -123,6 +123,42 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     setEditStopDetail(detail);
   }, []);
 
+  const removeStop = useCallback((id: number) => {
+    setStops(stops => stops.filter((s) => s.id !== id));
+    deleteStop(id);
+  }, []);
+
+  const updateStop = useCallback((id: number, stop: Partial<UpdateStopDTO>) => {
+
+    setStops(stops => stops.map((s) => {
+      if (s.id === id) {
+        const mappedStop = {
+          ...s,
+          ...stop,
+          updatedAt: new Date(),
+        };
+
+
+        persistStopChanges(id, {
+          id,
+          name: mappedStop.name,
+          latitude: mappedStop.latitude,
+          longitude: mappedStop.longitude,
+          notes: mappedStop.notes,
+          type: mappedStop.type,
+          actualArrivalDate: mappedStop.actualArrivalDate,
+          status: mappedStop.status,
+          desiredArrivalDate: mappedStop.desiredArrivalDate
+        });
+
+        return mappedStop;
+      }
+
+      return s;
+    }));
+
+  }, []);
+
   useEffect(() => {
     if (result) {
       if (pendingAttachments?.length) {
@@ -144,32 +180,13 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
         type: result.type
       }]);
     }
-  }, [result, pendingAttachments])
+  }, [result, pendingAttachments]);
 
-  const removeStop = useCallback((id: number) => {
-    setStops(stops => stops.filter((s) => s.id !== id));
-    deleteStop(id);
-  }, []);
-
-  const updateStop = useCallback((id: number, stop: UpdateStopDTO) => {
-    setStops(stops => stops.map((s) => s.id === id ? {
-      ...s,
-      ...stop,
-      updatedAt: new Date(),
-    } : s));
-
-    persistStopChanges(id, {
-      id,
-      name: stop.name,
-      latitude: stop.latitude,
-      longitude: stop.longitude,
-      notes: stop.notes,
-      type: stop.type,
-      actualArrivalDate: stop.actualArrivalDate,
-      status: stop.status,
-      desiredArrivalDate: stop.desiredArrivalDate
-    });
-  }, []);
+  useEffect(() => {
+    if (persistResult) {
+      fetchStops();
+    }
+  }, [persistResult])
 
   const getStop = useCallback((id: number) => {
     return stops.find((s) => s.id === id);

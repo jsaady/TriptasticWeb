@@ -1,13 +1,15 @@
 import { CreateStopDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
+import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 import { UserRole } from '@api/features/users/userRole.enum.js';
 import { ConfirmModal } from '@ui/components/ConfirmModal.js';
 import { LocalSearchResult, SearchBox } from '@ui/components/SearchBox.js';
 import { StopMarker } from '@ui/components/StopMarker.js';
 import { useAuthorization } from '@ui/utils/useAuth.js';
+import { denver } from '@ui/utils/useGeolocation.js';
 import { useLocalStorage } from '@ui/utils/useLocalStorage.js';
 import L, { LatLng } from 'leaflet';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { MapContainer, Polyline } from 'react-leaflet';
 import { EditNoteStop } from '../home/EditNoteStop.js';
 import { useStops } from '../home/StopsContext.js';
@@ -15,9 +17,8 @@ import { ViewStopDetails } from '../home/ViewStopDetails.js';
 import { useFetchApiKey } from '../home/fetchApiKey.js';
 import { MapBridge } from './MapBridge.js';
 import { MapLibreTileLayer } from './MapLibreTileLayer.js';
-import { ToggleRouteButton } from './ToggleRouteButton.js';
-import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
-import { denver } from '@ui/utils/useGeolocation.js';
+import { FloatingMapButton } from './ToggleRouteButton.js';
+import { FeatherIcon } from '@ui/components/Icon.js';
 
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -44,6 +45,7 @@ export const MapView = () => {
   const [isSearch, setIsSearch] = useState(false);
   const [newLocationLatLng, setNewLocationLatLng] = useState<LatLng | null>(null);
   const [searchResultBounds, setSearchResultBounds] = useState<BoundsTuple | null>(null);
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
 
 
   const {
@@ -132,10 +134,41 @@ export const MapView = () => {
 
   const stadiaTheme = useMemo(() => darkMode ? 'alidade_smooth_dark' : 'alidade_smooth', [darkMode]);
 
+  const handleCancelEditLocation = useCallback(() => {
+    setIsEditingLocation(false);
+    setEditStop(null);
+  }, []);
+
+  const handleMapClick = useCallback((latlng: LatLng) => {
+    if (me?.role === UserRole.ADMIN) {
+      if (!isEditingLocation) {
+        handleNewStop(latlng);
+      } else if (editStopDetail) {
+        // update the location of stop
+        updateStop(editStopDetail.id, {
+          latitude: latlng.lat,
+          longitude: latlng.lng,
+        });
+        handleCancelEditLocation();
+      }
+    }
+  }, [me, editStopDetail, isEditingLocation]);
+
+  const floatingButtonIcon: FeatherIcon = useMemo<FeatherIcon>(() => (
+    isEditingLocation ?
+      'x' : 'git-commit'
+  ), [isEditingLocation]);
+
+  const handleFloatingButtonClick = useCallback(() => {
+    return isEditingLocation ?
+      handleCancelEditLocation() :
+      handleRouteToggleClicked();
+  }, [isEditingLocation]);
+
   return (
     <div className='flex flex-col items-center justify-center'>
       <SearchBox onSelected={handleSearchSelected} onFocusChange={setIsSearch} />
-      <ToggleRouteButton toggled={routeToggled} onClick={handleRouteToggleClicked} />
+      <FloatingMapButton icon={floatingButtonIcon} slashThrough={routeToggled && !isEditingLocation} onClick={handleFloatingButtonClick} />
       <MapContainer
         className='h-[calc(100vh-72px)] text-black dark:text-black'
         center={currentLocation}
@@ -146,21 +179,26 @@ export const MapView = () => {
           attribution='&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
           url={`https://tiles.stadiamaps.com/styles/${stadiaTheme}.json?apiKey=${stadiaApiKey}`}
         />
-        <MapBridge onNewStop={handleNewStop} mapBounds={searchResultBounds} />
+        <MapBridge onMapClick={handleMapClick} mapBounds={searchResultBounds} />
         {
           stops.map((stop) => (
             <StopMarker
               stop={stop}
               key={stop.id}
+              hidden={isEditingLocation && stop.id !== editStopDetail?.id}
               onDeleteClicked={() => handleDeleteClick(stop.id)}
               onDetailClicked={() => setDetailModalId(stop.id)}
               onEditClicked={() => setEditStop(stop)}
               onCheckInClick={() => setCheckInModalId(stop.id)}
+              onLocationEditClick={() => {
+                setEditStop(stop);
+                setIsEditingLocation(true);
+              }}
             />
           ))
         }
         {
-          routeToggled && stopVectors?.map(([isComplete, ...vector], i) => (
+          routeToggled && !isEditingLocation && stopVectors?.map(([isComplete, ...vector], i) => (
             <Polyline key={i} positions={vector} fill color={isComplete ? 'green' : 'gray'} />
           ))
         }
@@ -170,7 +208,7 @@ export const MapView = () => {
         <EditNoteStop latitude={newLocationLatLng.lat} longitude={newLocationLatLng.lng} close={closeModal} saveStop={handleAddStop} />
       )}
 
-      {editStopDetail && (
+      {editStopDetail && !isEditingLocation && (
         <EditNoteStop latitude={editStopDetail.latitude} longitude={editStopDetail.longitude} existingStop={editStopDetail} close={closeModal} saveStop={handleUpdateStop} />
       )}
 

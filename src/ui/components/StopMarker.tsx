@@ -14,12 +14,14 @@ import { DefaultZoom } from '@ui/features/mapView/MapView.js';
 
 export interface StopMarkerProps {
   stop: StopListDTO;
+  hidden?: boolean;
   onDeleteClicked: () => void;
   onDetailClicked: () => void;
   onEditClicked: () => void;
   onCheckInClick: () => void;
+  onLocationEditClick: () => void;
 }
-export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClicked, onCheckInClick }: StopMarkerProps) {
+export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClicked, onDetailClicked, onCheckInClick, onLocationEditClick }: StopMarkerProps) {
   const { me } = useAuthorization();
   const [currentZoom, setCurrentZoom] = useState(DefaultZoom);
 
@@ -50,10 +52,12 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
   const handleEditClick = buildCallback(onEditClicked);
   const handleDetailClick = buildCallback(onDetailClicked);
   const handleCheckInClick = buildCallback(onCheckInClick);
+  const handleLocationEditClick = buildCallback(onLocationEditClick);
 
   const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
 
   const color = useMemo(() => {
+    if (hidden) return 'transparent';
     if (stop.status === StopStatus.UPCOMING) return 'gray';
     if (stop.status === StopStatus.ACTIVE) return 'lightblue';
 
@@ -69,7 +73,7 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
       case StopType.PIT_STOP:
         return darkMode ? 'yellow' : '#FBB917';
     }
-  }, [stop.type, darkMode]);
+  }, [stop.type, darkMode, hidden]);
   
   const location = useMemo(() => new LatLng(stop.latitude, stop.longitude), [stop.latitude, stop.longitude])
 
@@ -103,6 +107,10 @@ export function StopMarker ({ stop, onDeleteClicked, onEditClicked, onDetailClic
 
         <SmallButton className='ml-5' onClick={handleDetailClick}>
           <Icon icon='info' />
+        </SmallButton>
+
+        <SmallButton className='ml-5' onClick={handleLocationEditClick}>
+          <Icon icon='crosshair' />
         </SmallButton>
 
         {stop.status !== StopStatus.ACTIVE && <SmallButton className='ml-5' onClick={handleCheckInClick}>
