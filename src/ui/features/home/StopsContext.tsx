@@ -48,7 +48,9 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
   const [fetchStops] = useAsyncHttp(async ({ get }) => {
     const response: Serialized<StopListDTO>[] = await get('/api/stops/trip/1');
 
-    setStops(mapAPIResponse(response));
+    const mappedStops = mapAPIResponse(response);
+
+    setStops(mappedStops);
 
     return response;
   }, [setStops]);
@@ -80,7 +82,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     return del('/api/stops/' + id);
   }, []);
 
-  const [doCheckIn] = useAsyncHttp(async ({ put }, id: number) => {
+  const [doCheckIn, { result: checkInResult }] = useAsyncHttp(async ({ put }, id: number) => {
     return put(`/api/stops/${id}/checkIn`, {});
   }, []);
 
@@ -183,10 +185,10 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
   }, [result, pendingAttachments]);
 
   useEffect(() => {
-    if (persistResult) {
+    if (persistResult || checkInResult) {
       fetchStops();
     }
-  }, [persistResult])
+  }, [persistResult, checkInResult])
 
   const getStop = useCallback((id: number) => {
     return stops.find((s) => s.id === id);

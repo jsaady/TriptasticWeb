@@ -30,6 +30,8 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
   });
 
   const submit = useCallback((data: typeof state) => {
+    const desiredArrivalDate = new Date(data.desiredArrivalDate);
+    const actualArrivalDate = data.actualArrivalDate ? new Date(data.actualArrivalDate) : null;
     saveStop({
       id: existingStop?.id ?? Math.random() * -100000,
       name: data.name,
@@ -38,8 +40,8 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
       longitude,
       type: data.type,
       status: existingStop?.status ?? StopStatus.UPCOMING,
-      desiredArrivalDate: data.desiredArrivalDate,
-      actualArrivalDate: (data.actualArrivalDate || existingStop?.desiredArrivalDate) ?? new Date(),
+      desiredArrivalDate: desiredArrivalDate,
+      actualArrivalDate: actualArrivalDate ?? desiredArrivalDate ?? new Date(),
     }, data.attachments);
 
     close();

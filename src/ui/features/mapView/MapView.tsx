@@ -184,7 +184,7 @@ export const MapView = () => {
           stops.map((stop) => (
             <StopMarker
               stop={stop}
-              key={stop.id}
+              key={`${stop.id}-${stop.updatedAt}`}
               hidden={isEditingLocation && stop.id !== editStopDetail?.id}
               onDeleteClicked={() => handleDeleteClick(stop.id)}
               onDetailClicked={() => setDetailModalId(stop.id)}
@@ -199,7 +199,7 @@ export const MapView = () => {
         }
         {
           routeToggled && !isEditingLocation && stopVectors?.map(([isComplete, ...vector], i) => (
-            <Polyline key={i} positions={vector} fill color={isComplete ? 'green' : 'gray'} />
+            <Polyline key={`${i}-${isComplete}`} positions={vector} fill color={isComplete ? 'green' : 'gray'} />
           ))
         }
       </MapContainer>
