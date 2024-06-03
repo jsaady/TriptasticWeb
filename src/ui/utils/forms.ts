@@ -95,7 +95,7 @@ export const useForm = <T>(initialState?: T, { validateOnSubmit = true }: { vali
         },
         ref,
         name,
-        defaultValue: stateRef.current[name],
+        defaultValue: stateRef.current?.[name],
       };
 
       if (constraints) applyConstraints(props, constraints);
