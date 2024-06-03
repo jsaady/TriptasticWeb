@@ -43,8 +43,11 @@ export class StopsService {
   }
 
   async detachAttachment(stopId: number, attachmentId: number): Promise<StopDetailDTO> {
-    const stop = await this.em.findOne(Stop, { id: stopId }, { populate: true });
+    const stop = await this.em.findOne(Stop, { id: stopId }, { populate: ['attachments'] });
     if (!stop) throw new NotFoundException(`Stop not found`);
+
+    console.log(stop.attachments, attachmentId);
+
     const attachment = stop.attachments.getItems().find(a => a.id === attachmentId);
 
     if (!attachment) throw new NotFoundException(`Attachment not found`);

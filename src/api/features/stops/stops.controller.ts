@@ -80,9 +80,9 @@ export class StopsController {
   @Delete(':id/attach/:attachId')
   @HasRole(UserRole.ADMIN)
   detach(
-    @Param('id') id: number,
-    @Param('attachId') attachId: number
+    @Param('id') id: string,
+    @Param('attachId') attachId: string
   ) {
-    return this.stopService.detachAttachment(id, attachId);
+    return this.stopService.detachAttachment(+id, +attachId);
   }
 }

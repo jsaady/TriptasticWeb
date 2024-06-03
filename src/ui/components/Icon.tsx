@@ -7,13 +7,15 @@ export interface IconProps {
   height?: number;
   width?: number;
   icon: FeatherIcon;
+  onClick?: () => void;
   className?: string;
   strokeWidth?: number;
+  stroke?: string;
   fill?: string;
 }
 
 
-export const Icon = ({ icon, className, height = 24, width = 24, strokeWidth = 2, fill }: IconProps) => {
+export const Icon = ({ icon, className, height = 24, width = 24, strokeWidth = 2, stroke = 'white', fill, onClick }: IconProps) => {
   const featherIcon = feather.icons[icon];
 
   const mappedAttrs = useMemo(() => {
@@ -35,10 +37,12 @@ export const Icon = ({ icon, className, height = 24, width = 24, strokeWidth = 2
 
   return <svg
     {...mappedAttrs}
+    onClick={onClick}
     className={className}
     height={height}
     width={width}
     strokeWidth={strokeWidth}
+    stroke={stroke}
     fill={fill}
     data-icon-name={icon}
     dangerouslySetInnerHTML={{ __html: featherIcon.contents}} />

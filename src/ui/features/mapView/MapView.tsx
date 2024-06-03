@@ -56,6 +56,7 @@ export const MapView = () => {
     checkIn,
     removeStop,
     setEditStop,
+    persistAttachments,
   } = useStops();
 
   const currentStop = useMemo(() => stops.find(stop => stop.status === StopStatus.ACTIVE), [stops]);
@@ -64,7 +65,7 @@ export const MapView = () => {
     return currentStop ?
       [currentStop.latitude, currentStop.longitude] as [number, number] :
       denver;
-  }, [currentStop])
+  }, [currentStop]);
 
   const stopVectors = useMemo(() => {
     if (stops) {
@@ -165,6 +166,24 @@ export const MapView = () => {
       handleRouteToggleClicked();
   }, [isEditingLocation]);
 
+  const handleFileUpload = useCallback((id: number) => {
+      let input = document.createElement('input');
+      input.type = 'file';
+      input.multiple = true;
+      input.accept = 'image/*';
+      input.onchange = _ => {
+        let files = input.files;
+
+        if (files?.length) {
+          persistAttachments(id, files);
+        }
+      };
+      input.hidden = true;
+      document.body.appendChild(input);
+      input.click();
+      document.body.removeChild(input);
+  }, []);
+
   return (
     <div className='flex flex-col items-center justify-center'>
       <SearchBox onSelected={handleSearchSelected} onFocusChange={setIsSearch} />
@@ -190,6 +209,7 @@ export const MapView = () => {
               onDetailClicked={() => setDetailModalId(stop.id)}
               onEditClicked={() => setEditStop(stop)}
               onCheckInClick={() => setCheckInModalId(stop.id)}
+              onFileUpload={() => handleFileUpload(stop.id)}
               onLocationEditClick={() => {
                 setEditStop(stop);
                 setIsEditingLocation(true);

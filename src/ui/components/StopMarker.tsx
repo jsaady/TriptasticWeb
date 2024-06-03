@@ -2,6 +2,7 @@ import { StopListDTO } from '@api/features/stops/dto/stop.dto.js';
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 import { StopType } from '@api/features/stops/entities/stopType.enum.js';
 import { UserRole } from '@api/features/users/userRole.enum.js';
+import { DefaultZoom } from '@ui/features/mapView/MapView.js';
 import { useAuthorization } from '@ui/utils/useAuth.js';
 import { LatLng, LeafletMouseEvent } from 'leaflet';
 import { useCallback, useMemo, useState } from 'react';
@@ -10,7 +11,6 @@ import { stopOptions } from '../features/home/stopOptions.js';
 import { SmallButton } from './Button.js';
 import { FeatherMarker } from './FeatherMarker.js';
 import { Icon } from './Icon.js';
-import { DefaultZoom } from '@ui/features/mapView/MapView.js';
 
 export interface StopMarkerProps {
   stop: StopListDTO;
@@ -19,9 +19,10 @@ export interface StopMarkerProps {
   onDetailClicked: () => void;
   onEditClicked: () => void;
   onCheckInClick: () => void;
+  onFileUpload: () => void;
   onLocationEditClick: () => void;
 }
-export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClicked, onDetailClicked, onCheckInClick, onLocationEditClick }: StopMarkerProps) {
+export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClicked, onDetailClicked, onCheckInClick, onLocationEditClick, onFileUpload }: StopMarkerProps) {
   const { me } = useAuthorization();
   const [currentZoom, setCurrentZoom] = useState(DefaultZoom);
 
@@ -111,6 +112,10 @@ export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClick
 
         <SmallButton className='ml-5' onClick={handleLocationEditClick}>
           <Icon icon='crosshair' />
+        </SmallButton>
+
+        <SmallButton className='ml-5' onClick={onFileUpload}>
+          <Icon icon='upload' />
         </SmallButton>
 
         {stop.status !== StopStatus.ACTIVE && <SmallButton className='ml-5' onClick={handleCheckInClick}>

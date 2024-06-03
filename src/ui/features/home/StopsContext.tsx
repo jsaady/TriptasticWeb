@@ -4,19 +4,23 @@ import { useAsyncHttp } from '@ui/utils/useAsync.js';
 import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 import { Serialized } from '../../../common/serialized.js';
+import { AttachmentDTO } from '@api/features/stops/dto/attachment.dto.js';
 
 export interface StopsState {
   stops: StopListDTO[];
   focusedStopId: number | null;
   filteredStops: StopListDTO[] | null;
   editStopDetail: StopDetailDTO | null;
+  attachments: AttachmentDTO[] | null;
   setFocusedStopId: (stopId: number | null) => void;
   addStop: (stop: CreateStopDTO, attachments?: FileList) => void;
   checkIn: (id: number) => void;
   removeStop: (id: number) => void;
   updateStop: (id: number, stop: Partial<UpdateStopDTO>) => void;
   getStop: (id: number) => StopListDTO | undefined;
+  fetchAttachments: (stopId: number) => void;
   persistAttachments: (id: number, files: FileList) => void;
+  removeAttachment: (stopId: number, attachmentId: number) => void;
   fetchStops: () => () => void;
   searchStops: (q: string, limit: number) => () => void;
   setEditStop: (stop: StopListDTO | null) => void;
@@ -76,6 +80,13 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     }
 
     return post(`/api/stops/${id}/attach`, formData);
+  }, []);
+  const [fetchAttachments, { result: attachments }] = useAsyncHttp(async ({ get }, stopId: number) => {
+    return await get<Serialized<AttachmentDTO[]>>(`/api/stops/${stopId}/attachments`);
+  }, []);
+  const [removeAttachment] = useAsyncHttp(async ({ del }, stopId: number, attachmentId: number) => {
+    await del(`/api/stops/${stopId}/attach/${attachmentId}`);
+    fetchAttachments(stopId);
   }, []);
 
   const [deleteStop] = useAsyncHttp(async ({ del }, id: number) => {
@@ -199,6 +210,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     focusedStopId,
     filteredStops,
     editStopDetail,
+    attachments,
     setEditStop,
     setFocusedStopId,
     addStop,
@@ -209,7 +221,8 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     fetchStops,
     searchStops,
     persistAttachments,
-    
+    fetchAttachments,
+    removeAttachment,
   }}>
     <Component {...props} />
   </StopsContext.Provider>;

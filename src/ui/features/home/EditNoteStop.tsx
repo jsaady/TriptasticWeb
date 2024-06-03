@@ -87,7 +87,7 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
 
           {!existingStop && <div>
             <label className='font-bold mb-1 block' htmlFor='photos'>Photos & Videos</label>
-            <Input {...register('attachments')} type='file' multiple accept='image/*,video/*' />
+            <Input {...register('attachments')} type='file' multiple accept='image/*' />
           </div>}
         </fieldset>
       </form>

@@ -7,6 +7,10 @@ import { Serialized } from '../../../common/serialized.js';
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 import { useStops } from './StopsContext.js';
 import { useNavigate } from 'react-router';
+import { LinkButton } from '@ui/components/Button.js';
+import { Icon } from '@ui/components/Icon.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { UserRole } from '@api/features/users/userRole.enum.js';
 
 export interface ViewStopAttachmentsProps {
   stopId: number;
@@ -15,19 +19,18 @@ export interface ViewStopAttachmentsProps {
 }
 
 export const ViewStopDetails = ({ stopId, showViewMapButton, onClose }: ViewStopAttachmentsProps) => {
-  const { setFocusedStopId } = useStops();
+  const { setFocusedStopId, fetchAttachments, removeAttachment, attachments } = useStops();
+  const { me } = useAuthorization();
   const navigate = useNavigate();
 
-  const [fetchAttachments, { result }] = useAsyncHttp(async ({ get }) => {
-    return await get<Serialized<AttachmentDTO[]>>(`/api/stops/${stopId}/attachments`);
-  }, [stopId]);
+
 
   const [fetchStop, { result: stop }] = useAsyncHttp(async ({ get }) => {
     return await get<Serialized<StopDetailDTO>>(`/api/stops/${stopId}`);
   }, [stopId]);
 
   useEffect(() => {
-    fetchAttachments();
+    fetchAttachments(stopId);
     fetchStop();
   }, [stopId]);
 
@@ -35,7 +38,6 @@ export const ViewStopDetails = ({ stopId, showViewMapButton, onClose }: ViewStop
     setFocusedStopId(stop?.id ?? null);
     navigate('/map');
   };
-
   const formattedDesiredArrivalDate = useMemo(() => stop?.desiredArrivalDate ? new Date(stop.desiredArrivalDate).toLocaleDateString() : '', [stop?.desiredArrivalDate]);
 
   return (
@@ -51,8 +53,9 @@ export const ViewStopDetails = ({ stopId, showViewMapButton, onClose }: ViewStop
       </div>}
       <hr className='mb-6 mt-6' />
       <ul>
-        {result?.map((attachment) => (
-          <li key={attachment.id}>
+        {attachments?.map((attachment) => (
+          <li key={attachment.id} className='mb-8'>
+            {me?.role === UserRole.ADMIN && <Icon fill='red' height={36} width={36} className='cursor-pointer right-0 ml-auto mr-3 mt-1 mb-[-3em] z-9999 sticky' icon='trash' onClick={() => removeAttachment(stopId, attachment.id)} />}
             {attachment.mimeType.startsWith('image') && <img src={`/api/attachments/${attachment.id}`} alt={attachment.fileName} />}
             {attachment.mimeType.startsWith('video') && <video src={`/api/attachments/${attachment.id}`} />}
             {/* <a href={`/api/attachments/${attachment.id}`}>{attachment.fileName}</a> */}
