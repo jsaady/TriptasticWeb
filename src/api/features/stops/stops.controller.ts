@@ -65,11 +65,11 @@ export class StopsController {
   @Post(':id/attach')
   @HasRole(UserRole.ADMIN)
   @UseInterceptors(AnyFilesInterceptor())
-  attach(
+  async attach(
     @Param('id') id: number,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.stopService.attachFiles(id, files);
+    await this.stopService.attachFiles(id, files);
   }
 
   @Get(':id/attachments')
