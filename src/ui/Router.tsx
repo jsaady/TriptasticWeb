@@ -3,6 +3,7 @@ import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { UserAdminPage } from './features/userAdmin/userAdminPage.js';
 import { MapView } from './features/mapView/MapView.js';
 import { ListView } from './features/listView/ListView.js';
+import { setCurrentInviteCode } from './utils/inviteCodeStorage.js';
 
 const Root = lazy(() => import('./Root.js').then(module => ({ default: module.Root })));
 const Home = lazy(() => import('./features/home/Home.js').then(module => ({ default: module.Home })));
@@ -20,6 +21,13 @@ export const router = createBrowserRouter([{
   path: '/',
   element: <Root />,
   children: [{
+    path: 'invite/:code',
+    loader: ({ params }) => {
+      setCurrentInviteCode(params.code!);
+      return {}
+    },
+    element: <Navigate to="/" />,
+  }, {
     path: 'login',
     element: <Login />,
     children: [{

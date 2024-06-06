@@ -1,5 +1,7 @@
-import { ComponentType, createContext, useCallback, useContext, useEffect, useMemo } from 'react';
+import { UserRole } from '@api/features/users/userRole.enum.js';
 import { useAsync, useAsyncHttp } from '@ui/utils/useAsync.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { ComponentType, createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 
 interface NotificationState {
   supported: boolean;
@@ -15,6 +17,8 @@ interface NotificationContextState extends NotificationState {
 const NotificationContext = createContext<NotificationContextState>(null as any)
 
 export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp: ComponentType) => (props: T) => {
+  const { me } = useAuthorization();
+
   const supported = useMemo(() => 'PushManager' in window && 'serviceWorker' in navigator, []);
 
   const [fetchCurrentPreferences, { result: currentPreferences }] = useAsyncHttp(({ get }) => get('/api/notifications/preferences'), []);
@@ -94,8 +98,8 @@ export const withNotifications = <T extends React.JSX.IntrinsicAttributes>(Comp:
     }
   }, [enabled]);
 
-  useEffect(() => {fetchCurrentPreferences()}, []);
-  useEffect(() => {fetchCurrentDevices()}, []);
+  useEffect(() => {me && me?.role !== UserRole.GUEST && fetchCurrentPreferences()}, [me]);
+  useEffect(() => {me && me?.role !== UserRole.GUEST && fetchCurrentDevices()}, [me]);
   useEffect(() => {checkBrowserStatus()}, [currentDevices]);
 
   const unsubscribe = useCallback(() => {

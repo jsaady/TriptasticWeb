@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useLoggedIn } from './useLoggedIn.js';
 import { useGlobalSocket } from './useSocket.js';
+import { getCurrentInviteCode, setCurrentInviteCode } from './inviteCodeStorage.js';
 
 export class FetchError extends Error {
   constructor (public response: Response, public responseText: string) {
@@ -14,6 +15,12 @@ const getHeaders = (socketId: string, body: any) => {
     'Content-Type': 'application/json',
     'X-Socket-Id': socketId
   });
+
+  const inviteCode = getCurrentInviteCode();
+
+  if (inviteCode) {
+    h.set('X-Invite-Code', inviteCode);
+  }
 
   if (body instanceof FormData) {
     h.delete('Content-Type');
@@ -47,6 +54,7 @@ export const useHttp = (): HTTPClient => {
     if (response.status >= 400) {
       if (response.status === 401) {
         setLoggedIn(false);
+        setCurrentInviteCode('');
       }
 
       console.error(response);

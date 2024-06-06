@@ -1,17 +1,19 @@
+import { UserRole } from '@api/features/users/userRole.enum.js';
 import { useMemo } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { LinkNavBarItem, NavBar, OnClickNavBarItem } from './components/NavBar.js';
-import { Sidebar, useSidebar, withSidebar } from './components/SideBar.js';
+import { Sidebar, withSidebar } from './components/SideBar.js';
 import { useNotifications, withNotifications } from './features/notifications/useNotifications.js';
 import { useAuthorization } from './utils/useAuth.js';
 import { withGeolocation } from './utils/useGeolocation.js';
-import { UserRole } from '@api/features/users/userRole.enum.js';
-import { icon } from 'leaflet';
+import { useCopyInviteLink } from './utils/useInviteLink.js';
 export const Authenticated = withGeolocation(withSidebar(withNotifications(() => {
   const { logout, loggedIn, loading, me } = useAuthorization();
   const { enabled, supported, subscribe, unsubscribe } = useNotifications();
 
   const { pathname } = useLocation();
+
+  const { copyInviteLink, inviteLink } = useCopyInviteLink();
 
   const subscribeButtonText = useMemo(() => {
     return !enabled ? 'Subscribe' : 'Unsubscribe';
@@ -29,25 +31,44 @@ export const Authenticated = withGeolocation(withSidebar(withNotifications(() =>
     }];
   }, [pathname]);
 
-  const rightItems = useMemo<(OnClickNavBarItem|LinkNavBarItem)[]>(() => {
-    return [{
+  const adminItems = useMemo<(LinkNavBarItem|OnClickNavBarItem)[]>(() => {
+    return me?.role === UserRole.ADMIN ? [{
+      icon: 'users',
+      label: 'User Admin',
+      link: '/admin/users'
+    } as const] : [];
+  }, [me]);
+
+  const userItems = useMemo<(LinkNavBarItem|OnClickNavBarItem)[]>(() => {
+    return me?.role === UserRole.GUEST ? [] : [{
       icon: 'lock',
       label: 'Account',
       link: '/account'
-    }, {
+    } as const, {
       icon: 'bell',
       label: subscribeButtonText,
       onClick: enabled ? unsubscribe : subscribe,
       disabled: !supported
-    }, ...(me?.role === UserRole.ADMIN ? [{
-      icon: 'users',
-      label: 'User Admin',
-      link: '/admin/users'
-    } as const] : []), {
-      icon: 'log-out',
-      label: 'Logout',
-      onClick: logout
-    }];
+    } as const, {
+      icon: 'link',
+      label: 'Copy Invite Link',
+      onClick: copyInviteLink,
+      disabled: !inviteLink
+    } as const];
+  }, [me, subscribeButtonText, enabled, supported, inviteLink, subscribe, unsubscribe, copyInviteLink]);
+
+  const logoutItem = useMemo<OnClickNavBarItem[]>(() => [{
+    icon: 'log-out',
+    label: 'Logout',
+    onClick: logout
+  }], [logout]);
+
+  const rightItems = useMemo<(OnClickNavBarItem|LinkNavBarItem)[]>(() => {
+    return [
+      ...userItems,
+      ...adminItems,
+      ...logoutItem
+    ]
   }, [logout, supported, subscribeButtonText, enabled, subscribe, unsubscribe]);
 
   

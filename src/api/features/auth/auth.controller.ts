@@ -9,6 +9,7 @@ import { AuthService } from './auth.service.js';
 import { IsAuthenticated } from './isAuthenticated.guard.js';
 import { User } from './user.decorator.js';
 import { WebAuthnService } from './webAuthn.service.js';
+import { UserRole } from '../users/userRole.enum.js';
 
 @Controller('/auth')
 export class AuthController {
@@ -90,6 +91,13 @@ export class AuthController {
   @Get('/check')
   @IsAuthenticated({ allowExpiredPassword: true, allowNoMFA: true, allowUnverifiedEmail: true })
   async checkAuth(@User() token: AuthTokenContents, @Res({ passthrough: true }) response: Response) {
+    if (token.role === UserRole.GUEST) {
+      return {
+        success: true,
+        code: '',
+        data: token
+      };
+    }
     const user = await this.userService.getUserById(token?.sub);
 
     return await this.processUserLogin(user, response, token.clientIdentifier, token.mfaMethod);

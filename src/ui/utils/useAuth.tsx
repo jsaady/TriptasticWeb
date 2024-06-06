@@ -7,6 +7,7 @@ import { useLoggedIn, withLoggedIn } from './useLoggedIn.js';
 import { useGlobalSocket } from './useSocket.js';
 import { AuthTokenContents } from '@api/features/auth/auth.dto.js';
 import { useLocalStorage } from './useLocalStorage.js';
+import { setCurrentInviteCode } from './inviteCodeStorage.js';
 
 export interface AuthState {
   loggedIn: boolean;
@@ -83,6 +84,8 @@ const withAuthorizationContext = <P extends React.JSX.IntrinsicAttributes>(Compo
     setLoggedIn(false);
 
     navigate('/login');
+
+    setCurrentInviteCode('');
   }, [setLoggedIn, globalSocketReconnect]);
 
   const clearPreviousUsername = useCallback(() => {
