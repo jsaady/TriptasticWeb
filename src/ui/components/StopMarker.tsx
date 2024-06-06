@@ -54,6 +54,7 @@ export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClick
   const handleDetailClick = buildCallback(onDetailClicked);
   const handleCheckInClick = buildCallback(onCheckInClick);
   const handleLocationEditClick = buildCallback(onLocationEditClick);
+  const handleFileUpload = buildCallback(onFileUpload);
 
   const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
 
@@ -114,7 +115,7 @@ export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClick
           <Icon icon='crosshair' />
         </SmallButton>
 
-        <SmallButton className='ml-5' onClick={onFileUpload}>
+        <SmallButton className='ml-5' onClick={handleFileUpload}>
           <Icon icon='upload' />
         </SmallButton>
 

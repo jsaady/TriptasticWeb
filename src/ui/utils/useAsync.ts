@@ -1,18 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HTTPClient, useHttp } from './http.js';
 
-export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, deps: any[]) => {
+export const useAsync = <T, A extends any[]> (asyncCall: (...args: A) => Promise<T>, deps: any[]) => {
   const [state, setState] = useState({
     result: null as null | T,
+    loading: false,
     error: null as any
   });
 
   const loadingRef = useRef(false);
-  const stateRef = useRef(state);
 
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
+  const cb = useCallback(asyncCall, deps);
 
   const trigger = useCallback((...args: A) => {
     (async () => {
@@ -29,8 +27,7 @@ export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, de
   
       try {
         const result = await cb(...args);
-  
-        setState(s => ({
+        setState(_ => ({
           loading: false,
           result,
           error: null
@@ -43,11 +40,15 @@ export const useAsync = <T, A extends any[]> (cb: (...args: A) => Promise<T>, de
         }));
       } finally {
         loadingRef.current = false;
+        setState(s => ({
+          ...s,
+          loading: false
+        }));
       }
     })();
   }, [cb, ...deps]);
 
-  return [trigger, {...state, loading: loadingRef.current}] as const;
+  return [trigger, state] as const;
 };
 
 type Pop<T, O extends any[] = []> = T extends [infer Head, ...infer Tail] ? Tail extends [any] ? [...O, Head] : Pop<Tail, [...O, Head]> : [];

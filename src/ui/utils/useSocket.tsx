@@ -59,12 +59,6 @@ export const GlobalSocketProvider = ({ children, url = '/' }: GlobalSocketProvid
   </GlobalSocketContext.Provider>
 };
 
-export const withGlobalSocketProvider = <P extends React.JSX.IntrinsicAttributes>(Component: React.FC<P>) => (props: P) => {
-  return <GlobalSocketProvider>
-    <Component {...props} />
-  </GlobalSocketProvider>;
-};
-
 export const useSocket = (channel: string): [SocketState, (message: string, channel?: string) => void] => {
   const { socket } = useGlobalSocket();
   const socketRef = useRef(socket);
