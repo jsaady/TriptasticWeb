@@ -14,6 +14,7 @@ export class StopDetailDTO extends PickType(Stop, [
   'longitude',
   'type',
   'importId',
+  'sortOrder',
   'status'
 ]){ }
 

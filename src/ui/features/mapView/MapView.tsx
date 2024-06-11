@@ -69,7 +69,14 @@ export const MapView = () => {
 
   const stopVectors = useMemo(() => {
     if (stops) {
-      const sortedStops = [...stops].sort((a, b) => a.desiredArrivalDate.getTime() - b.desiredArrivalDate.getTime());
+      const sortedStops = [...stops].sort((a, b) => {
+        // sort by desired arrival date or sort order if matching desired arrival date
+        if (a.desiredArrivalDate.getTime() === b.desiredArrivalDate.getTime()) {
+          return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+        } else {
+          return a.desiredArrivalDate.getTime() - b.desiredArrivalDate.getTime();
+        }
+      });
       let vectors: [boolean, [number, number], [number, number]][] = [];
       for (let i = 0; i < sortedStops.length - 1; i++) {
         let start = sortedStops[i];

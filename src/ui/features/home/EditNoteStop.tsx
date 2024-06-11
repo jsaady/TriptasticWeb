@@ -27,6 +27,7 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
     type: existingStop?.type ?? StopType.NATIONAL_PARK,
     desiredArrivalDate: existingStop?.desiredArrivalDate ?? new Date(),
     actualArrivalDate: existingStop?.actualArrivalDate ?? null,
+    sortOrder: existingStop?.sortOrder ?? 0,
   });
 
   const submit = useCallback((data: typeof state) => {
@@ -42,6 +43,7 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
       status: existingStop?.status ?? StopStatus.UPCOMING,
       desiredArrivalDate: desiredArrivalDate,
       actualArrivalDate: actualArrivalDate ?? desiredArrivalDate ?? new Date(),
+      sortOrder: data.sortOrder,
     }, data.attachments);
 
     close();
@@ -73,6 +75,10 @@ export const EditNoteStop = ({ close, saveStop, latitude, longitude, initialName
           <div className='pb-4'>
             <label className='font-bold mb-1 block' htmlFor='name'>Arrival Date</label>
             <Input {...register('desiredArrivalDate')} type='date' />
+          </div>
+          <div className='pb-4'>
+            <label className='font-bold mb-1 block' htmlFor='name'>Sort Order (for multiple stops per day)</label>
+            <Input {...register('sortOrder')} type='number' />
           </div>
 
           {existingStop && <div className='pb-4'>

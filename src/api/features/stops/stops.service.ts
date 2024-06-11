@@ -27,6 +27,9 @@ export class StopsService {
     const stop = wrap(new Stop()).assign(stopDto);
     stop.creator = this.em.getReference(User, this.auth.getCurrentUserId());
     stop.trip = this.em.getReference(Trip, 1);
+    if (stop.desiredArrivalDate < new Date()) {
+      stop.status = StopStatus.COMPLETED;
+    }
     await this.em.persist(stop).flush();
 
     return stop;
@@ -94,6 +97,7 @@ export class StopsService {
       } : {},
     }, {
       limit: limit || undefined,
+      orderBy: [{ desiredArrivalDate: 'ASC' }, { sortOrder: 'ASC' }],
       fields: [
         'status',
         'id',
@@ -106,6 +110,7 @@ export class StopsService {
         'desiredArrivalDate',
         'actualArrivalDate',
         'importId',
+        'sortOrder',
         ...(includeNotes ? ['notes' as const] : [])]
       });
 

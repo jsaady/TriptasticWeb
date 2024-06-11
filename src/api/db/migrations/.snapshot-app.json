@@ -514,6 +514,17 @@
           "primary": false,
           "nullable": true,
           "mappedType": "string"
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "numeric(10,0)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "precision": 10,
+          "scale": 0,
+          "mappedType": "decimal"
         }
       },
       "name": "stop",

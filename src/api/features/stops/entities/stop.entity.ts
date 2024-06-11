@@ -58,4 +58,7 @@ export class Stop {
 
   @Property({ nullable: true })
   importId?: string;
+
+  @Property({ nullable: true, type: 'numeric' })
+  sortOrder?: number;
 }

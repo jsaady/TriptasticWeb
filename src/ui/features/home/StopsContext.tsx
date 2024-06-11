@@ -41,6 +41,7 @@ const mapAPIResponse = (response: Serialized<StopListDTO>[]): StopListDTO[] => r
   status: stopEnt.status,
   latitude: stopEnt.latitude,
   longitude: stopEnt.longitude,
+  sortOrder: stopEnt.sortOrder,
 }));
 
 export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
@@ -112,6 +113,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       type: stop.type,
       actualArrivalDate: stop.actualArrivalDate,
       desiredArrivalDate: stop.desiredArrivalDate,
+      sortOrder: stop.sortOrder,
       status: StopStatus.UPCOMING,
     });
   }, []);
@@ -164,7 +166,8 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
           type: mappedStop.type,
           actualArrivalDate: mappedStop.actualArrivalDate,
           status: mappedStop.status,
-          desiredArrivalDate: mappedStop.desiredArrivalDate
+          desiredArrivalDate: mappedStop.desiredArrivalDate,
+          sortOrder: mappedStop.sortOrder,
         });
 
         return mappedStop;
@@ -193,6 +196,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
         attachments: [] as File[],
         notes: result.notes,
         status: StopStatus.UPCOMING,
+        sortOrder: result.sortOrder,
         type: result.type
       }]);
     }
