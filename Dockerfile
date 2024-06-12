@@ -6,7 +6,7 @@ COPY . .
 RUN npm run build
 
 FROM node:20-alpine
-RUN apk add vips vips-dev vips-heif
+RUN apk add libheif vips vips-dev vips-heif
 
 WORKDIR /app
 COPY --from=builder /app/dist /app/dist
