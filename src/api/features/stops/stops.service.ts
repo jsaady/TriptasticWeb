@@ -11,6 +11,7 @@ import { Attachment } from './entities/attachment.entity.js';
 import { Stop } from './entities/stop.entity.js';
 import { StopStatus } from './entities/stopStatus.enum.js';
 import { Trip } from './entities/trip.entity.js';
+import convert from 'heic-convert';
 
 @Injectable()
 export class StopsService {
@@ -66,17 +67,32 @@ export class StopsService {
 
     if (!stop) throw new NotFoundException(`Stop not found`);
 
-    const attachments = files.map(file => {
+    const attachments: Attachment[] = [];
+
+    for (let file of files) {
       const attachment = new Attachment();
-      attachment.fileName = file.originalname;
-      attachment.mimeType = file.mimetype;
-      attachment.size = file.size;
-      attachment.content = file.buffer;
+      if (file.mimetype.endsWith('heic')) {
+        this.logger.log(`Converting HEIC to PNG for ${file.originalname}`);
+        const data = await convert({
+          buffer: file.buffer,
+          format: 'PNG',
+          quality: 1,
+        });
+
+        attachment.fileName = file.originalname.replace(/\.heic$/i, 'png');
+        attachment.mimeType = 'image/png';
+        attachment.size = data.byteLength;
+        attachment.content = Buffer.from(data);
+      } else {
+        attachment.fileName = file.originalname;
+        attachment.mimeType = file.mimetype;
+        attachment.size = file.size;
+        attachment.content = file.buffer;
+      }
 
       stop.attachments.add(attachment);
-
-      return attachment;
-    });
+      attachments.push(attachment);
+    }
 
     await this.em.persistAndFlush(attachments);
 

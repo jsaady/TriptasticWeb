@@ -1,6 +1,6 @@
-import { BadRequestException, Controller, Get, NotFoundException, Param, Query, Res } from '@nestjs/common';
-import { AttachmentService } from './attachment.service.js';
+import { BadRequestException, Controller, Get, Param, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
+import { AttachmentService } from './attachment.service.js';
 
 @Controller('attachments')
 export class AttachmentController {
@@ -15,6 +15,7 @@ export class AttachmentController {
     res.setHeader('Content-Type', attachment.mimeType);
     res.setHeader('Content-Length', attachment.size.toString());
     res.setHeader('Content-Disposition', `inline; filename="${attachment.fileName}"`);
+    res.setHeader('Cache-Control', 'max-age=604800');
     res.send(attachment.content);
 
     return 'attachment';
@@ -22,16 +23,6 @@ export class AttachmentController {
 
   @Get('thumb/:id')
   async getThumbnail(@Param('id') id: string, @Res() res: Response, @Query('w') width: string, @Query('h') height: string) {
-    const attachment = await this.attachmentService.getAttachment(+id);
-
-    if (!attachment) {
-      throw new NotFoundException('Attachment not found');
-    }
-
-    if (attachment.mimeType.startsWith('image/') === false) {
-      throw new BadRequestException('Not an image');
-    }
-
     let px;
     let isWidth = true;
     if (width) {
@@ -45,12 +36,12 @@ export class AttachmentController {
       throw new BadRequestException('Invalid size');
     }
 
-    const content = await this.attachmentService.getThumbnail(attachment, px, isWidth);
+    const thumbnail = await this.attachmentService.getThumbnail(+id, px, isWidth);
 
-
-    res.setHeader('Content-Type', attachment.mimeType);
-    res.setHeader('Content-Length', content.byteLength.toString());
-    res.setHeader('Content-Disposition', `inline; filename="${isWidth ? 'w' : 'h'}-${px}-${attachment.fileName}"`);
-    res.send(content);
+    res.setHeader('Content-Type', thumbnail.mimeType);
+    res.setHeader('Content-Length', thumbnail.size.toString());
+    res.setHeader('Content-Disposition', `inline; filename="${thumbnail.fileName}"`);
+    res.setHeader('Cache-Control', 'max-age=604800');
+    res.send(thumbnail.content);
   }
 }

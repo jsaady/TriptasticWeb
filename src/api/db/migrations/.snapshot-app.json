@@ -732,6 +732,24 @@
           "nullable": false,
           "mappedType": "string"
         },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
         "content": {
           "name": "content",
           "type": "bytea",
@@ -740,24 +758,6 @@
           "primary": false,
           "nullable": false,
           "mappedType": "blob"
-        },
-        "width": {
-          "name": "width",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "integer"
-        },
-        "height": {
-          "name": "height",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "integer"
         },
         "attachment_id": {
           "name": "attachment_id",
