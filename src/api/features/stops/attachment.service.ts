@@ -17,7 +17,7 @@ export class AttachmentService {
   async getThumbnail(attachment: Attachment, px: number, isWidth: boolean) {
     try {
       this.logger.log(`Creating thumbnail for ${attachment.fileName} at ${px} ${isWidth ? 'width' : 'height'}`);
-      return sharp(attachment.content)
+      return await sharp(attachment.content)
         .resize({
           [isWidth ? 'width' : 'height']: px,
           fit: 'contain'
