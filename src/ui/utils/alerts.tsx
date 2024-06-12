@@ -65,13 +65,13 @@ export const AlertProvider = ({ children }: PropsWithChildren) => {
 
   const alertsRef = useRef(alerts);
 
-  const getAlerts = useCallback(() => alertsRef.current, []);
+  const getAlerts = useCallback(() => alerts, [alerts]);
 
   useEffect(() => {
     alertsRef.current = alerts;
   }, [alerts]);
 
-  const alert = (message: string, type = AlertType.Success, dismissAfter = 5000) => {
+  const alert = useCallback((message: string, type = AlertType.Success, dismissAfter = 5000) => {
     const id = alertId++;
     setAlerts(m => [...m, {
       id,
@@ -98,8 +98,9 @@ export const AlertProvider = ({ children }: PropsWithChildren) => {
     
     setTimeout(() => {
       setAlerts(m => m.filter(m => m.id !== id));
+      
     }, dismissAfter + (fadeTime * 2));
-  };
+  }, []);
 
   return <AlertContext.Provider value={{
     alert,

@@ -1,6 +1,6 @@
 import { LatLng } from 'leaflet';
 import { ComponentType, createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { useAsyncHttp } from '@ui/utils/useAsync.js';
+import { useAsyncHttp, useAsyncHttpWithAlert } from '@ui/utils/useAsync.js';
 import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 import { Serialized } from '../../../common/serialized.js';
@@ -69,37 +69,38 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     return mapAPIResponse(response);
   }, [setStops]);
 
-  const [persistStop, { result }] = useAsyncHttp(async ({ post }, body: CreateStopDTO) => {
+  const [persistStop, { result }] = useAsyncHttpWithAlert(async ({ post }, body: CreateStopDTO) => {
     return post<StopDetailDTO>('/api/stops', body);
-  }, []);
+  }, [], 'Stop created successfully', 'Error creating stop');
 
-  const [persistStopChanges, { result: persistResult }] = useAsyncHttp(async ({ put }, id: number, body: UpdateStopDTO) => {
+  const [persistStopChanges, { result: persistResult }] = useAsyncHttpWithAlert(async ({ put }, id: number, body: UpdateStopDTO) => {
     return put<StopDetailDTO>('/api/stops/' + id, body);
-  }, []);
+  }, [], 'Stop updated successfully', 'Error updating stop');
 
-  const [persistAttachments, attachmentUploadState] = useAsyncHttp(async ({ post }, id: number, files: FileList) => {
+  const [persistAttachments] = useAsyncHttpWithAlert(async ({ post }, id: number, files: FileList) => {
     const formData = new FormData();
     for (const file of files) {
       formData.append('file', file);
     }
 
     return post(`/api/stops/${id}/attach`, formData);
-  }, []);
+  }, [], 'Attachment uploaded successfully', 'Error uploading attachment');
   const [fetchAttachments, { result: attachments }] = useAsyncHttp(async ({ get }, stopId: number) => {
     return await get<Serialized<AttachmentDTO[]>>(`/api/stops/${stopId}/attachments`);
   }, []);
-  const [removeAttachment] = useAsyncHttp(async ({ del }, stopId: number, attachmentId: number) => {
+
+  const [removeAttachment] = useAsyncHttpWithAlert(async ({ del }, stopId: number, attachmentId: number) => {
     await del(`/api/stops/${stopId}/attach/${attachmentId}`);
     fetchAttachments(stopId);
-  }, []);
+  }, [], 'Attachment removed successfully', 'Error removing attachment');
 
-  const [deleteStop] = useAsyncHttp(async ({ del }, id: number) => {
+  const [deleteStop] = useAsyncHttpWithAlert(async ({ del }, id: number) => {
     return del('/api/stops/' + id);
-  }, []);
+  }, [], 'Successfully removed stop', 'Error removing stop');
 
-  const [doCheckIn, { result: checkInResult }] = useAsyncHttp(async ({ put }, id: number) => {
+  const [doCheckIn, { result: checkInResult }] = useAsyncHttpWithAlert(async ({ put }, id: number) => {
     return put(`/api/stops/${id}/checkIn`, {});
-  }, []);
+  }, [], 'Successfully checked in', 'Error checking in');
 
   const addStop = useCallback((stop: CreateStopDTO, attachments?: FileList) => {
     if (attachments?.length) {
@@ -207,12 +208,6 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       fetchStops();
     }
   }, [persistResult, checkInResult]);
-
-  useEffect(() => {
-    if (attachmentUploadState.result !== null) {
-      alert('Attachment uploaded successfully', AlertType.Success, 3000);
-    }
-  }, [attachmentUploadState]);
 
   const getStop = useCallback((id: number) => {
     return stops.find((s) => s.id === id);

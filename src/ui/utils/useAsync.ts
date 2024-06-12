@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HTTPClient, useHttp } from './http.js';
+import { AlertType, useAlert } from './alerts.js';
 
 export const useAsync = <T, A extends any[]> (asyncCall: (...args: A) => Promise<T>, deps: any[]) => {
   const [state, setState] = useState({
@@ -86,3 +87,21 @@ export const useAsyncHttp = <T, A extends any[]>(call: (http: AsyncHTTPClient, .
 
   return [makeCall, state, cancel] as const;
 }
+
+export const useAsyncHttpWithAlert = <T, A extends any[]>(call: (http: AsyncHTTPClient, ...rest: A) => Promise<T>, deps: any[], successMessage: string, failMessage: string) => {
+  const alert = useAlert();
+
+  return useAsyncHttp<T, A>(async (http, ...args) => {
+    try {
+      const r = await call(http, ...args);
+  
+      alert(successMessage, AlertType.Success, 3000);
+
+      return r;
+    } catch (e) {
+      alert(failMessage, AlertType.Error, 3000);
+
+      throw e;
+    }
+  }, [...deps, alert]);
+};
