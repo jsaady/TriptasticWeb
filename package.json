@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
+  "engines": {
+    "vips": "^8.15.2"
+  },
   "scripts": {
     "test": "npm run test:api",
     "test:ui": "jest --ci --coverage --config ./jest-ui.config.js",
