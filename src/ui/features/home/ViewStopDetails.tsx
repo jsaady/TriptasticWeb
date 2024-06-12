@@ -56,7 +56,11 @@ export const ViewStopDetails = ({ stopId, showViewMapButton, onClose }: ViewStop
         {attachments?.map((attachment) => (
           <li key={attachment.id} className='mb-8'>
             {me?.role === UserRole.ADMIN && <Icon fill='red' height={36} width={36} className='cursor-pointer right-0 ml-auto mr-3 mt-1 mb-[-3em] z-9999 sticky' icon='trash' onClick={() => removeAttachment(stopId, attachment.id)} />}
-            {attachment.mimeType.startsWith('image') && <img src={`/api/attachments/${attachment.id}`} alt={attachment.fileName} />}
+            {attachment.mimeType.startsWith('image') && (
+              <a href={`/api/attachments/${attachment.id}`} target='_blank'>
+                <img src={`/api/attachments/thumb/${attachment.id}?w=800`} alt={attachment.fileName} />
+              </a>
+            )}
             {attachment.mimeType.startsWith('video') && <video src={`/api/attachments/${attachment.id}`} />}
             {/* <a href={`/api/attachments/${attachment.id}`}>{attachment.fileName}</a> */}
           </li>
