@@ -55,8 +55,9 @@ export class AttachmentService {
       const resizedContent = await sharp(attachment.content)
         .resize({
           [isWidth ? 'width' : 'height']: px,
-          fit: 'contain'
+          fit: 'contain',
         })
+        .rotate()
         .toBuffer();
 
       const thumbnail = new Thumbnail();

@@ -1,12 +1,11 @@
-import { StopDetailDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
+import { UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
 import { StopType } from '@api/features/stops/entities/stopType.enum.js';
 import { ButtonSelect } from '@ui/components/ButtonSelect.js';
 import { Input } from '@ui/components/Input.js';
 import { RichTextarea } from '@ui/components/RichTextarea.js';
 import { useForm } from '@ui/utils/forms.js';
 import { StyledModal } from '@ui/utils/modals.js';
-import { useAsyncHttp } from '@ui/utils/useAsync.js';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { stopOptions } from './stopOptions.js';
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 

@@ -57,7 +57,7 @@ export const ViewStopDetails = ({ stopId, showViewMapButton, onClose }: ViewStop
           <li key={attachment.id} className='mb-8'>
             {me?.role === UserRole.ADMIN && <Icon fill='red' height={36} width={36} className='cursor-pointer right-0 ml-auto mr-3 mt-1 mb-[-3em] z-9999 sticky' icon='trash' onClick={() => removeAttachment(stopId, attachment.id)} />}
             {attachment.mimeType.startsWith('image') && (
-              <a href={`/api/attachments/${attachment.id}`} target='_blank'>
+              <a className='cursor-pointer' onClick={() => window.open('/viewAttachment/' + attachment.id)}>
                 <img src={`/api/attachments/thumb/${attachment.id}?w=800`} alt={attachment.fileName} />
               </a>
             )}

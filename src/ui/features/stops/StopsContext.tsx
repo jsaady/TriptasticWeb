@@ -45,7 +45,7 @@ const mapAPIResponse = (response: Serialized<StopListDTO>[]): StopListDTO[] => r
 }));
 
 export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
-  const alert = useAlert();
+  const [attachments, setAttachments] = useState<AttachmentDTO[]>([]);
 
   const [stops, setStops] = useState<StopListDTO[]>([]);
   const [pendingAttachments, setPendingAttachments] = useState<FileList>();
@@ -78,14 +78,15 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
   }, [], 'Stop updated successfully', 'Error updating stop');
 
   const [persistAttachments] = useAsyncHttpWithAlert(async ({ post }, id: number, files: FileList) => {
-    const formData = new FormData();
     for (const file of files) {
+      const formData = new FormData();
       formData.append('file', file);
+      await post(`/api/stops/${id}/attach`, formData);
     }
-
-    return post(`/api/stops/${id}/attach`, formData);
   }, [], 'Attachment uploaded successfully', 'Error uploading attachment');
-  const [fetchAttachments, { result: attachments }] = useAsyncHttp(async ({ get }, stopId: number) => {
+
+  const [fetchAttachments, { result: fetchedAttachments }] = useAsyncHttp(async ({ get }, stopId: number) => {
+    setAttachments([]);
     return await get<Serialized<AttachmentDTO[]>>(`/api/stops/${stopId}/attachments`);
   }, []);
 
@@ -208,6 +209,12 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       fetchStops();
     }
   }, [persistResult, checkInResult]);
+
+  useEffect(() => {
+    if (fetchedAttachments) {
+      setAttachments(fetchedAttachments);
+    }
+  }, [fetchedAttachments]);
 
   const getStop = useCallback((id: number) => {
     return stops.find((s) => s.id === id);

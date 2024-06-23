@@ -7,7 +7,7 @@ import { LatLng } from 'leaflet';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 import { useCallback, useEffect, useState } from 'react';
 import { Popup, useMapEvents } from 'react-leaflet';
-import { useStops } from '../home/StopsContext.js';
+import { useStops } from '../stops/StopsContext.js';
 
 export interface MapBridgeProps {
   onMapClick: (stop: LatLng) => void;

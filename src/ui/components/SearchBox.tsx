@@ -1,12 +1,11 @@
+import { UserRole } from '@api/features/users/userRole.enum.js';
+import { useStops } from '@ui/features/stops/StopsContext.js';
+import { useAuthorization } from '@ui/utils/useAuth.js';
+import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useDebounce } from '../utils/debounce.js';
 import { useOpenStreetMap } from '../utils/osm.js';
 import { Input } from './Input.js';
-import { useDebounce } from '../utils/debounce.js';
-import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
-import { RawResult } from 'leaflet-geosearch/dist/providers/openStreetMapProvider.js';
-import { useAuthorization } from '@ui/utils/useAuth.js';
-import { useStops } from '@ui/features/home/StopsContext.js';
-import { UserRole } from '@api/features/users/userRole.enum.js';
 
 export interface LocalSearchResult {
   label: string;

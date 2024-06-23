@@ -1,10 +1,9 @@
+import { withOpenStreetMapProvider } from '@ui/utils/osm.js';
 import 'leaflet-geosearch/dist/geosearch.css';
 import 'leaflet/dist/leaflet.css';
 import { memo, useEffect } from 'react';
-import { useGeolocation } from '@ui/utils/useGeolocation.js';
-import { useStops, withStopsProvider } from './StopsContext.js';
-import { withOpenStreetMapProvider } from '@ui/utils/osm.js';
 import { Outlet } from 'react-router';
+import { useStops, withStopsProvider } from '../stops/StopsContext.js';
 
 export const Home = withOpenStreetMapProvider(withStopsProvider(memo(() => {
   const {

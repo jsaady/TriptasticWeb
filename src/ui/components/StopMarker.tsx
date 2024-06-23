@@ -7,7 +7,7 @@ import { useAuthorization } from '@ui/utils/useAuth.js';
 import { LatLng, LeafletMouseEvent } from 'leaflet';
 import { useCallback, useMemo, useState } from 'react';
 import { Popup, useMap, useMapEvents } from 'react-leaflet';
-import { stopOptions } from '../features/home/stopOptions.js';
+import { stopOptions } from '../features/stops/stopOptions.js';
 import { SmallButton } from './Button.js';
 import { FeatherMarker } from './FeatherMarker.js';
 import { Icon } from './Icon.js';

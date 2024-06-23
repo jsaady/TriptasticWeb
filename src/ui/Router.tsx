@@ -4,6 +4,7 @@ import { UserAdminPage } from './features/userAdmin/userAdminPage.js';
 import { MapView } from './features/mapView/MapView.js';
 import { ListView } from './features/listView/ListView.js';
 import { setCurrentInviteCode } from './utils/inviteCodeStorage.js';
+import { ViewStopAttachment } from './features/stops/ViewStopAttachment.js';
 
 const Root = lazy(() => import('./Root.js').then(module => ({ default: module.Root })));
 const Home = lazy(() => import('./features/home/Home.js').then(module => ({ default: module.Home })));
@@ -18,6 +19,9 @@ const Authenticated = lazy(() => import('./Authenticated.js').then(module => ({ 
 const Account = lazy(() => import('./features/account/Account.js').then(module => ({ default: module.Account })));
 
 export const router = createBrowserRouter([{
+  path: 'viewAttachment/:id',
+  element: <ViewStopAttachment />
+}, {
   path: '/',
   element: <Root />,
   children: [{

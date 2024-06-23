@@ -1,9 +1,9 @@
 import { StopListDTO } from '@api/features/stops/dto/stop.dto.js';
-import { Table, TableColumn } from '@ui/components/Table/index.js';
-import { useStops } from '../home/StopsContext.js';
 import { Clickable } from '@ui/components/Clickable.js';
+import { Table, TableColumn } from '@ui/components/Table/index.js';
 import { useState } from 'react';
-import { ViewStopDetails } from '../home/ViewStopDetails.js';
+import { useStops } from '../stops/StopsContext.js';
+import { ViewStopDetails } from '../stops/ViewStopDetails.js';
 
 export const ListView = () => {
   const { stops } = useStops();

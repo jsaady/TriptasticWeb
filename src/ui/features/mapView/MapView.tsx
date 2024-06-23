@@ -2,6 +2,7 @@ import { CreateStopDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.j
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 import { UserRole } from '@api/features/users/userRole.enum.js';
 import { ConfirmModal } from '@ui/components/ConfirmModal.js';
+import { FeatherIcon } from '@ui/components/Icon.js';
 import { LocalSearchResult, SearchBox } from '@ui/components/SearchBox.js';
 import { StopMarker } from '@ui/components/StopMarker.js';
 import { useAuthorization } from '@ui/utils/useAuth.js';
@@ -11,14 +12,13 @@ import L, { LatLng } from 'leaflet';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
 import { useCallback, useMemo, useState } from 'react';
 import { MapContainer, Polyline } from 'react-leaflet';
-import { EditNoteStop } from '../home/EditNoteStop.js';
-import { useStops } from '../home/StopsContext.js';
-import { ViewStopDetails } from '../home/ViewStopDetails.js';
 import { useFetchApiKey } from '../home/fetchApiKey.js';
+import { EditNoteStop } from '../stops/EditNoteStop.js';
+import { useStops } from '../stops/StopsContext.js';
+import { ViewStopDetails } from '../stops/ViewStopDetails.js';
 import { MapBridge } from './MapBridge.js';
 import { MapLibreTileLayer } from './MapLibreTileLayer.js';
 import { FloatingMapButton } from './ToggleRouteButton.js';
-import { FeatherIcon } from '@ui/components/Icon.js';
 
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
