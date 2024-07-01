@@ -22,6 +22,7 @@ data:
   REQUIRE_MFA: "{{ .Values.params.requireMfa }}"
   REQUIRE_EMAIL_VERIFICATION: "{{ .Values.params.requireEmailVerification }}"
   ALLOW_REGISTRATION: "{{ .Values.params.allowRegistration }}"
+  GOOGLE_SPREADSHEET_ID: {{ .Values.params.googleSpreadsheetId | b64enc }}
 
 ---
 
@@ -32,6 +33,7 @@ metadata:
   name: app-secrets
 data:
   EMAIL_PASSWORD: {{ .Values.params.emailPassword | b64enc }}
+  DEFAULT_ROOT_PASSWORD: {{ .Values.params.defaultRootPassword | b64enc }}
   STADIA_MAP_API_KEY: {{ .Values.params.stadiaApiKey | b64enc }}
   NINJA_API_KEY: {{ .Values.params.ninjaApiKey | b64enc }}
   GOOGLE_CREDS: {{ .Values.params.googleCreds | b64enc }}

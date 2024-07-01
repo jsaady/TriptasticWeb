@@ -54,6 +54,7 @@ export class GeneratedConfigService {
       stadiaMapApiKey: this.config.getOrThrow(CONFIG_VARS.stadiaMapApiKey),
       googleCreds: this.config.getOrThrow(CONFIG_VARS.googleCreds),
       ninjaApiKey: this.config.getOrThrow(CONFIG_VARS.ninjaApiKey),
+      googleSpreadsheetId: this.config.getOrThrow(CONFIG_VARS.googleSpreadsheetId),
     });
 
     return config;

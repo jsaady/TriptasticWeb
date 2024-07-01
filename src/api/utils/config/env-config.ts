@@ -12,4 +12,5 @@ export interface EnvironmentConfig {
   allowRegistration: boolean;
   googleCreds: string;
   ninjaApiKey: string;
+  googleSpreadsheetId: string;
 }

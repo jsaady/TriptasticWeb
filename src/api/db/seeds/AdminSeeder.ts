@@ -13,10 +13,16 @@ export class AdminSeeder extends Seeder {
 
     if (existingUserCount === 0) {
       console.log('Inserting new root user');
+      const DEFAULT_ROOT_PASSWORD = process.env.DEFAULT_ROOT_PASSWORD;
+
+      if (!DEFAULT_ROOT_PASSWORD) {
+        throw new Error('DEFAULT_ROOT_PASSWORD env variable is not set');
+      }
+
       em.create(User, {
         email: rootAdminEmail,
         username: 'admin',
-        password: await hash('Password123!', AUTH_SALT_ROUNDS),
+        password: await hash(DEFAULT_ROOT_PASSWORD, AUTH_SALT_ROUNDS),
         needPasswordReset: true,
         emailConfirmed: true,
         role: UserRole.ADMIN,

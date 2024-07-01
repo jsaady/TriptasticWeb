@@ -19,6 +19,7 @@ export const CONFIG_VARS = {
   stadiaMapApiKey: 'STADIA_MAP_API_KEY',
   googleCreds: 'GOOGLE_CREDS',
   ninjaApiKey: 'NINJA_API_KEY',
+  googleSpreadsheetId: 'GOOGLE_SPREADSHEET_ID',
 };
 
 export const RATE_LIMIT_TTL = 60;

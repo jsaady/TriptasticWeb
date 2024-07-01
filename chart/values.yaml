@@ -125,3 +125,5 @@ params:
   allowRegistration: 'true'
   ninjaApiKey: ''
   googleCreds: ''
+  googleSpreadsheetId: ''
+  defaultRootPassword: 'Password123!'

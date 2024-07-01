@@ -13,7 +13,6 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { resolve } from 'path';
 import { MigrationModule } from './db/migration.provider.js';
 import { AuthModule } from './features/auth/auth.module.js';
-import { MapModule } from './features/map/map.module.js';
 import { NotificationsModule } from './features/notifications/notifications.module.js';
 import { StopsModule } from './features/stops/stops.module.js';
 import { UsersModule } from './features/users/users.module.js';
@@ -66,7 +65,6 @@ const currentDir = resolve(new URL(import.meta.url).pathname, '..');
     NotificationsModule,
     StopsModule,
     UsersModule,
-    MapModule,
     ThrottlerModule.forRoot([{
       ttl: RATE_LIMIT_TTL,
       limit: RATE_LIMIT_LIMIT

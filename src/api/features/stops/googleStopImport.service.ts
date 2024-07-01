@@ -48,7 +48,7 @@ export class GoogleStopImportService {
       key: this.googleCreds.private_key,
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
-    const spreadsheet = new googleSheet.GoogleSpreadsheet('1jwq8QAqY1-YJsX5bnWY-lFF6AidcJ94sbLUGULljFk0', auth);
+    const spreadsheet = new googleSheet.GoogleSpreadsheet(this.config.getOrThrow('googleSpreadsheetId'), auth);
     await spreadsheet.loadInfo();
     const sheet = spreadsheet.sheetsByTitle['Route'];
 
