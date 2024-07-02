@@ -13,3 +13,7 @@
  - [ ] Make look pretty
  - [x] Non-map view (like a scrapbook of sorts)
  - [x] Re-do [app-infra](https://github.com/jsaady/app-infra)
+ - [ ] (semi-)Offline support
+   - [ ] Service worker caching of js files
+   - [ ] Caching of stops
+   - [ ] Long living tokens
