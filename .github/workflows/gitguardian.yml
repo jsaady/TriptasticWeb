@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   scanning:
     name: GitGuardian scan
-    runs-on: triptastic-runner-set
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
