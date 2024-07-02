@@ -11,7 +11,7 @@ export class GeneratedConfigService {
   logger = new Logger('GeneratedConfigService');
   constructor(
     private config: ConfigService,
-    @Inject(IS_MIGRATED) isMigrated: boolean,
+    @Inject(IS_MIGRATED) _: boolean,
     @InjectRepository(GeneratedConfig) private repo: EntityRepository<GeneratedConfig>,
   ) {}
 

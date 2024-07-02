@@ -75,6 +75,7 @@ export class NotificationDevicesService {
       } catch (e) {
         this.logger.error(`Error sending notification to user (${userId}#${sub.id})`);
         this.logger.error(e);
+        throw e;
       }
     }
 

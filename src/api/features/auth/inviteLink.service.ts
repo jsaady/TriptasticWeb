@@ -1,14 +1,14 @@
 import { EntityManager } from '@mikro-orm/postgresql';
-import { RequestContextService } from '@nestjs-enhanced/context';
 import { Injectable } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { UserInvitation } from './entities/userInvitation.entity.js';
 import { User } from '../users/users.entity.js';
-import { Ref, Reference, wrap } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
 import { ConfigService } from '../../utils/config/config.service.js';
 import { Request } from 'express';
 import { AuthTokenContents } from './auth.dto.js';
 import { UserRole } from '../users/userRole.enum.js';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class InviteLinkService {
@@ -47,9 +47,9 @@ export class InviteLinkService {
     let inviteLink = await this.em.findOne(UserInvitation, { inviter: userId });
 
     if (!inviteLink) {
-      inviteLink = new UserInvitation();
-      wrap(inviteLink).assign({
-        inviter: this.em.getReference(User, userId)
+      inviteLink = this.em.create(UserInvitation, {
+        inviter: this.em.getReference(User, userId),
+        inviteCode: v4()
       });
       await this.em.persistAndFlush(inviteLink);
     }

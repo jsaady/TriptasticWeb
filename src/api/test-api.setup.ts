@@ -3,6 +3,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import dotenv from 'dotenv';
 import { DefaultSeeder } from './db/seeds/DefaultSeeder.js';
 import { getTestMikroOrmConfig } from "./db/testConfig.js";
+import { TestSeeder } from './db/seeds/TestSeeder.js';
 
 
 dotenv.config({
@@ -24,7 +25,7 @@ await orm.getMigrator().up();
 
 // log all of the current tables for the connection
 console.log('Migration done! Seeding...');
-await orm.seeder.seed(DefaultSeeder);
+await orm.seeder.seed(DefaultSeeder, TestSeeder);
 
 await orm.close();
 console.log('Done!');

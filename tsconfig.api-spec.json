@@ -5,6 +5,7 @@
     "rootDir": "./src/api",
     "outDir": "./dist/api",
     "inlineSourceMap": true,
+    "sourceMap": true,
     "allowJs": true
   }
 }

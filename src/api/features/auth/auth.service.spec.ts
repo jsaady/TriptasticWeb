@@ -35,7 +35,6 @@ describe('AuthService', () => {
     getUserByEmail: jest.fn(),
     getUserByUsername: jest.fn(),
     updateUser: jest.fn(),
-    updateRole: jest.fn(),
   };
   const mockWebAuthnService: Record<keyof WebAuthnService, jest.Mock> = {
     getDeviceCountByUserId: jest.fn(),
@@ -159,6 +158,7 @@ describe('AuthService', () => {
         email: '',
         role: UserRole.USER,
         password: '',
+        lastLoginDate: null,
         needPasswordReset: true,
         emailConfirmed: false,
       });
@@ -180,7 +180,7 @@ describe('AuthService', () => {
       });
 
       await expect(service.start('test')).resolves.toEqual({
-        status: 'registerUser',
+        status: 'registerDevice',
         challengeOptions: {
           challenge: 'test',
           timeout: 1000,

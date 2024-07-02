@@ -462,19 +462,6 @@ describe('webAuthnService', () => {
         email: ''
       };
 
-
-      // insert the other fake user
-      const fakeUser = orm.em.create(User, {
-        email: 'fake2@fake.com',
-        password: 'password',
-        currentWebAuthnChallenge: null,
-        role: UserRole.USER,
-        emailConfirmed: false,
-        needPasswordReset: false,
-        username: 'fake2',
-      });
-
-
       // insert fake devices
       const fakeDevice = orm.em.create(UserDevice, {
         name: 'testDevice',
@@ -482,14 +469,14 @@ describe('webAuthnService', () => {
         credentialID: isoBase64URL.toBuffer('rawId' as any),
         credentialPublicKey: 'credentialPublicKey' as any,
         transports: [],
-        user: fakeUser,
+        user: orm.em.getReference(User, 2),
       });
 
       await orm.em.flush();
 
       await expect(service.removeDeviceById(fakeDevice.id, mockUser.id)).rejects.toThrowError('Device does not exist');
 
-      await orm.em.removeAndFlush([fakeDevice, fakeUser]);
+      await orm.em.removeAndFlush([fakeDevice]);
     });
   });
 });

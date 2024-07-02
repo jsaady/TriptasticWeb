@@ -14,6 +14,7 @@ const generateMockUser = (email = 'test@test.com', password = '', username = 'te
   role: UserRole.USER,
   needPasswordReset: false,
   emailConfirmed: false,
+  lastLoginDate: new Date(),
 });
 
 describe('UserService', () => {
@@ -44,7 +45,7 @@ describe('UserService', () => {
   afterEach(() => {
     return orm.em.nativeDelete(User, {
       id: {
-        $gt: 1,
+        $gt: 3,
       }
     });
   });
