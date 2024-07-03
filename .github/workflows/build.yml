@@ -53,8 +53,6 @@ jobs:
         DATABASE_PASSWORD: postgres
     # - name: Lint
     #   run: npm lint
-    - uses: ArtiomTr/jest-coverage-report-action@v2
-      if: ${{ github.event_name == 'pull_request' }}
   build:
     runs-on: triptastic-runner-set
     needs:
