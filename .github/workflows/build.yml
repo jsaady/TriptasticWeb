@@ -55,8 +55,6 @@ jobs:
     #   run: npm lint
   build:
     runs-on: triptastic-runner-set
-    needs:
-      - test
     # runs-on: self-hosted
     permissions:
       contents: read
@@ -154,7 +152,7 @@ jobs:
       FULL_IMAGE_TAG: ${{ needs.build.outputs.tags }}
     needs:
       - build
-      # - test
+      - test
     steps:
     - uses: actions/checkout@v3
     - name: Replace old image with new image
