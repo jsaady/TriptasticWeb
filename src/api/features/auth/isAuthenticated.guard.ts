@@ -30,7 +30,7 @@ export class IsAuthenticatedGuard implements CanActivate {
 
     if (skipAuthCheck) return true;
 
-    const { allowExpiredPassword = false, allowUnverifiedEmail = false, allowNoMFA = false } = this.reflector.getAllAndOverride<IsAuthenticatedConfig>(IS_AUTH_CONFIG, [context.getClass(), context.getHandler()]) ?? false;
+    const { allowExpiredPassword = false, allowUnverifiedEmail = false, allowNoMFA = false } = this.reflector.getAllAndOverride<IsAuthenticatedConfig>(IS_AUTH_CONFIG, [context.getClass(), context.getHandler()]) ?? {};
 
     try {
       const inviteContents = await this.inviteLinkService.extractInviteCodeFromRequest(request);

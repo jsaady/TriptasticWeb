@@ -9,3 +9,7 @@ models/*
 .DS_Store
 cache/*
 !cache/.gitkeep
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

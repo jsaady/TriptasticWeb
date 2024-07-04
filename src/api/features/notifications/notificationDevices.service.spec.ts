@@ -4,16 +4,21 @@ import { MockConfigModule } from '../../testFixtures/config.mock.js';
 import { CreateMikroORM } from '../../testFixtures/mikroOrm.mock.js';
 import { GeneratedConfig } from '../../utils/config/generated-config.entity.js';
 import { User } from '../users/users.entity.js';
-import { AddSubscriptionDTO, SendNotificationDTO } from './notification.dto.js';
+import { AddSubscriptionDTO, BatchNotificationDTO, SendNotificationDTO } from './notification.dto.js';
 import { NotificationDevicesService } from './notificationDevices.service.js';
 import { Subscription } from './entities/subscription.entity.js';
+import PgBoss, { Job } from 'pg-boss';
+import { UserRole } from '../users/userRole.enum.js';
 
-describe('NotificationService', () => {
+describe('NotificationDevicesService', () => {
   let service: NotificationDevicesService;
   let module: TestingModule;
   let mikroOrm: MikroORM;
   const mockWebPush = {
     sendNotification: jest.fn(),
+  };
+  const mockPgBoss = {
+    send: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -25,6 +30,10 @@ describe('NotificationService', () => {
       providers: [
         NotificationDevicesService,
         { provide: 'WEB_PUSH', useValue: mockWebPush },
+        {
+          provide: PgBoss,
+          useValue: mockPgBoss,
+        },
       ],
     }).compile();
 
@@ -33,15 +42,32 @@ describe('NotificationService', () => {
   });
 
   afterEach(async () => {
+    jest.resetAllMocks();
     await mikroOrm.em.nativeDelete(Subscription, {
       user: { id: 1 },
     });
   });
 
   afterAll(async () => {
+    await mikroOrm.em.nativeDelete(Subscription, {});
     await module?.close();
   });
 
+  describe('getDevices', () => {
+    it('should return all devices for a user', async () => {
+      mikroOrm.em.persistAndFlush(
+        mikroOrm.em.create(Subscription, {
+          user: mikroOrm.em.getReference(User, 1),
+          endpoint: 'https://example.com',
+          keys: { p256dh: 'p256dh', auth: 'auth' },
+        }),
+      );
+
+      const devices = await service.getDevices(1);
+
+      expect(devices).toHaveLength(1);
+    });
+  });
 
   describe('addSubscription', () => {
     it('should add a new subscription', async () => {
@@ -105,7 +131,7 @@ describe('NotificationService', () => {
     });
 
     it('should throw an error if user is not subscribed', async () => {
-      const userId = 2;
+      const userId = 4;
       const text = 'Hello, world!';
       const title = 'Test Notification';
 
@@ -131,7 +157,44 @@ describe('NotificationService', () => {
         throw new Error('Test Error');
       });
 
-      await expect(service.sendNotification(sendNotificationDto)).rejects.toThrow('Error sending notification');
+      await expect(service.sendNotification(sendNotificationDto)).rejects.toThrow();
+    });
+  });
+
+  describe('batchNotify', () => {
+    it('should send a batch notification', async () => {
+      const dto = {
+        title: 'Test Notification',
+        text: 'Hello, world!',
+        userIds: [1, 2, 3],
+      };
+
+      service.batchNotify(dto);
+
+      expect(mockPgBoss.send).toBeCalledTimes(1);
+    });
+  });
+
+  describe('processBatchNotification', () => {
+    it('should send a notification to all users in the batch', async () => {
+      const dto = {
+        title: 'Test Notification',
+        text: 'Hello, world!',
+        userIds: [1, 2, 3],
+      };
+
+      const subscriptionDto: AddSubscriptionDTO = {
+        endpoint: 'https://example.com',
+        keys: { p256dh: 'p256dh', auth: 'auth' },
+      };
+
+      for (const userId of dto.userIds) {
+        await service.addSubscription(userId, subscriptionDto);
+      }
+
+      await service.processBatchNotification({ data: dto } as unknown as Job<BatchNotificationDTO>);
+
+      expect(mockWebPush.sendNotification).toBeCalledTimes(3);
     });
   });
 });

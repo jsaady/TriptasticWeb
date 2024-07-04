@@ -25,6 +25,34 @@ env:
   DOMAIN_NAME: ${{ github.repository_owner }}-${{ github.ref_name }}.apps.holyham.cloud
 
 jobs:
+  test:
+    runs-on: triptastic-runner-set
+    services:
+      postgres:
+        image: ankane/pgvector:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    container:
+      image: node
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+    - name: Install
+      run: npm ci
+    - name: Build
+      run: npm run build
+    - name: Run tests
+      run: npm test
+      env:
+        DATABASE_URL: "postgres://postgres:postgres@postgres:5432/test"
+        DATABASE_PASSWORD: postgres
+    # - name: Lint
+    #   run: npm lint
   build:
     runs-on: triptastic-runner-set
     # runs-on: self-hosted
@@ -89,77 +117,32 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
           platforms: linux/arm64
-
-      # Sign the resulting Docker image digest except on PRs.
-      # This will only write to the public Rekor transparency log when the Docker
-      # repository is public to avoid leaking data.  If you would like to publish
-      # transparency data even for private images, pass --force to cosign below.
-      # https://github.com/sigstore/cosign
-      # - name: Sign the published Docker image
-      #   if: ${{ github.event_name != 'pull_request' }}
-      #   env:
-      #     # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-      #     TAGS: ${{ steps.meta.outputs.tags }}
-      #     DIGEST: ${{ steps.build-and-push.outputs.digest }}
-      #   # This step uses the identity token to provision an ephemeral certificate
-      #   # against the sigstore community Fulcio instance.
-      #   run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
-  build_helm:
-    runs-on: triptastic-runner-set
-    needs:
-      - build
-    permissions:
-      contents: read
-      packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
-      id-token: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Install Helm
-        run: |
-          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-          chmod 700 get_helm.sh
-          ./get_helm.sh
-      - name: Login to Helm repo
-        run: helm registry login ghcr.io/jsaady -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Build Helm chart
-        run: helm package chart
-
-      - name: Push Helm chart
-        run: helm push *.tgz oci://ghcr.io/jsaady
-
-
-  # test:
-  #   runs-on: ubuntu-latest
-  #   services:
-  #     postgres:
-  #       image: ankane/pgvector:latest
-  #       env:
-  #         POSTGRES_USER: postgres
-  #         POSTGRES_PASSWORD: postgres
-  #         POSTGRES_DB: test
-  #       ports:
-  #         - 5432:5432
-  #       options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-  #   container:
-  #     image: node
+  # build_helm:
+  #   runs-on: triptastic-runner-set
+  #   needs:
+  #     - build
+  #   permissions:
+  #     contents: read
+  #     packages: write
+  #     # This is used to complete the identity challenge
+  #     # with sigstore/fulcio when running outside of PRs.
+  #     id-token: write
   #   steps:
-  #   - name: Checkout repo
-  #     uses: actions/checkout@v3
-  #   - name: Install
-  #     run: npm ci
-  #   - name: Build
-  #     run: npm run build
-  #   - name: Run tests
-  #     run: npm test
-  #     env:
-  #       DATABASE_URL: "postgres://postgres:postgres@postgres:5432/test"
-  #       DATABASE_PASSWORD: postgres
-  #   # - name: Lint
-  #   #   run: npm lint
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #     - name: Install Helm
+  #       run: |
+  #         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+  #         chmod 700 get_helm.sh
+  #         ./get_helm.sh
+  #     - name: Login to Helm repo
+  #       run: helm registry login ghcr.io/jsaady -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+      
+  #     - name: Build Helm chart
+  #       run: helm package chart
+
+  #     - name: Push Helm chart
+  #       run: helm push *.tgz oci://ghcr.io/jsaady
 
   deploy:
     if: github.ref == 'refs/heads/main'
@@ -169,7 +152,7 @@ jobs:
       FULL_IMAGE_TAG: ${{ needs.build.outputs.tags }}
     needs:
       - build
-      # - test
+      - test
     steps:
     - uses: actions/checkout@v3
     - name: Replace old image with new image
@@ -182,19 +165,3 @@ jobs:
         git add ./chart/values_dev.yaml
         git commit -m "Update image tag to $FULL_IMAGE_TAG [skip ci]"
         git push
-    # - name: Extract env vars
-    #   uses: jsaady/actions/extract-env-vars@main
-    #   env:
-    #     APP_SECRET_ENVIRONMENT_URL: ${{ secrets.APP_SECRET_ENVIRONMENT_URL }}
-    #     APP_SECRET_ENVIRONMENT_NAME: ${{ secrets.APP_SECRET_ENVIRONMENT_NAME }}
-    #     APP_SECRET_EMAIL_HOST: ${{ secrets.APP_SECRET_EMAIL_HOST }}
-    #     APP_SECRET_EMAIL_PORT: ${{ secrets.APP_SECRET_EMAIL_PORT }}
-    #     APP_SECRET_EMAIL_USER: ${{ secrets.APP_SECRET_EMAIL_USER }}
-    #     APP_SECRET_EMAIL_PASSWORD: ${{ secrets.APP_SECRET_EMAIL_PASSWORD }}
-    #     APP_SECRET_EMAIL_REPLY_TO: ${{ secrets.APP_SECRET_EMAIL_REPLY_TO }}
-
-    # - name: Dump ENV Vars
-    #   run: cat ./app/app-secrets.yaml
-
-    # - name: kubectl debug
-    #   run: kubectl cluster-info

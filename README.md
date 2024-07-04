@@ -1,11 +1,20 @@
-# Node/React Starter
+# Triptastic
 
+An app to help manage your trip! You can add stops, pictures, notes, and a full route of your trip! Lots of plans for this to expand and is currently not stable enough for release.
+
+
+## Architecture
+
+Triptastic app is built using a combination of technologies including PostgreSQL, Node.js, MikroORM, Nest.js, Parcel, React, and Tailwind CSS.
+
+### Backend
+
+The backend of the app is powered by Node.js and [Nest.js](https://nestjs.com). The data persistence layer is handled by PostgreSQL. MikroORM is used as an ORM, for seeding, and migrations. The frontend of the app is built using React. Parcel is used as the bundler. Tailwind CSS is utilized as the CSS framework.
 
 
 ## Getting started
 
-### TODO
-- Socket support
+Create a .env file and make sure you have a postgres database running. You will eventually need a stadia key if you choose to use the current map in production.
 
 
 ## Commands

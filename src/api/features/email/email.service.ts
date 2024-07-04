@@ -7,7 +7,7 @@ import { ConfigService } from '../../utils/config/config.service.js';
 @Injectable()
 export class EmailService {
   private readonly senderEmail: string;
-  logger = new Logger('EmailService');
+  private logger = new Logger('EmailService');
 
   constructor (
     @InjectNodeMailer() private transport: Transporter,
