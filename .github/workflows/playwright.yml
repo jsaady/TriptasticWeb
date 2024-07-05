@@ -37,6 +37,7 @@ jobs:
       run: npm run build
     - name: Launch app (and store pid)
       run: |
+        cp .env.test .env
         npm start >> output.log 2>&1 & echo $! > app.pid
         sleep_time=1
         while ! curl -s localhost:3000 >/dev/null; do
