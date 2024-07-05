@@ -127,3 +127,9 @@ params:
   googleCreds: ''
   googleSpreadsheetId: ''
   defaultRootPassword: 'Password123!'
+
+telemetry:
+  opentelemetry:
+    enabled: false
+    otlp_url: ''
+    otlp_insecure: false

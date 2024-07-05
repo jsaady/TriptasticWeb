@@ -22,8 +22,15 @@ data:
   REQUIRE_MFA: "{{ .Values.params.requireMfa }}"
   REQUIRE_EMAIL_VERIFICATION: "{{ .Values.params.requireEmailVerification }}"
   ALLOW_REGISTRATION: "{{ .Values.params.allowRegistration }}"
-  GOOGLE_SPREADSHEET_ID: {{ .Values.params.googleSpreadsheetId | b64enc }}
-
+  GOOGLE_SPREADSHEET_ID: "{{ .Values.params.googleSpreadsheetId | b64enc }}"
+{{ if .Values.telemetry.opentelemetry.enabled }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: "{{ .Values.telemetry.opentelemetry.otlp_url }}"
+  OTEL_EXPORTER_OTLP_INSECURE: "{{ .Values.telemetry.opentelemetry.otlp_insecure }}"
+  OTEL_SERVICE_NAME: {{ .Chart.Name }} - {{ .Values.params.environmentName }}
+  OTEL_SDK_DISABLED: "false"
+{{ else }}
+  OTEL_SDK_DISABLED: "true"
+{{ end }}
 ---
 
 apiVersion: v1
