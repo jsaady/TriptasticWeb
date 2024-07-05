@@ -12,6 +12,7 @@ import { AppModule } from './app.module.js';
 import { AuthService } from './features/auth/auth.service.js';
 import { start } from './instrumentation.js';
 import { ConfigService } from './utils/config/config.service.js';
+import { trace } from '@opentelemetry/api';
 
 
 (async () => {
@@ -19,7 +20,18 @@ import { ConfigService } from './utils/config/config.service.js';
 
   const app = await NestFactory.create(AppModule, {
     logger: process.env.NODE_ENV === 'development' ? undefined : WinstonModule.createLogger({
-      format: winston.format.json(),
+      format: winston.format.combine(
+        winston.format((info) => {
+          const currentTrace = trace.getActiveSpan()?.spanContext();
+          if (currentTrace) {
+            info['span.id'] = currentTrace.spanId;
+            info['trace.id'] = currentTrace.traceId;
+          }
+
+          return info;
+        })(),
+        winston.format.json()
+      ),
       transports: [new winston.transports.Console()],
     })
   });
