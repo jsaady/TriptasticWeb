@@ -22,7 +22,7 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     container:
-      image: mcr.microsoft.com/playwright:latest
+      image: mcr.microsoft.com/playwright:v1.45.1
     steps:
     - uses: n1hility/cancel-previous-runs@v3
       with: 
@@ -38,9 +38,14 @@ jobs:
     - name: Launch app (and store pid)
       run: |
         npm start >> output.log 2>&1 & echo $! > app.pid
-        while ! nc -z localhost 3000; do sleep 1; done
+        sleep_time=1
+        while ! curl -s localhost:3000 >/dev/null; do
+          echo "trying again"
+          sleep $sleep_time
+          sleep_time=$((sleep_time + 1))
+        done
       id: app
-      timeout-minutes: 1
+      timeout-minutes: 2
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
