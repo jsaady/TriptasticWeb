@@ -31,8 +31,11 @@ jobs:
     - name: Build
       run: npm run build
     - name: Launch app (and store pid)
-      run: npm start >> output.log 2>&1 & echo $! > app.pid
+      run: |
+        npm start >> output.log 2>&1 & echo $! > app.pid
+        while ! nc -z localhost 3000; do sleep 1; done
       id: app
+      timeout-minutes: 5
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
