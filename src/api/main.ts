@@ -1,18 +1,22 @@
+import './instrumentation.js';
+
 import { initSocketAdapters } from '@nestjs-enhanced/sockets';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { NextFunction } from 'express';
 import helmet from 'helmet';
+import { WinstonModule } from 'nest-winston';
 import { Socket } from 'socket.io';
+import winston from 'winston';
 import { AppModule } from './app.module.js';
 import { AuthService } from './features/auth/auth.service.js';
+import { start } from './instrumentation.js';
 import { ConfigService } from './utils/config/config.service.js';
-import { WinstonModule } from 'nest-winston';
-import winston from 'winston';
-
 
 
 (async () => {
+  start();
+
   const app = await NestFactory.create(AppModule, {
     logger: process.env.NODE_ENV === 'development' ? undefined : WinstonModule.createLogger({
       format: winston.format.json(),
