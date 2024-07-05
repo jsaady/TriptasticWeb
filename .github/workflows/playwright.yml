@@ -15,6 +15,11 @@ jobs:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
+    - name: Build
+      run: npm run build
+    - name: Launch app (and store pid)
+      run: npm start >> output.log 2>&1 & echo $! > app.pid
+      id: app
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
@@ -25,3 +30,15 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+    - name: Upload proxy server logs
+      uses: actions/upload-artifact@v3
+      if: ${{ !cancelled() }}
+      with:
+          name: proxy-server-output.log
+          path: ${{github.workspace}}/output.log
+          retention-days: 7
+    - name: Kill localhost:3000
+      if: always()
+      shell: bash
+      run: kill -9 `cat app.pid`
+      continue-on-error: true
