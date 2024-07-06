@@ -8,13 +8,46 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/test"
+      DATABASE_PASSWORD: postgres
+    services:
+      postgres:
+        image: ankane/pgvector:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    container:
+      image: mcr.microsoft.com/playwright:v1.45.1
     steps:
+    - uses: n1hility/cancel-previous-runs@v3
+      with: 
+        token: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
+    - name: Build
+      run: npm run build
+    - name: Launch app (and store pid)
+      run: |
+        cp .env.test .env
+        npm start >> output.log 2>&1 & echo $! > app.pid
+        sleep_time=1
+        while ! curl -s localhost:3000 >/dev/null; do
+          echo "trying again"
+          cat output.log
+          sleep $sleep_time
+          sleep_time=$((sleep_time + 1))
+        done
+      id: app
+      timeout-minutes: 2
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
@@ -25,3 +58,15 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+    - name: Upload proxy server logs
+      uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+          name: proxy-server-output.log
+          path: ${{github.workspace}}/output.log
+          retention-days: 7
+    - name: Kill localhost:3000
+      if: always()
+      shell: bash
+      run: kill -9 `cat app.pid`
+      continue-on-error: true

@@ -17,11 +17,19 @@ import { NotificationsModule } from './features/notifications/notifications.modu
 import { StopsModule } from './features/stops/stops.module.js';
 import { UsersModule } from './features/users/users.module.js';
 import { RATE_LIMIT_LIMIT, RATE_LIMIT_TTL } from './utils/config/config.js';
+import { PrometheusModule } from "@willsoto/nestjs-prometheus";
 
 const currentDir = resolve(new URL(import.meta.url).pathname, '..');
 
 @Module({
   imports: [
+    PrometheusModule.register({
+      defaultMetrics: {
+        enabled: true,
+        // See https://github.com/siimon/prom-client#configuration
+        config: {},
+      },
+    }),
     NestConfigModule.forRoot(),
     MigrationModule,
     WorkersModule,
