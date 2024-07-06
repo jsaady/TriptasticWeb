@@ -155,9 +155,8 @@ jobs:
       - test
     steps:
     - uses: actions/checkout@v3
-    - uses: webfactory/ssh-agent@v0.9.0
       with:
-        ssh-private-key: ${{ secrets.DEPLOY_SSH }}
+        ssh-key: ${{ secrets.DEPLOY_SSH }}
     - name: Replace old image with new image
       run: |
         sed -i "s|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:.*|image: $FULL_IMAGE_TAG|Ig" ./chart/values_dev.yaml

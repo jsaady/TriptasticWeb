@@ -24,9 +24,8 @@ jobs:
     runs-on: triptastic-runner-set
     steps:
     - uses: actions/checkout@v3
-    - uses: webfactory/ssh-agent@v0.9.0
       with:
-        ssh-private-key: ${{ secrets.DEPLOY_SSH }}
+        ssh-key: ${{ secrets.DEPLOY_SSH }}
     - name: update production values
       run: cp ./chart/values_dev.yaml ./chart/values_prod.yaml
     - name: Push to repo
