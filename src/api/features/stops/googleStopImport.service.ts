@@ -210,7 +210,12 @@ export class GoogleStopImportService {
 
   @ScheduledQueue('*/10 * * * *')
   async scheduleImport(_: Job) {
-    await this.importStops(true);
+    try {
+      await this.importStops(true);
+    } catch (e) {
+      this.logger.error('Failed to import stops');
+      this.logger.error(e);
+    }
     return;
   }
 }

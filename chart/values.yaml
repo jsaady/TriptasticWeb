@@ -129,6 +129,8 @@ params:
   defaultRootPassword: 'Password123!'
 
 telemetry:
+  prometheus_monitor:
+    enabled: false
   opentelemetry:
     enabled: false
     otlp_url: ''
