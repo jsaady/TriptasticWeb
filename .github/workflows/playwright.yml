@@ -42,6 +42,7 @@ jobs:
         sleep_time=1
         while ! curl -s localhost:3000 >/dev/null; do
           echo "trying again"
+          cat output.log
           sleep $sleep_time
           sleep_time=$((sleep_time + 1))
         done
