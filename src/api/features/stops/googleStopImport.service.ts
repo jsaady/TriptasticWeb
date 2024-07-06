@@ -14,23 +14,26 @@ import { StopStatus } from './entities/stopStatus.enum.js';
 
 @Injectable()
 export class GoogleStopImportService {
-  logger = new Logger('GoogleStopImportService');
-
-  googleCreds: {
-    client_email: string;
-    private_key: string;
-  };
+  private logger = new Logger('GoogleStopImportService');
 
   constructor(
     private config: ConfigService,
     private stopService: StopsService,
     private userService: UserService,
-  ) {
-    this.googleCreds = JSON.parse(Buffer.from(this.config.getOrThrow('googleCreds'), 'base64').toString('utf-8'));
-  }
+  ) { }
 
   async importStops(isJob?: boolean) {
     this.logger.log('Starting import');
+
+    const googleSpreadsheetId = this.config.getOrThrow('googleSpreadsheetId');
+    const rawGoogleCreds = this.config.getOrThrow('googleCreds');
+
+    if (!rawGoogleCreds || !googleSpreadsheetId) {
+      this.logger.warn('Missing google creds or spreadsheet id');
+      return;
+    }
+    const googleCreds = JSON.parse(Buffer.from(this.config.getOrThrow('googleCreds'), 'base64').toString('utf-8'));
+
     let creatorId: number | undefined;
 
     if (isJob) {
@@ -44,11 +47,12 @@ export class GoogleStopImportService {
     }
 
     const auth = new JWT({
-      email: this.googleCreds.client_email,
-      key: this.googleCreds.private_key,
+      email: googleCreds.client_email,
+      key: googleCreds.private_key,
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    })
-    const spreadsheet = new googleSheet.GoogleSpreadsheet(this.config.getOrThrow('googleSpreadsheetId'), auth);
+    });
+
+    const spreadsheet = new googleSheet.GoogleSpreadsheet(googleSpreadsheetId, auth);
     await spreadsheet.loadInfo();
     const sheet = spreadsheet.sheetsByTitle['Route'];
 
