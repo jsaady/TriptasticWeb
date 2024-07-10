@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     /* Visit https://aka.ms/tsconfig to read more about this file */

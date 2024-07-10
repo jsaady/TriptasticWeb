@@ -12,6 +12,7 @@ import { Stop } from './entities/stop.entity.js';
 import { StopStatus } from './entities/stopStatus.enum.js';
 import { Trip } from './entities/trip.entity.js';
 import convert from 'heic-convert';
+import { wrapWithLabels } from '../../instrumentation.cjs';
 
 @Injectable()
 export class StopsService {
@@ -134,15 +135,17 @@ export class StopsService {
   }
 
   async getAttachments(stopId: number): Promise<AttachmentDTO[]> {
-    const attachments = await this.em.find(Attachment, { stop: stopId }, { populate: ['id', 'createdAt', 'mimeType', 'size', 'fileName'] });
+    return wrapWithLabels({ action: 'getAttachmentc' }, async () => {
+      const attachments = await this.em.find(Attachment, { stop: stopId }, { populate: ['id', 'createdAt', 'mimeType', 'size', 'fileName'] });
 
-    return attachments.map(a => ({
-      id: a.id,
-      createdAt: a.createdAt.toISOString(),
-      mimeType: a.mimeType,
-      size: a.size,
-      fileName: a.fileName,
-    }));
+      return attachments.map(a => ({
+        id: a.id,
+        createdAt: a.createdAt.toISOString(),
+        mimeType: a.mimeType,
+        size: a.size,
+        fileName: a.fileName,
+      }));
+    });
   }
 
   async getStopById(id: number): Promise<Stop> {

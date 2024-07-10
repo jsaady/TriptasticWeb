@@ -31,6 +31,13 @@ data:
 {{ else }}
   OTEL_SDK_DISABLED: "true"
 {{ end }}
+{{ if .Values.telemetry.pyroscope.enabled }}
+  PYROSCOPE_ENABLED: "true"
+  PYROSCOPE_SERVER_ADDRESS: "{{ .Values.telemetry.pyroscope.pyroscope_url }}"
+  PYROSCOPE_APPLICATION_NAME: "{{ .Chart.Name }}_{{ .Values.params.environmentName }}"
+{{ else }}
+  PYROSCOPE_ENABLED: "false"
+{{ end }}
 ---
 
 apiVersion: v1

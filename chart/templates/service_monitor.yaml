@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "chart.fullname" . }}-pod-monitor
+  name: {{ include "chart.fullname" . }}-service-monitor
   labels:
     app: {{ include "chart.name" . }}
     chart: {{ include "chart.chart" . }}
@@ -17,4 +17,6 @@ spec:
       - {{ .Release.Namespace }}
   endpoints:
     - port: http
+      path: /api/metrics
+      interval: 30s
 {{ end }}
