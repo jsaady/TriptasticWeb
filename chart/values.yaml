@@ -129,6 +129,9 @@ params:
   defaultRootPassword: 'Password123!'
 
 telemetry:
+  pyroscope:
+    enabled: false
+    pyroscope_url: ''
   prometheus_monitor:
     enabled: false
   opentelemetry:

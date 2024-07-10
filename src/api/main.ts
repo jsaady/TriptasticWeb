@@ -1,4 +1,4 @@
-import './instrumentation.js';
+import './instrumentation.cjs';
 
 import { initSocketAdapters } from '@nestjs-enhanced/sockets';
 import { NestFactory } from '@nestjs/core';
@@ -10,7 +10,7 @@ import { Socket } from 'socket.io';
 import winston from 'winston';
 import { AppModule } from './app.module.js';
 import { AuthService } from './features/auth/auth.service.js';
-import { start } from './instrumentation.js';
+import { start } from './instrumentation.cjs';
 import { ConfigService } from './utils/config/config.service.js';
 import { trace } from '@opentelemetry/api';
 
