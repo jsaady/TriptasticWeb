@@ -128,7 +128,7 @@ spec:
 kind: ServiceMonitor
 apiVersion: monitoring.coreos.com/v1
 metadata:
-  name: {{ include "chart.fullname" }}-postgres-exporter-monitor
+  name: {{ include "chart.fullname" . }}-postgres-exporter-monitor
   labels:
     app: {{ include "chart.name" . }}
     chart: {{ include "chart.chart" . }}
