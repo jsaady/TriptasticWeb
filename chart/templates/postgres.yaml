@@ -115,6 +115,7 @@ spec:
     app: postgres-exporter
   ports:
     - protocol: TCP
+      name: http
       port: 9187
       targetPort: 9187
 {{ end }}
@@ -132,6 +133,6 @@ spec:
     matchLabels:
       app: postgres-exporter
   endpoints:
-    - port: 9187
+    - port: http
 {{- end -}}
 {{- end }}
