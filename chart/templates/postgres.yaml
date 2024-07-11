@@ -111,8 +111,7 @@ apiVersion: v1
 metadata:
   name: postgres-exporter
   labels:
-    {{- include "chart.labels" . | nindent 4 }}
-    component: postgres-exporter
+    app: postgres-exporter
 spec:
   selector:
     app: postgres-exporter
@@ -130,15 +129,11 @@ apiVersion: monitoring.coreos.com/v1
 metadata:
   name: {{ include "chart.fullname" . }}-postgres-exporter-monitor
   labels:
-    app: {{ include "chart.name" . }}
-    chart: {{ include "chart.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: postgres-exporter
 spec:
   selector:
     matchLabels:
-      app: {{ include "chart.name" . }}
-      component: postgres-exporter
+      app: postgres-exporter
   endpoints:
     - port: http
 {{- end -}}
