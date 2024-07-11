@@ -70,4 +70,68 @@ spec:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: postgres-pvc
+
+{{ if .Values.telemetry.postgres_exporter.enabled }}
+---
+# install the postgres exporter
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: postgres-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-exporter
+  template:
+    metadata:
+      labels:
+        app: postgres-exporter
+    spec:
+      containers:
+        - name: postgres-exporter
+          image: quay.io/prometheuscommunity/postgres-exporter
+          env:
+            - name: DATA_SOURCE_URI
+              value: postgres:5432/app?sslmode=disable
+            - name: DATA_SOURCE_USER
+              value: postgres
+            - name: DATA_SOURCE_PASS
+              value: {{ .Values.postgres.defaultPassword }}
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres-exporter
+spec:
+  selector:
+    app: postgres-exporter
+  ports:
+    - protocol: TCP
+      port: 9187
+      targetPort: 9187
+{{ end }}
+{{- if .Values.telemetry.prometheus_monitor.enabled -}}
+---
+# install a service monitor for the exporter
+kind: ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: postgres-exporter
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: postgres-exporter
+  endpoints:
+    - port: 9187
+{{- end -}}
 {{- end }}

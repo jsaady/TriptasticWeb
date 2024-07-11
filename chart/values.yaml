@@ -138,3 +138,5 @@ telemetry:
     enabled: false
     otlp_url: ''
     otlp_insecure: false
+  postgres_exporter:
+    enabled: false
