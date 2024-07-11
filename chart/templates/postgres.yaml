@@ -93,7 +93,7 @@ spec:
           image: quay.io/prometheuscommunity/postgres-exporter
           env:
             - name: DATA_SOURCE_URI
-              value: postgres:5432/app?sslmode=disable
+              value: postgres-service:5432/app?sslmode=disable
             - name: DATA_SOURCE_USER
               value: postgres
             - name: DATA_SOURCE_PASS
