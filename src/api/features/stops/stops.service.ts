@@ -100,12 +100,13 @@ export class StopsService {
     return stop;
   }
 
-  async getStopsByTrip(tripId: number, q?: string, limit?: number): Promise<StopListDTO[]>
-  async getStopsByTrip(tripId: number, q: string, limit: number, includeNotes: false): Promise<StopListDTO[]>
-  async getStopsByTrip(tripId: number, q: string, limit: number, includeNotes: true): Promise<StopDetailDTO[]>
-  async getStopsByTrip(tripId: number, q: string, limit: number, includeNotes?: boolean): Promise<StopListDTO[]|StopDetailDTO[]> {
+  async getStopsByTrip(tripId: number, includeArchived: boolean, q?: string, limit?: number): Promise<StopListDTO[]>
+  async getStopsByTrip(tripId: number, includeArchived: boolean, q: string, limit: number, includeNotes: false): Promise<StopListDTO[]>
+  async getStopsByTrip(tripId: number, includeArchived: boolean, q: string, limit: number, includeNotes: true): Promise<StopDetailDTO[]>
+  async getStopsByTrip(tripId: number, includeArchived: boolean, q: string, limit: number, includeNotes?: boolean): Promise<StopListDTO[]|StopDetailDTO[]> {
     const stops = await this.em.find(Stop, {
       trip: this.em.getReference(Trip, tripId),
+      status: !includeArchived ? { $ne: StopStatus.ARCHIVED } : { $in: [StopStatus.ARCHIVED, StopStatus.COMPLETED, StopStatus.ACTIVE, StopStatus.UPCOMING] },
       ...q ? {
         $or: [
           { name: { $ilike: `%${q}%` } },
@@ -233,6 +234,18 @@ export class StopsService {
       text: `Stop ${stop.name} has been checked in`,
       userIds,
     });
+
+    await this.em.flush();
+
+    return stop;
+  }
+
+  async archiveStop(id: number): Promise<Stop> {
+    const stop = await this.em.findOne(Stop, { id });
+
+    if (!stop) throw new NotFoundException(`Stop not found`);
+
+    stop.status = StopStatus.ARCHIVED;
 
     await this.em.flush();
 

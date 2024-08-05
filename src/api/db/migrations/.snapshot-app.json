@@ -502,7 +502,8 @@
           "enumItems": [
             "UPCOMING",
             "ACTIVE",
-            "COMPLETED"
+            "COMPLETED",
+            "ARCHIVED"
           ],
           "mappedType": "enum"
         },

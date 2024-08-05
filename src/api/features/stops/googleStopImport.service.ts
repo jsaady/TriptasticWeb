@@ -2,15 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { JWT } from 'google-auth-library';
 import * as googleSheet from 'google-spreadsheet';
+import { Job } from 'pg-boss';
+import { rootAdminEmail } from '../../db/seeds/AdminSeeder.js';
 import { ConfigService } from '../../utils/config/config.service.js';
+import { UserService } from '../users/users.service.js';
 import { CreateStopDTO, UpdateStopDTO } from './dto/stop.dto.js';
+import { StopStatus } from './entities/stopStatus.enum.js';
 import { StopType } from './entities/stopType.enum.js';
 import { StopsService } from './stops.service.js';
-import { ScheduledQueue } from '@nestjs-enhanced/pg-boss';
-import { Job } from 'pg-boss';
-import { UserService } from '../users/users.service.js';
-import { rootAdminEmail } from '../../db/seeds/AdminSeeder.js';
-import { StopStatus } from './entities/stopStatus.enum.js';
 
 @Injectable()
 export class GoogleStopImportService {
@@ -54,44 +53,55 @@ export class GoogleStopImportService {
 
     const spreadsheet = new googleSheet.GoogleSpreadsheet(googleSpreadsheetId, auth);
     await spreadsheet.loadInfo();
-    const sheet = spreadsheet.sheetsByTitle['Route'];
+    const sheet = spreadsheet.sheetsByTitle['NewRoute'];
 
-    const existingStops = await this.stopService.getStopsByTrip(1, '', 0, true);
+    const existingStops = await this.stopService.getStopsByTrip(1, true, '', 0, true);
 
     const stopMapByImportId = new Map(existingStops.map(stop => [stop.importId, stop]));
+    const undetectedStops = new Map(existingStops.map(stop => [stop.importId, stop]));
 
     const newRows: CreateStopDTO[] = [];
     const updatedRows: UpdateStopDTO[] = [];
   
+    let sortOrder = 0;
+
     for await (const row of await sheet.getRows()) {
       const date = new Date(row.get('Date'));
       // remove local timezone
-      date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+      date.setHours(date.getHours() - date.getTimezoneOffset() / 60);
+      date.setMinutes(0);
+      date.setSeconds(0);
+      date.setMilliseconds(0);
+
       const importId = `${row.get('Stop')}-${row.get('Reason')}`;
       const existing = stopMapByImportId.get(importId);
+
+      sortOrder++;
+
       if (existing) {
+        undetectedStops.delete(importId);
+
         const {
           id,
           importId: _,
           ...rest
         } = existing;
 
-        const partialUpdate = {
-          desiredArrivalDate: date,
-        };
+        const dateChanged = date.getTime() !== rest.desiredArrivalDate.getTime();
+        const sortOrderChanged = sortOrder && (sortOrder !== rest.sortOrder);
 
-        const dateChanged = partialUpdate.desiredArrivalDate.getTime() !== rest.desiredArrivalDate.getTime();
-
-        if (!dateChanged) {
+        if (!dateChanged && !sortOrderChanged) {
           continue;
         }
 
-        this.logger.log(`Updating existing stop ${importId} with changes: ${dateChanged ? 'date' : ''}`);
+        this.logger.log(`Updating existing stop ${importId} with changes: ${dateChanged ? 'date' : ''} ${sortOrderChanged ? 'sortOrder' : ''}`);
 
         updatedRows.push({
           id: id,
           importId,
           ...rest,
+          sortOrder,
+          desiredArrivalDate: dateChanged ? date : rest.desiredArrivalDate,
         });
       } else {
         this.logger.log(`Creating stop ${importId}`);
@@ -193,8 +203,20 @@ export class GoogleStopImportService {
           actualArrivalDate: new Date(),
           type,
           status: StopStatus.UPCOMING,
+          sortOrder: sortOrder,
         });
       }
+    }
+
+    for (const [importId, stop] of undetectedStops) {
+      if (stop.status === StopStatus.ARCHIVED) {
+        continue;
+      }
+
+      this.logger.log(`Deleting stop ${importId}`);
+
+      stop.status = StopStatus.ARCHIVED;
+      updatedRows.push(stop);
     }
 
     if (newRows.length === 0 && updatedRows.length === 0) {
@@ -208,7 +230,7 @@ export class GoogleStopImportService {
     return;
   }
 
-  @ScheduledQueue('*/10 * * * *')
+  // @ScheduledQueue('*/5 * * * *')
   async scheduleImport(_: Job) {
     try {
       await this.importStops(true);

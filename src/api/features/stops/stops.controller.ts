@@ -50,7 +50,7 @@ export class StopsController {
   }
 
   @Get('trip/:tripId')
-  getByTripId(@Param('tripId') tripId: string, @Query('q') q: string, @Query('limit') limit: string) {
+  getByTripId(@Param('tripId') tripId: string, @Query('q') q: string, @Query('limit') limit: string, @Query('includeArchived') includeArchived?: string) {
     if (isNaN(+tripId)) {
       throw new BadRequestException(`Bad trip ID ${tripId}`);
     }
@@ -59,7 +59,11 @@ export class StopsController {
       throw new BadRequestException(`Bad limit ${limit}`);
     }
 
-    return this.stopService.getStopsByTrip(+tripId, q, limit ? +limit : 0);
+    if (includeArchived && includeArchived !== 'true') {
+      throw new BadRequestException(`Bad includeArchived ${includeArchived}`);
+    }
+
+    return this.stopService.getStopsByTrip(+tripId, includeArchived === 'true', q, limit ? +limit : 0);
   }
 
   @Post(':id/attach')
