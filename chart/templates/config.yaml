@@ -22,7 +22,7 @@ data:
   REQUIRE_MFA: "{{ .Values.params.requireMfa }}"
   REQUIRE_EMAIL_VERIFICATION: "{{ .Values.params.requireEmailVerification }}"
   ALLOW_REGISTRATION: "{{ .Values.params.allowRegistration }}"
-  GOOGLE_SPREADSHEET_ID: "{{ .Values.params.googleSpreadsheetId | b64enc }}"
+  GOOGLE_SPREADSHEET_ID: "{{ .Values.params.googleSpreadsheetId }}"
 {{ if .Values.telemetry.opentelemetry.enabled }}
   OTEL_EXPORTER_OTLP_ENDPOINT: "{{ .Values.telemetry.opentelemetry.otlp_url }}"
   OTEL_EXPORTER_OTLP_INSECURE: "{{ .Values.telemetry.opentelemetry.otlp_insecure }}"
