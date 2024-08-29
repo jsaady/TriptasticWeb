@@ -40,6 +40,7 @@ export const MapView = () => {
   const [newModalOpen, setNewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [checkInModalId, setCheckInModalId] = useState<number>();
+  const [notifyModalId, setNotifyModalId] = useState<number>();
   const [detailModalId, setDetailModalId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isSearch, setIsSearch] = useState(false);
@@ -57,6 +58,7 @@ export const MapView = () => {
     removeStop,
     setEditStop,
     persistAttachments,
+    notifyUsers,
   } = useStops();
 
   const currentStop = useMemo(() => stops.find(stop => stop.status === StopStatus.ACTIVE), [stops]);
@@ -130,6 +132,13 @@ export const MapView = () => {
     checkIn(checkInModalId);
   }, [checkInModalId]);
 
+  const notifyUsersOfUpdate = useCallback(() => {
+    if (!notifyModalId) return;
+
+    setNotifyModalId(void 0);
+    notifyUsers(notifyModalId);
+  }, [notifyModalId]);
+
   const handleSearchSelected = useCallback((result: LocalSearchResult) => {
     setSearchResultBounds(result.bounds);
   }, []);
@@ -137,6 +146,10 @@ export const MapView = () => {
   const handleRouteToggleClicked = useCallback(() => {
     setRouteToggled(!routeToggled);
   }, [routeToggled]);
+
+  const handleNotifyClick = useCallback((id: number) => {
+    setNotifyModalId(id);
+  }, []);
 
   const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
 
@@ -217,6 +230,7 @@ export const MapView = () => {
               onEditClicked={() => setEditStop(stop)}
               onCheckInClick={() => setCheckInModalId(stop.id)}
               onFileUpload={() => handleFileUpload(stop.id)}
+              onNotifyClicked={() => handleNotifyClick(stop.id)}
               onLocationEditClick={() => {
                 setEditStop(stop);
                 setIsEditingLocation(true);
@@ -250,6 +264,15 @@ export const MapView = () => {
           onCancel={() => setCheckInModalId(undefined)}
           onConfirm={handleCheckInClick} />
       )}
+
+      {notifyModalId && (
+        <ConfirmModal 
+          title='Check in'
+          message='Are you sure you want to notify users of an update to this stop?'
+          onCancel={() => setNotifyModalId(undefined)}
+          onConfirm={notifyUsersOfUpdate} />
+      )}
+
 
       {detailModalId && (
         <ViewStopDetails onClose={() => setDetailModalId(null)} stopId={detailModalId} />

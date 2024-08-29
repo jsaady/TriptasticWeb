@@ -1,11 +1,10 @@
 import { LatLng } from 'leaflet';
-import { ComponentType, createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { ComponentType, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAsyncHttp, useAsyncHttpWithAlert } from '@ui/utils/useAsync.js';
 import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from '@api/features/stops/dto/stop.dto.js';
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 import { Serialized } from '../../../common/serialized.js';
 import { AttachmentDTO } from '@api/features/stops/dto/attachment.dto.js';
-import { AlertType, useAlert } from '@ui/utils/alerts.js';
 
 export interface StopsState {
   stops: StopListDTO[];
@@ -19,6 +18,7 @@ export interface StopsState {
   removeStop: (id: number) => void;
   updateStop: (id: number, stop: Partial<UpdateStopDTO>) => void;
   getStop: (id: number) => StopListDTO | undefined;
+  notifyUsers: (id: number) => void;
   fetchAttachments: (stopId: number) => void;
   persistAttachments: (id: number, files: FileList) => void;
   removeAttachment: (stopId: number, attachmentId: number) => void;
@@ -48,6 +48,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
   const [attachments, setAttachments] = useState<AttachmentDTO[]>([]);
 
   const [stops, setStops] = useState<StopListDTO[]>([]);
+
   const [pendingAttachments, setPendingAttachments] = useState<FileList>();
   const [editStopDetail, setEditStopDetail] = useState<StopDetailDTO | null>(null);
 
@@ -84,6 +85,10 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
       await post(`/api/stops/${id}/attach`, formData);
     }
   }, [], 'Attachment uploaded successfully', 'Error uploading attachment');
+
+  const [notifyUsers] = useAsyncHttpWithAlert(async ({ post }, id: number) => {
+    await post(`/api/stops/${id}/notify`, {});
+  }, [], 'Notification sent successfully', 'Error sending notification');
 
   const [fetchAttachments, { result: fetchedAttachments }] = useAsyncHttp(async ({ get }, stopId: number) => {
     setAttachments([]);
@@ -221,7 +226,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
   }, []);
 
   return <StopsContext.Provider value={{
-    stops,
+    stops: stops,
     focusedStopId,
     filteredStops,
     editStopDetail,
@@ -233,6 +238,7 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
     removeStop,
     updateStop,
     getStop,
+    notifyUsers,
     fetchStops,
     searchStops,
     persistAttachments,

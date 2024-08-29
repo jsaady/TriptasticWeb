@@ -21,8 +21,9 @@ export interface StopMarkerProps {
   onCheckInClick: () => void;
   onFileUpload: () => void;
   onLocationEditClick: () => void;
+  onNotifyClicked: () => void;
 }
-export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClicked, onDetailClicked, onCheckInClick, onLocationEditClick, onFileUpload }: StopMarkerProps) {
+export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClicked, onDetailClicked, onCheckInClick, onLocationEditClick, onFileUpload, onNotifyClicked }: StopMarkerProps) {
   const { me } = useAuthorization();
   const [currentZoom, setCurrentZoom] = useState(DefaultZoom);
 
@@ -55,6 +56,7 @@ export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClick
   const handleCheckInClick = buildCallback(onCheckInClick);
   const handleLocationEditClick = buildCallback(onLocationEditClick);
   const handleFileUpload = buildCallback(onFileUpload);
+  const handleNotifyClick = buildCallback(onNotifyClicked);
 
   const darkMode = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)').matches, []);
 
@@ -117,6 +119,10 @@ export function StopMarker ({ stop, hidden = false, onDeleteClicked, onEditClick
 
         <SmallButton className='ml-5' onClick={handleFileUpload}>
           <Icon icon='upload' />
+        </SmallButton>
+
+        <SmallButton className='ml-5' onClick={handleNotifyClick}>
+          <Icon icon='bell' />
         </SmallButton>
 
         {stop.status !== StopStatus.ACTIVE && <SmallButton className='ml-5' onClick={handleCheckInClick}>

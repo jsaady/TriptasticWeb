@@ -227,17 +227,20 @@ export class StopsService {
     stop.actualArrivalDate = new Date();
     stop.status = StopStatus.ACTIVE;
 
-    const userIds = await this.userNotificationService.getUserIdsToNotify(stop.id);
-
-    this.notificationService.batchNotify({
-      title: 'Stop Checked In',
-      text: `Stop ${stop.name} has been checked in`,
-      userIds,
-    });
-
     await this.em.flush();
 
     return stop;
+  }
+
+  async notifySubscribers(stopId: number): Promise<void> {
+    const userIds = await this.userNotificationService.getUserIdsToNotify(stopId);
+    const stop = await this.getStopById(stopId);
+
+    await this.notificationService.batchNotify({
+      title: 'Stop Updated',
+      text: `"${stop.name}" has been updated`,
+      userIds,
+    });
   }
 
   async archiveStop(id: number): Promise<Stop> {

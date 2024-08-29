@@ -41,6 +41,14 @@ export class StopsController {
     return this.stopService.checkIntoStop(id);
   }
 
+  @Post(':id/notify')
+  @HasRole(UserRole.ADMIN)
+  notify(
+    @Param('id') id: number
+  ) {
+    return this.stopService.notifySubscribers(id);
+  }
+
   @Delete(':id')
   @HasRole(UserRole.ADMIN)
   deleteStop(

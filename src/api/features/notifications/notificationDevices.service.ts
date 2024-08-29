@@ -83,7 +83,7 @@ export class NotificationDevicesService {
   }
 
   async batchNotify(dto: BatchNotificationDTO) {
-    this.pgBoss.send('process-batch-notification', dto);
+    return this.pgBoss.send('process-batch-notification', dto);
   }
 
   @ProcessQueue('process-batch-notification')
