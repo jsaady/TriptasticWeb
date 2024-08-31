@@ -26,7 +26,7 @@ env:
 
 jobs:
   test:
-    runs-on: triptastic-runner-set
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: ankane/pgvector:latest
