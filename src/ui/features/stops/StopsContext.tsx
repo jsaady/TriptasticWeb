@@ -5,6 +5,7 @@ import { CreateStopDTO, StopDetailDTO, StopListDTO, UpdateStopDTO } from '@api/f
 import { StopStatus } from '@api/features/stops/entities/stopStatus.enum.js';
 import { Serialized } from '../../../common/serialized.js';
 import { AttachmentDTO } from '@api/features/stops/dto/attachment.dto.js';
+import { useSpinnerProgress } from '@ui/utils/useSpinner.js';
 
 export interface StopsState {
   stops: StopListDTO[];
@@ -45,6 +46,7 @@ const mapAPIResponse = (response: Serialized<StopListDTO>[]): StopListDTO[] => r
 }));
 
 export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component: ComponentType<T>) => (props: T) => {
+  const [,setProgress] = useSpinnerProgress();
   const [attachments, setAttachments] = useState<AttachmentDTO[]>([]);
 
   const [stops, setStops] = useState<StopListDTO[]>([]);
@@ -79,10 +81,14 @@ export const withStopsProvider = <T extends JSX.IntrinsicAttributes,>(Component:
   }, [], 'Stop updated successfully', 'Error updating stop');
 
   const [persistAttachments] = useAsyncHttpWithAlert(async ({ post }, id: number, files: FileList) => {
+    const len = files.length;
+    setProgress(1);
+
     for (const file of files) {
       const formData = new FormData();
       formData.append('file', file);
       await post(`/api/stops/${id}/attach`, formData);
+      setProgress((prev) => prev + 100 / len);
     }
   }, [], 'Attachment uploaded successfully', 'Error uploading attachment');
 

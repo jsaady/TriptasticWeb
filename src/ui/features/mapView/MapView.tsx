@@ -10,7 +10,7 @@ import { denver } from '@ui/utils/useGeolocation.js';
 import { useLocalStorage } from '@ui/utils/useLocalStorage.js';
 import L, { LatLng } from 'leaflet';
 import { BoundsTuple } from 'leaflet-geosearch/dist/providers/provider.js';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { MapContainer, Polyline } from 'react-leaflet';
 import { useFetchApiKey } from '../home/fetchApiKey.js';
 import { EditNoteStop } from '../stops/EditNoteStop.js';
@@ -42,12 +42,14 @@ export const MapView = () => {
   const [checkInModalId, setCheckInModalId] = useState<number>();
   const [notifyModalId, setNotifyModalId] = useState<number>();
   const [detailModalId, setDetailModalId] = useState<number | null>(null);
+  const [uploadId, setUploadId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isSearch, setIsSearch] = useState(false);
   const [newLocationLatLng, setNewLocationLatLng] = useState<LatLng | null>(null);
   const [searchResultBounds, setSearchResultBounds] = useState<BoundsTuple | null>(null);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     stops,
@@ -187,25 +189,24 @@ export const MapView = () => {
   }, [isEditingLocation]);
 
   const handleFileUpload = useCallback((id: number) => {
-      let input = document.createElement('input');
-      input.type = 'file';
-      input.multiple = true;
-      input.accept = 'image/*';
-      input.onchange = _ => {
-        let files = input.files;
+    setUploadId(id);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    fileInputRef.current?.click();
+  }, [fileInputRef.current]);
 
-        if (files?.length) {
-          persistAttachments(id, files);
-        }
-      };
-      input.hidden = true;
-      document.body.appendChild(input);
-      input.click();
-      document.body.removeChild(input);
-  }, []);
+  const uploadFiles = useCallback(() => {
+    console.log('here', fileInputRef.current?.files, uploadId);
+    if (fileInputRef.current?.files?.length && uploadId) {
+      persistAttachments(uploadId, fileInputRef.current.files);
+    }
+    setUploadId(null);
+  }, [uploadId]);
 
   return (
     <div className='flex flex-col items-center justify-center'>
+      <input ref={fileInputRef} type='file' multiple hidden accept='image/*' onChange={uploadFiles} />
       <SearchBox onSelected={handleSearchSelected} onFocusChange={setIsSearch} />
       <FloatingMapButton icon={floatingButtonIcon} slashThrough={routeToggled && !isEditingLocation} onClick={handleFloatingButtonClick} />
       <MapContainer
