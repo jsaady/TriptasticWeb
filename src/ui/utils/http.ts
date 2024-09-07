@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useLoggedIn } from './useLoggedIn.js';
 import { useGlobalSocket } from './useSocket.js';
 import { getCurrentInviteCode, setCurrentInviteCode } from './inviteCodeStorage.js';
+import { useSpinner } from './useSpinner.js';
 
 export class FetchError extends Error {
   constructor (public response: Response, public responseText: string) {
@@ -39,35 +40,43 @@ export interface HTTPClient {
 
 export const useHttp = (): HTTPClient => {
   const { setLoggedIn } = useLoggedIn();
+  const [, setLoading] = useSpinner();
   const globalSocketState = useGlobalSocket();
 
   const makeRequest = useCallback(async (path: string, method: 'get'|'post'|'patch'|'put'|'delete', signal: AbortSignal, body?: any) => {
-    const originalResponse = await fetch(path, {
-      body: body instanceof FormData ? body : JSON.stringify(body),
-      headers: getHeaders(globalSocketState.socket?.id ?? '', body),
-      method,
-      signal
-    });
-
-    const response = originalResponse.clone();
+    setLoading(true);
+    try {
+      const originalResponse = await fetch(path, {
+        body: body instanceof FormData ? body : JSON.stringify(body),
+        headers: getHeaders(globalSocketState.socket?.id ?? '', body),
+        method,
+        signal
+      });
+      setLoading(false);
   
-    if (response.status >= 400) {
-      if (response.status === 401) {
-        setLoggedIn(false);
-        setCurrentInviteCode('');
+      const response = originalResponse.clone();
+    
+      if (response.status >= 400) {
+        if (response.status === 401) {
+          setLoggedIn(false);
+          setCurrentInviteCode('');
+        }
+  
+        console.error(response);
+        throw new FetchError(originalResponse, await response.text());
       }
-
-      console.error(response);
-      throw new FetchError(originalResponse, await response.text());
+  
+      if (response.headers.get('Content-Type')?.startsWith('application/json')) {
+        const parsed = await response.json();
+  
+        return parsed;
+      }
+  
+      return '';
+    } catch (e) {
+      setLoading(false);
+      throw e;
     }
-
-    if (response.headers.get('Content-Type')?.startsWith('application/json')) {
-      const parsed = await response.json();
-
-      return parsed;
-    }
-
-    return '';
   }, [setLoggedIn, globalSocketState]);
   
   const get = useCallback(async (path: string, signal: AbortSignal) => {

@@ -7,6 +7,8 @@ import { useNotifications, withNotifications } from './features/notifications/us
 import { useAuthorization } from './utils/useAuth.js';
 import { withGeolocation } from './utils/useGeolocation.js';
 import { useCopyInviteLink } from './utils/useInviteLink.js';
+import { Spinner } from './components/Spinner.js';
+import { useSpinner } from './utils/useSpinner.js';
 export const Authenticated = withGeolocation(withSidebar(withNotifications(() => {
   const { logout, loggedIn, loading, me } = useAuthorization();
   const { enabled, supported, subscribe, unsubscribe } = useNotifications();
@@ -71,6 +73,7 @@ export const Authenticated = withGeolocation(withSidebar(withNotifications(() =>
     ]
   }, [logout, supported, subscribeButtonText, enabled, subscribe, unsubscribe]);
 
+  const [spinning] = useSpinner();
   
   if (loading) return 'Loading...';
   
@@ -80,6 +83,7 @@ export const Authenticated = withGeolocation(withSidebar(withNotifications(() =>
 
   return <div className='flex flex-col lg:max-w-[75em] lg:m-auto'>
     <NavBar name='Triptastic' navItems={navItems} rightIcon='user' rightItems={rightItems} />
+    <Spinner active={spinning} />
     <div className='w-full'>
       <Sidebar />
       <Outlet />
