@@ -95,7 +95,7 @@
     "@nestjs-enhanced/pub-sub": "^1.2.4",
     "@nestjs-enhanced/sockets": "^1.2.4",
     "@nestjs-enhanced/workers": "^1.2.4",
-    "@nestjs/common": "^10.3.8",
+    "@nestjs/common": "^11.0.16",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.3.8",
     "@nestjs/jwt": "^10.2.0",
