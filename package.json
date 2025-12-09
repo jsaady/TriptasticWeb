@@ -127,7 +127,7 @@
     "helmet": "^7.0.0",
     "multer": "^1.4.5-lts.1",
     "nest-winston": "^1.10.0",
-    "nodemailer": "^6.9.4",
+    "nodemailer": "^7.0.11",
     "pg": "^8.11.3",
     "pg-boss": "^9.0.3",
     "prom-client": "^15.1.3",
